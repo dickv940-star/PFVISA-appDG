@@ -307,6 +307,10 @@
         item.textContent = rule;
         requirementsList.appendChild(item);
       });
+    } else {
+      const item = document.createElement("li");
+      item.textContent = "PERLU VERIFIKASI: PFVISA belum memiliki profil ukuran, DPI, dan proporsi kepala yang terverifikasi khusus untuk dokumen ini. Ukuran yang tampil hanya titik awal, bukan aturan resmi. Periksa petunjuk pada portal resmi sebelum mengirim foto.";
+      requirementsList.appendChild(item);
     }
     officialLink.href = guide.official;
     officialLink.textContent = "Buka sumber resmi " + guide.name + " ↗";
@@ -314,7 +318,9 @@
       resetCrop();
       sizePreset.value = presetKey;
       customFields.hidden = true;
-      if (spec && spec.dpi) dpiSelect.value = String(spec.dpi);
+      // Always reset DPI when switching country/document so a previous selection
+      // cannot silently carry over to a country with no verified photo profile.
+      dpiSelect.value = spec && spec.dpi ? String(spec.dpi) : "300";
       detectedCrop = null;
       renderPhoto();
       if (sourceImage) detectAndCropFace(sourceImage);
