@@ -118,7 +118,7 @@
     $("spec-pixels").textContent = dimensions.widthPx + " × " + dimensions.heightPx + " px";
     photoFrame.classList.toggle("square", Math.abs(size.width - size.height) < 0.1);
     photoFrame.classList.toggle("portrait", size.height > size.width);
-    photoFrame.classList.toggle("wide", size.width / size.height > 0.9 && size.width / size.height < 0.75);
+    photoFrame.classList.toggle("wide", size.width / size.height > 1.2);
   }
 
   function loadFile(file) {
