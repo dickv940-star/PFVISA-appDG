@@ -278,8 +278,8 @@
     const ratio = dimensions.widthPx / dimensions.heightPx;
     const crop = cropRect(sourceImage.naturalWidth, sourceImage.naturalHeight, ratio);
 
-    previewCanvas.width = dimensions.widthPx;
-    previewCanvas.height = dimensions.heightPx;
+    if (previewCanvas.width !== dimensions.widthPx) previewCanvas.width = dimensions.widthPx;
+    if (previewCanvas.height !== dimensions.heightPx) previewCanvas.height = dimensions.heightPx;
     const context = previewCanvas.getContext("2d", { alpha: false });
     context.imageSmoothingEnabled = true;
     context.imageSmoothingQuality = "high";
