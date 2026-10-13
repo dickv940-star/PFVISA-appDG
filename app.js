@@ -31,6 +31,10 @@
     "35x45": { width: 35, height: 45, label: "35 × 45 mm" },
     "2x2": { width: 50.8, height: 50.8, label: "2 × 2 inci" },
     "40x60": { width: 40, height: 60, label: "40 × 60 mm" },
+    "50x70": { width: 50, height: 70, label: "50 × 70 mm" },
+    "33x48": { width: 33, height: 48, label: "33 × 48 mm" },
+    "45x45": { width: 45, height: 45, label: "45 × 45 mm" },
+    "40x50": { width: 40, height: 50, label: "40 × 50 mm" },
     "30x40": { width: 30, height: 40, label: "30 × 40 mm" }
   };
 
@@ -155,6 +159,45 @@
   };
   Object.assign(presets, extraPresets);
 
+  // Parameter khusus per negara + jenis dokumen. Sumber/tingkat kepastian ditampilkan
+  // kepada pengguna; profil umum tidak boleh dianggap sebagai jaminan penerimaan resmi.
+  const photoSpecs = {
+    "id:passport": { preset: "35x45", dpi: 600, headMm: null, topMm: null, source: "Panduan paspor Indonesia perlu dikonfirmasi pada kanal Imigrasi yang digunakan." },
+    "id:visa": { preset: "35x45", dpi: 600, headMm: null, topMm: null, source: "Ukuran visa mengikuti negara tujuan dan portal permohonan." },
+    "id:id": { preset: "30x40", dpi: 600, headMm: 30, topMm: 2.5, source: "Referensi format foto 30 × 40 mm; pastikan cocok dengan instansi penerbit." },
+
+    "us:passport": { preset: "2x2", dpi: 300, headMm: 32.8, topMm: 6.5, source: "Referensi Visafoto untuk paspor AS; cocokkan panduan resmi." },
+    "us:visa": { preset: "2x2", dpi: 300, headMm: 32.8, topMm: 6.5, source: "Referensi foto visa AS 2 × 2 inci; portal visa dapat menentukan ketentuan digital tersendiri." },
+
+    "schengen:visa": { preset: "35x45", dpi: 600, headMm: 33.5, topMm: 5, source: "Referensi format Schengen 35 × 45 mm; konsulat/pusat visa dapat memberi instruksi tambahan." },
+    "schengen:residence": { preset: "35x45", dpi: 600, headMm: null, topMm: null, source: "Izin tinggal berbeda menurut negara penerbit; ukuran ini hanya titik awal." },
+
+    "gb:passport": { preset: "35x45", dpi: 600, headMm: null, topMm: null, source: "Foto paspor UK digital tidak selalu mengikuti ukuran cetak; ikuti pemeriksaan foto pada layanan GOV.UK." },
+    "gb:visa": { preset: "35x45", dpi: 600, headMm: null, topMm: null, source: "Visa UK dapat memakai foto digital atau pengambilan biometrik; ikuti instruksi permohonan." },
+
+    "ca:passport": { preset: "50x70", dpi: 600, headMm: 34, topMm: 5, source: "Paspor Kanada umumnya 50 × 70 mm; ukuran kepala harus diperiksa terhadap panduan resmi." },
+    "ca:visa": { preset: "35x45", dpi: 600, headMm: null, topMm: null, source: "Aplikasi imigrasi Kanada memiliki ketentuan berbeda menurut kategori aplikasi." },
+
+    "au:passport": { preset: "35x45", dpi: 600, headMm: 34, topMm: 5, source: "Panduan resmi paspor Australia: foto 35–40 × 45–50 mm, tinggi wajah 32–36 mm. Profil 35 × 45 mm adalah ukuran kerja." },
+    "au:visa": { preset: "35x45", dpi: 600, headMm: 34, topMm: 5, source: "Persyaratan yang diberikan: kepala 34 mm dan jarak tepi atas 5 mm; periksa kembali subclass/portal visa." },
+
+    "in:passport": { preset: "35x45", dpi: 600, headMm: null, topMm: null, source: "India memiliki beberapa format paspor cetak/digital; konfirmasi spesifikasi portal yang digunakan." },
+    "in:visa": { preset: "2x2", dpi: 300, headMm: 32.8, topMm: 6.5, source: "Referensi umum foto visa India 2 × 2 inci; e-Visa dapat meminta ukuran piksel berbeda." },
+
+    "cn:passport": { preset: "33x48", dpi: 300, headMm: null, topMm: null, source: "Referensi format 33 × 48 mm; verifikasi panduan paspor resmi yang berlaku." },
+    "cn:visa": { preset: "33x48", dpi: 300, headMm: null, topMm: null, source: "Referensi format visa Tiongkok 33 × 48 mm; pusat visa dapat memperbarui persyaratan." },
+
+    "jp:passport": { preset: "35x45", dpi: 600, headMm: null, topMm: null, source: "Ukuran foto paspor Jepang harus dicocokkan dengan instruksi permohonan yang dipakai." },
+    "jp:visa": { preset: "45x45", dpi: 600, headMm: 27, topMm: 5, source: "Referensi Visafoto untuk salah satu format visa Jepang 45 × 45 mm; persyaratan dapat berbeda menurut aplikasi." },
+
+    "ae:visa": { preset: "35x45", dpi: 600, headMm: null, topMm: null, source: "Persyaratan visa UEA dapat berubah menurut emirate, jenis visa, dan portal." },
+    "ae:id": { preset: "35x45", dpi: 600, headMm: null, topMm: null, source: "Emirates ID/izin tinggal dapat memiliki spesifikasi digital tersendiri; verifikasi pada portal resmi." }
+  };
+
+  function currentPhotoSpec() {
+    return photoSpecs[countrySelect.value + ":" + documentSelect.value] || null;
+  }
+
   function populateDocuments() {
     const guide = countryGuides[countrySelect.value] || countryGuides.id;
     documentSelect.replaceChildren();
@@ -204,12 +247,11 @@
       if (faceHeight <= 0) throw new Error("Posisi wajah tidak terbaca");
       const headTop = Math.max(0, forehead.y - faceHeight * 0.22);
       const headHeight = chin.y - headTop;
-      let headFraction = 0.72, topMargin = 0.07;
-      if (countrySelect.value === "us") { headFraction = 0.60; topMargin = 0.10; }
-      else if (countrySelect.value === "schengen") { headFraction = 0.76; topMargin = 0.06; }
-      else if (countrySelect.value === "au" && documentSelect.value === "passport") { headFraction = 0.71; topMargin = 0.06; }
-      else if (countrySelect.value === "ca" && documentSelect.value === "passport") { headFraction = 0.49; topMargin = 0.12; }
-      const dims = getDimensions(), ratio = dims.widthPx / dims.heightPx;
+      const spec = currentPhotoSpec();
+      const dims = getDimensions();
+      const headFraction = spec && spec.headMm != null ? spec.headMm / dims.heightMm : 0.72;
+      const topMargin = spec && spec.topMm != null ? spec.topMm / dims.heightMm : 0.07;
+      const ratio = dims.widthPx / dims.heightPx;
       let ch = headHeight / headFraction, cw = ch * ratio;
       const scale = Math.min(1, w / cw, h / ch);
       cw *= scale; ch *= scale;
@@ -242,6 +284,8 @@
     const guide = countryGuides[countrySelect.value] || countryGuides.id;
     const doc = guide.documents[documentSelect.value] || Object.values(guide.documents)[0];
     if (!doc) return;
+    const spec = currentPhotoSpec();
+    const presetKey = spec && presets[spec.preset] ? spec.preset : doc.preset;
     requirementsTitle.textContent = "Syarat foto — " + guide.name;
     requirementsSummary.textContent = doc.summary;
     requirementsList.replaceChildren();
@@ -250,12 +294,27 @@
       item.textContent = rule;
       requirementsList.appendChild(item);
     });
+    if (spec) {
+      const facts = [
+        "Profil kerja PFVISA: " + presets[presetKey].label + ", " + spec.dpi + " DPI.",
+        spec.headMm != null ? "Target tinggi kepala (perkiraan ubun-ubun hingga dagu): " + mmLabel(spec.headMm) + " mm." : "Ukuran kepala belum dikunci otomatis karena spesifikasi yang tepat bergantung pada dokumen/portal.",
+        spec.topMm != null ? "Target jarak tepi atas ke ubun-ubun: " + mmLabel(spec.topMm) + " mm." : "Jarak tepi atas kepala belum ditetapkan otomatis; periksa petunjuk resmi.",
+        spec.source,
+        "Profil ini membantu penyesuaian ukuran dan crop, tetapi bukan jaminan penerimaan. Ketentuan resmi dapat berbeda menurut kategori aplikasi."
+      ];
+      facts.forEach((rule) => {
+        const item = document.createElement("li");
+        item.textContent = rule;
+        requirementsList.appendChild(item);
+      });
+    }
     officialLink.href = guide.official;
     officialLink.textContent = "Buka sumber resmi " + guide.name + " ↗";
-    if (presets[doc.preset]) {
+    if (presets[presetKey]) {
       resetCrop();
-      sizePreset.value = doc.preset;
+      sizePreset.value = presetKey;
       customFields.hidden = true;
+      if (spec && spec.dpi) dpiSelect.value = String(spec.dpi);
       detectedCrop = null;
       renderPhoto();
       if (sourceImage) detectAndCropFace(sourceImage);
