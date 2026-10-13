@@ -1,0 +1,108 @@
+<!doctype html>
+<html lang="id">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <meta name="theme-color" content="#10243a">
+  <meta name="description" content="PFVISA by AppDigi — alat sederhana untuk menyiapkan ukuran foto paspor dan visa langsung di browser.">
+  <title>PFVISA — Visa Photo Studio</title>
+  <link rel="icon" href="./logo-192x192.png">
+  <link rel="stylesheet" href="./style.css">
+  <script src="./app.js" defer></script>
+</head>
+<body>
+  <header class="topbar">
+    <a class="brand" href="./" aria-label="PFVISA beranda">
+      <img src="./logo-192x192.png" alt="" width="42" height="42">
+      <span><strong>PFVISA</strong><small>by AppDigi</small></span>
+    </a>
+    <span class="privacy"><span class="privacy-dot"></span> Foto diproses di perangkat Anda</span>
+  </header>
+
+  <main class="page">
+    <section class="intro">
+      <p class="eyebrow">VISA PHOTO STUDIO</p>
+      <h1>Siapkan foto paspor & visa dengan mudah.</h1>
+      <p class="intro-copy">Unggah foto, pilih ukuran, periksa pratinjau, lalu simpan hasilnya. Foto diproses secara lokal di browser Anda.</p>
+    </section>
+
+    <section class="workspace" aria-label="Editor foto">
+      <div class="panel controls-panel">
+        <div class="panel-heading">
+          <span class="step">01</span>
+          <div><h2>Unggah foto</h2><p>Pilih foto dari perangkat Anda.</p></div>
+        </div>
+        <label class="upload-area" id="drop-zone" for="photo-input">
+          <span class="upload-icon" aria-hidden="true">↑</span>
+          <strong>Pilih foto</strong>
+          <span>atau seret foto ke sini</span>
+          <small>JPG, PNG atau WebP · maksimal 20 MB</small>
+        </label>
+        <input id="photo-input" class="visually-hidden" type="file" accept="image/jpeg,image/png,image/webp">
+        <p id="file-name" class="file-name" aria-live="polite">Belum ada foto dipilih.</p>
+
+        <div class="section-divider"></div>
+        <div class="panel-heading compact">
+          <span class="step">02</span>
+          <div><h2>Pilih ukuran</h2><p>Ukuran umum; persyaratan resmi dapat berbeda.</p></div>
+        </div>
+        <label class="field-label" for="size-preset">Ukuran foto</label>
+        <select id="size-preset" class="select-field">
+          <option value="35x45">35 × 45 mm — Paspor / visa</option>
+          <option value="2x2">2 × 2 inci — Visa AS</option>
+          <option value="40x60">40 × 60 mm</option>
+          <option value="30x40">30 × 40 mm</option>
+          <option value="custom">Ukuran khusus</option>
+        </select>
+
+        <div id="custom-fields" class="custom-fields" hidden>
+          <div class="custom-grid">
+            <label class="field-label">Lebar (mm)<input id="custom-width" type="number" min="10" max="100" value="35"></label>
+            <label class="field-label">Tinggi (mm)<input id="custom-height" type="number" min="10" max="100" value="45"></label>
+          </div>
+        </div>
+
+        <label class="field-label" for="dpi">Resolusi ekspor</label>
+        <select id="dpi" class="select-field">
+          <option value="300">300 DPI — cetak berkualitas tinggi</option>
+          <option value="600">600 DPI — resolusi tinggi</option>
+          <option value="150">150 DPI — file lebih kecil</option>
+        </select>
+
+        <div class="action-stack">
+          <button id="download-btn" class="button button-primary" type="button" disabled>Simpan foto PNG <span aria-hidden="true">↗</span></button>
+          <button id="reset-btn" class="button button-secondary" type="button" disabled>Hapus foto</button>
+        </div>
+        <p id="status" class="status" role="status" aria-live="polite">Unggah foto untuk memulai.</p>
+      </div>
+
+      <div class="panel preview-panel">
+        <div class="preview-header">
+          <div><span class="step">03</span><h2>Pratinjau</h2></div>
+          <span id="dimension-label" class="dimension-label">35 × 45 mm</span>
+        </div>
+        <div class="preview-stage">
+          <div id="photo-frame" class="photo-frame portrait">
+            <div id="empty-state" class="empty-state">
+              <span class="empty-icon" aria-hidden="true">▧</span>
+              <strong>Pratinjau foto</strong>
+              <span>Foto Anda akan muncul di sini.</span>
+            </div>
+            <canvas id="preview-canvas" hidden aria-label="Pratinjau hasil foto"></canvas>
+          </div>
+        </div>
+        <div class="preview-note">
+          <span class="note-icon" aria-hidden="true">i</span>
+          <p>Pratinjau menyesuaikan foto ke rasio ukuran yang dipilih. Periksa posisi wajah dan ketentuan resmi negara tujuan sebelum digunakan.</p>
+        </div>
+        <div class="specs">
+          <div><span>Ukuran cetak</span><strong id="spec-size">35 × 45 mm</strong></div>
+          <div><span>Resolusi gambar</span><strong id="spec-pixels">413 × 531 px</strong></div>
+          <div><span>Format file</span><strong>PNG</strong></div>
+        </div>
+      </div>
+    </section>
+    <footer><span>PFVISA <span aria-hidden="true">·</span> AppDigi</span><span>Privasi Anda penting — foto tidak diunggah ke server.</span></footer>
+  </main>
+</body>
+</html>
