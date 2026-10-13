@@ -30,6 +30,44 @@
     "30x40": { width: 30, height: 40, label: "30 × 40 mm" }
   };
 
+  function generalCountryGuide(name, official, passportPreset = "35x45") {
+    return {
+      name, official,
+      documents: {
+        passport: {
+          label: "Paspor " + name, preset: passportPreset,
+          summary: "Ukuran awal di editor ini bukan konfirmasi standar resmi negara ini. Periksa instruksi terbaru otoritas penerbit sebelum menggunakan foto.",
+          rules: [
+            "Persyaratan paspor berbeda menurut negara, jenis permohonan, dan apakah foto dicetak atau diunggah secara digital.",
+            "Periksa dimensi, proporsi kepala/wajah, warna latar, ukuran file, format, dan batas usia foto pada sumber resmi.",
+            "Gunakan foto berwarna yang tajam, pencahayaan merata, wajah menghadap lurus, mata terlihat, dan ekspresi sesuai petunjuk resmi.",
+            "Hindari filter, retouch yang mengubah ciri wajah, bayangan kuat, pantulan, atau benda yang menutupi wajah.",
+            "Aplikasi ini hanya mengubah rasio/ukuran dan tidak memeriksa biometrik atau menjamin foto diterima."
+          ]
+        },
+        visa: {
+          label: "Visa " + name, preset: passportPreset,
+          summary: "Persyaratan foto visa ditentukan oleh jenis visa dan kanal pengajuan. Ukuran awal di editor ini bukan standar resmi untuk semua visa.",
+          rules: [
+            "Buka petunjuk resmi untuk kategori visa dan portal yang benar sebelum memilih ukuran akhir.",
+            "Cocokkan dimensi, resolusi, format file, batas ukuran file, latar belakang, dan proporsi wajah.",
+            "Visa elektronik, permohonan melalui pusat visa, dan dokumen cetak dapat memakai aturan berbeda.",
+            "Jangan menganggap ukuran paspor berlaku otomatis untuk visa atau izin tinggal."
+          ]
+        },
+        id: {
+          label: "Kartu identitas / izin tinggal", preset: passportPreset,
+          summary: "Dokumen identitas dan izin tinggal dapat memiliki spesifikasi foto yang berbeda dari paspor.",
+          rules: [
+            "Ikuti spesifikasi instansi penerbit untuk dokumen yang dipilih.",
+            "Konfirmasikan ukuran, latar belakang, proporsi wajah, format, dan batas file.",
+            "Gunakan ukuran awal hanya untuk penyuntingan; verifikasi kembali sebelum mengirim."
+          ]
+        }
+      }
+    };
+  }
+
   const countryGuides = {
     id: {
       name: "Indonesia",
@@ -75,7 +113,37 @@
     ae: { name: "Uni Emirat Arab", official: "https://icp.gov.ae/en/", documents: {
       visa: { label: "Visa UEA", preset: "2x2", summary: "Sistem visa UEA dapat meminta ukuran atau resolusi berbeda menurut portal dan jenis permohonan.", rules: ["Periksa ketentuan pada portal resmi atau penyedia layanan yang memproses visa.", "Gunakan foto terbaru dengan latar belakang polos dan wajah terlihat jelas.", "Jangan menganggap ukuran 2 × 2 inci berlaku untuk semua layanan UEA."] },
       id: { label: "Emirates ID / izin tinggal", preset: "35x45", summary: "Emirates ID dan izin tinggal dapat memiliki spesifikasi yang berbeda dari foto visa.", rules: ["Ikuti persyaratan teknis pada layanan ICP yang relevan.", "Pastikan proporsi kepala, latar belakang, dan kualitas foto sesuai instruksi.", "Periksa kembali ukuran file dan format unggahan."] }
-    }}
+    }},
+    nz: generalCountryGuide("Selandia Baru", "https://www.passports.govt.nz/what-you-need-for-your-application/passport-photos/"),
+    sg: generalCountryGuide("Singapura", "https://www.ica.gov.sg/documents/passport"),
+    my: generalCountryGuide("Malaysia", "https://www.imi.gov.my/"),
+    kr: generalCountryGuide("Korea Selatan", "https://www.passport.go.kr/"),
+    br: generalCountryGuide("Brasil", "https://www.gov.br/pf/pt-br/assuntos/passaporte"),
+    mx: generalCountryGuide("Meksiko", "https://www.gob.mx/sre"),
+    za: generalCountryGuide("Afrika Selatan", "https://www.dha.gov.za/"),
+    th: generalCountryGuide("Thailand", "https://consular.mfa.go.th/"),
+    ph: generalCountryGuide("Filipina", "https://consular.dfa.gov.ph/"),
+    vn: generalCountryGuide("Vietnam", "https://evisa.gov.vn/"),
+    sa: generalCountryGuide("Arab Saudi", "https://www.moi.gov.sa/"),
+    qa: generalCountryGuide("Qatar", "https://portal.moi.gov.qa/"),
+    tr: generalCountryGuide("Turki", "https://www.mfa.gov.tr/"),
+    pk: generalCountryGuide("Pakistan", "https://dgip.gov.pk/"),
+    bd: generalCountryGuide("Bangladesh", "https://www.dip.gov.bd/"),
+    np: generalCountryGuide("Nepal", "https://nepalpassport.gov.np/"),
+    ng: generalCountryGuide("Nigeria", "https://immigration.gov.ng/"),
+    eg: generalCountryGuide("Mesir", "https://www.mfa.gov.eg/"),
+    tw: generalCountryGuide("Taiwan", "https://www.boca.gov.tw/"),
+    hk: generalCountryGuide("Hong Kong", "https://www.immd.gov.hk/eng/"),
+    ie: generalCountryGuide("Irlandia", "https://www.ireland.ie/en/dfa/passports/"),
+    fr: generalCountryGuide("Prancis", "https://www.service-public.fr/"),
+    de: generalCountryGuide("Jerman", "https://www.auswaertiges-amt.de/"),
+    it: generalCountryGuide("Italia", "https://www.esteri.it/"),
+    es: generalCountryGuide("Spanyol", "https://www.exteriores.gob.es/"),
+    nl: generalCountryGuide("Belanda", "https://www.netherlandsworldwide.nl/passport-id-card"),
+    ch: generalCountryGuide("Swiss", "https://www.eda.admin.ch/"),
+    se: generalCountryGuide("Swedia", "https://polisen.se/"),
+    no: generalCountryGuide("Norwegia", "https://www.politiet.no/"),
+    ru: generalCountryGuide("Rusia", "https://mid.ru/")
   };
   const extraPresets = {
     "50x70": { width: 50, height: 70, label: "50 × 70 mm" },
