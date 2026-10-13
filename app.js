@@ -172,6 +172,63 @@
   let cropPanY = 0;
   let cropMode = false;
   let dragPoint = null;
+  let faceLandmarkerPromise = null;
+  let detectedCrop = null;
+
+  async function detectAndCropFace(image) {
+    setStatus("Mendeteksi wajah dan menyesuaikan crop otomatis…");
+    try {
+      if (!faceLandmarkerPromise) {
+        faceLandmarkerPromise = import("https://cdn.jsdelivr.net/npm/@mediapipe/tasks-vision@0.10.22/+esm")
+          .then(async (vision) => {
+            const files = await vision.FilesetResolver.forVisionTasks("https://cdn.jsdelivr.net/npm/@mediapipe/tasks-vision@0.10.22/wasm");
+            return vision.FaceLandmarker.createFromOptions(files, {
+              baseOptions: {
+                modelAssetPath: "https://storage.googleapis.com/mediapipe-models/face_landmarker/face_landmarker/float16/1/face_landmarker.task",
+                delegate: "CPU"
+              },
+              runningMode: "IMAGE",
+              numFaces: 1
+            });
+          });
+      }
+      const detector = await faceLandmarkerPromise;
+      if (sourceImage !== image) return;
+      const result = detector.detect(image);
+      const marks = result.faceLandmarks && result.faceLandmarks[0];
+      if (!marks || marks.length < 264) throw new Error("Wajah tidak terdeteksi");
+      const w = image.naturalWidth, h = image.naturalHeight;
+      const p = (i) => ({ x: marks[i].x * w, y: marks[i].y * h });
+      const forehead = p(10), chin = p(152), leftEye = p(33), rightEye = p(263);
+      const faceHeight = chin.y - forehead.y;
+      if (faceHeight <= 0) throw new Error("Posisi wajah tidak terbaca");
+      const headTop = Math.max(0, forehead.y - faceHeight * 0.22);
+      const headHeight = chin.y - headTop;
+      let headFraction = 0.72, topMargin = 0.07;
+      if (countrySelect.value === "us") { headFraction = 0.60; topMargin = 0.10; }
+      else if (countrySelect.value === "schengen") { headFraction = 0.76; topMargin = 0.06; }
+      else if (countrySelect.value === "au" && documentSelect.value === "passport") { headFraction = 0.71; topMargin = 0.06; }
+      else if (countrySelect.value === "ca" && documentSelect.value === "passport") { headFraction = 0.49; topMargin = 0.12; }
+      const dims = getDimensions(), ratio = dims.widthPx / dims.heightPx;
+      let ch = headHeight / headFraction, cw = ch * ratio;
+      const scale = Math.min(1, w / cw, h / ch);
+      cw *= scale; ch *= scale;
+      const centerX = (leftEye.x + rightEye.x) / 2;
+      detectedCrop = {
+        x: Math.max(0, Math.min(w - cw, centerX - cw / 2)),
+        y: Math.max(0, Math.min(h - ch, headTop - ch * topMargin)),
+        width: cw, height: ch
+      };
+      cropZoom = 1; cropPanX = 0; cropPanY = 0;
+      cropZoomInput.value = "1"; cropZoomLabel.textContent = "1.0×";
+      renderPhoto();
+      setStatus("Crop otomatis selesai. Periksa puncak kepala, dagu, dan posisi mata sebelum menyimpan.", "success");
+    } catch (error) {
+      detectedCrop = null;
+      renderPhoto();
+      setStatus("Deteksi otomatis gagal. Pastikan internet aktif, lalu gunakan Atur Crop Foto secara manual.", "error");
+    }
+  }
 
   function resetCrop() {
     cropZoom = 1;
@@ -199,7 +256,9 @@
       resetCrop();
       sizePreset.value = doc.preset;
       customFields.hidden = true;
+      detectedCrop = null;
       renderPhoto();
+      if (sourceImage) detectAndCropFace(sourceImage);
     }
   }
 
@@ -248,7 +307,9 @@
   function cropRect(imageWidth, imageHeight, targetRatio) {
     const imageRatio = imageWidth / imageHeight;
     let base;
-    if (imageRatio > targetRatio) {
+    if (detectedCrop) {
+      base = { ...detectedCrop };
+    } else if (imageRatio > targetRatio) {
       const cropWidth = imageHeight * targetRatio;
       base = { x: (imageWidth - cropWidth) / 2, y: 0, width: cropWidth, height: imageHeight };
     } else {
@@ -332,9 +393,10 @@
 
     image.onload = () => {
       sourceImage = image;
+      detectedCrop = null;
       fileName.textContent = file.name + " · " + image.naturalWidth + " × " + image.naturalHeight + " px";
       renderPhoto();
-      setStatus("Foto siap. Periksa pemotongan dan posisi wajah sebelum menyimpan.", "success");
+      detectAndCropFace(image);
     };
     image.onerror = () => {
       sourceImage = null;
@@ -394,7 +456,9 @@
   sizePreset.addEventListener("change", () => {
     customFields.hidden = sizePreset.value !== "custom";
     resetCrop();
+    detectedCrop = null;
     renderPhoto();
+    if (sourceImage) detectAndCropFace(sourceImage);
   });
 
   cropModeBtn.addEventListener("click", () => {
