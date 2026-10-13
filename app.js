@@ -245,26 +245,36 @@
       const forehead = p(10), chin = p(152), leftEye = p(33), rightEye = p(263);
       const faceHeight = chin.y - forehead.y;
       if (faceHeight <= 0) throw new Error("Posisi wajah tidak terbaca");
-      const headTop = Math.max(0, forehead.y - faceHeight * 0.22);
+
+      // Landmark 10 is the upper forehead, not the true crown. Estimate crown
+      // above it, then preserve the requested head-height/top-margin geometry.
+      const headTop = forehead.y - faceHeight * 0.25;
       const headHeight = chin.y - headTop;
       const spec = currentPhotoSpec();
       const dims = getDimensions();
       const headFraction = spec && spec.headMm != null ? spec.headMm / dims.heightMm : 0.72;
       const topMargin = spec && spec.topMm != null ? spec.topMm / dims.heightMm : 0.07;
       const ratio = dims.widthPx / dims.heightPx;
-      let ch = headHeight / headFraction, cw = ch * ratio;
-      const scale = Math.min(1, w / cw, h / ch);
-      cw *= scale; ch *= scale;
+      const ch = headHeight / headFraction;
+      const cw = ch * ratio;
       const centerX = (leftEye.x + rightEye.x) / 2;
-      detectedCrop = {
-        x: Math.max(0, Math.min(w - cw, centerX - cw / 2)),
-        y: Math.max(0, Math.min(h - ch, headTop - ch * topMargin)),
-        width: cw, height: ch
-      };
+      const cropX = centerX - cw / 2;
+      const cropY = headTop - ch * topMargin;
+
+      // Do not shrink the crop to fit the uploaded image: doing so silently
+      // changes the requested head-to-photo proportion. Out-of-frame areas
+      // are rendered as the existing white canvas background.
+      detectedCrop = { x: cropX, y: cropY, width: cw, height: ch };
       cropZoom = 1; cropPanX = 0; cropPanY = 0;
       cropZoomInput.value = "1"; cropZoomLabel.textContent = "1.0×";
       renderPhoto();
-      setStatus("Crop otomatis selesai. Periksa puncak kepala, dagu, dan posisi mata sebelum menyimpan.", "success");
+      const edgeIssue = cropX < 0 || cropY < 0 || cropX + cw > w || cropY + ch > h;
+      setStatus(
+        edgeIssue
+          ? "Crop otomatis diterapkan, tetapi foto sumber terlalu rapat atau wajah terlalu dekat tepi. Periksa area putih dan atur crop manual bila perlu."
+          : "Crop otomatis diterapkan berdasarkan perkiraan posisi ubun-ubun dan dagu. Periksa hasil sebelum menyimpan.",
+        edgeIssue ? "error" : "success"
+      );
     } catch (error) {
       detectedCrop = null;
       renderPhoto();
@@ -387,6 +397,11 @@
     const maxY = Math.max(0, (imageHeight - height) / 2);
     const centerX = base.x + base.width / 2 + cropPanX * maxX;
     const centerY = base.y + base.height / 2 + cropPanY * maxY;
+    // A detected crop may extend beyond the source bounds so the target
+    // head fraction and top margin remain stable instead of being clamped.
+    if (detectedCrop) {
+      return { x: centerX - width / 2, y: centerY - height / 2, width, height };
+    }
     return {
       x: Math.max(0, Math.min(imageWidth - width, centerX - width / 2)),
       y: Math.max(0, Math.min(imageHeight - height, centerY - height / 2)),
