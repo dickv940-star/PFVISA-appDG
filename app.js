@@ -426,11 +426,30 @@
     context.imageSmoothingQuality = "high";
     context.fillStyle = "#ffffff";
     context.fillRect(0, 0, previewCanvas.width, previewCanvas.height);
-    context.drawImage(
-      sourceImage,
-      crop.x, crop.y, crop.width, crop.height,
-      0, 0, previewCanvas.width, previewCanvas.height
-    );
+    const outsideSource =
+      crop.x < 0 || crop.y < 0 ||
+      crop.x + crop.width > sourceImage.naturalWidth ||
+      crop.y + crop.height > sourceImage.naturalHeight;
+
+    if (outsideSource && detectedCrop) {
+      // Build the crop in source-pixel coordinates first. drawImage() clips
+      // out-of-bounds source rectangles and can rescale the remaining pixels;
+      // this intermediate canvas preserves the requested geometry instead.
+      const cropCanvas = document.createElement("canvas");
+      cropCanvas.width = Math.max(1, Math.ceil(crop.width));
+      cropCanvas.height = Math.max(1, Math.ceil(crop.height));
+      const cropContext = cropCanvas.getContext("2d", { alpha: false });
+      cropContext.fillStyle = "#ffffff";
+      cropContext.fillRect(0, 0, cropCanvas.width, cropCanvas.height);
+      cropContext.drawImage(sourceImage, -crop.x, -crop.y);
+      context.drawImage(cropCanvas, 0, 0, previewCanvas.width, previewCanvas.height);
+    } else {
+      context.drawImage(
+        sourceImage,
+        crop.x, crop.y, crop.width, crop.height,
+        0, 0, previewCanvas.width, previewCanvas.height
+      );
+    }
 
     previewCanvas.hidden = false;
     emptyState.hidden = true;
