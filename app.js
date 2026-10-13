@@ -16,6 +16,10 @@
   const requirementsList = $("requirements-list");
   const officialLink = $("official-link");
   const previewCanvas = $("preview-canvas");
+  const cropModeBtn = $("crop-mode-btn");
+  const cropControls = $("crop-controls");
+  const cropZoomInput = $("crop-zoom");
+  const cropZoomLabel = $("crop-zoom-label");
   const photoFrame = $("photo-frame");
   const emptyState = $("empty-state");
   const fileName = $("file-name");
@@ -163,6 +167,20 @@
     updateRequirements();
   }
 
+  let cropZoom = 1;
+  let cropPanX = 0;
+  let cropPanY = 0;
+  let cropMode = false;
+  let dragPoint = null;
+
+  function resetCrop() {
+    cropZoom = 1;
+    cropPanX = 0;
+    cropPanY = 0;
+    cropZoomInput.value = "1";
+    cropZoomLabel.textContent = "1.0×";
+  }
+
   function updateRequirements() {
     const guide = countryGuides[countrySelect.value] || countryGuides.id;
     const doc = guide.documents[documentSelect.value] || Object.values(guide.documents)[0];
@@ -178,6 +196,7 @@
     officialLink.href = guide.official;
     officialLink.textContent = "Buka sumber resmi " + guide.name + " ↗";
     if (presets[doc.preset]) {
+      resetCrop();
       sizePreset.value = doc.preset;
       customFields.hidden = true;
       renderPhoto();
@@ -228,12 +247,25 @@
 
   function cropRect(imageWidth, imageHeight, targetRatio) {
     const imageRatio = imageWidth / imageHeight;
+    let base;
     if (imageRatio > targetRatio) {
       const cropWidth = imageHeight * targetRatio;
-      return { x: (imageWidth - cropWidth) / 2, y: 0, width: cropWidth, height: imageHeight };
+      base = { x: (imageWidth - cropWidth) / 2, y: 0, width: cropWidth, height: imageHeight };
+    } else {
+      const cropHeight = imageWidth / targetRatio;
+      base = { x: 0, y: (imageHeight - cropHeight) / 2, width: imageWidth, height: cropHeight };
     }
-    const cropHeight = imageWidth / targetRatio;
-    return { x: 0, y: (imageHeight - cropHeight) / 2, width: imageWidth, height: cropHeight };
+    const width = base.width / cropZoom;
+    const height = base.height / cropZoom;
+    const maxX = Math.max(0, (imageWidth - width) / 2);
+    const maxY = Math.max(0, (imageHeight - height) / 2);
+    const centerX = base.x + base.width / 2 + cropPanX * maxX;
+    const centerY = base.y + base.height / 2 + cropPanY * maxY;
+    return {
+      x: Math.max(0, Math.min(imageWidth - width, centerX - width / 2)),
+      y: Math.max(0, Math.min(imageHeight - height, centerY - height / 2)),
+      width, height
+    };
   }
 
   function renderPhoto() {
@@ -264,6 +296,7 @@
     updateLabels();
     downloadBtn.disabled = false;
     resetBtn.disabled = false;
+    cropModeBtn.disabled = false;
   }
 
   function updateLabels() {
@@ -320,6 +353,12 @@
     fileInput.value = "";
     previewCanvas.hidden = true;
     emptyState.hidden = false;
+    cropMode = false;
+    cropControls.hidden = true;
+    cropModeBtn.textContent = "Atur Crop Foto";
+    photoFrame.classList.remove("crop-active");
+    cropModeBtn.disabled = true;
+    resetCrop();
     previewCanvas.width = 1;
     previewCanvas.height = 1;
     fileName.textContent = "Belum ada foto dipilih.";
@@ -354,8 +393,47 @@
   fileInput.addEventListener("change", (event) => loadFile(event.target.files && event.target.files[0]));
   sizePreset.addEventListener("change", () => {
     customFields.hidden = sizePreset.value !== "custom";
+    resetCrop();
     renderPhoto();
   });
+
+  cropModeBtn.addEventListener("click", () => {
+    if (!sourceImage) {
+      setStatus("Unggah foto terlebih dahulu untuk mulai crop.", "error");
+      return;
+    }
+    cropMode = !cropMode;
+    cropControls.hidden = !cropMode;
+    photoFrame.classList.toggle("crop-active", cropMode);
+    cropModeBtn.textContent = cropMode ? "Selesai Atur Crop" : "Atur Crop Foto";
+    setStatus(cropMode ? "Seret foto pada pratinjau untuk mengatur posisi. Gunakan zoom bila perlu." : "Posisi crop diterapkan. Periksa hasil sebelum menyimpan.", "success");
+  });
+
+  cropZoomInput.addEventListener("input", () => {
+    cropZoom = clampNumber(cropZoomInput.value, 1, 2.5, 1);
+    cropZoomLabel.textContent = cropZoom.toFixed(1) + "×";
+    renderPhoto();
+  });
+
+  previewCanvas.addEventListener("pointerdown", (event) => {
+    if (!cropMode || !sourceImage) return;
+    dragPoint = { x: event.clientX, y: event.clientY };
+    previewCanvas.setPointerCapture(event.pointerId);
+    event.preventDefault();
+  });
+  previewCanvas.addEventListener("pointermove", (event) => {
+    if (!cropMode || !dragPoint || !sourceImage) return;
+    const rect = previewCanvas.getBoundingClientRect();
+    const dx = event.clientX - dragPoint.x;
+    const dy = event.clientY - dragPoint.y;
+    dragPoint = { x: event.clientX, y: event.clientY };
+    cropPanX = Math.max(-1, Math.min(1, cropPanX - (dx / Math.max(1, rect.width)) * 2));
+    cropPanY = Math.max(-1, Math.min(1, cropPanY - (dy / Math.max(1, rect.height)) * 2));
+    renderPhoto();
+  });
+  const endCropDrag = () => { dragPoint = null; };
+  previewCanvas.addEventListener("pointerup", endCropDrag);
+  previewCanvas.addEventListener("pointercancel", endCropDrag);
   customWidth.addEventListener("input", renderPhoto);
   customHeight.addEventListener("input", renderPhoto);
   dpiSelect.addEventListener("change", renderPhoto);
