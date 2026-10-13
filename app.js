@@ -489,6 +489,33 @@
     updateLabels();
   }
 
+  function pngWithDpi(dataUrl, dpi) {
+    const binary = atob(dataUrl.split(",")[1]);
+    const original = new Uint8Array(binary.length);
+    for (let i = 0; i < binary.length; i++) original[i] = binary.charCodeAt(i);
+    // PNG signature (8 bytes) + IHDR chunk (25 bytes) = 33 bytes.
+    if (original.length < 33 || String.fromCharCode(...original.slice(12, 16)) !== "IHDR") return original;
+    const ppm = Math.round(dpi / 0.0254);
+    const chunk = new Uint8Array(21);
+    const view = new DataView(chunk.buffer);
+    view.setUint32(0, 9, false);
+    chunk.set([112, 72, 89, 115], 4); // pHYs
+    view.setUint32(8, ppm, false);
+    view.setUint32(12, ppm, false);
+    chunk[16] = 1; // pixels per metre
+    let crc = 0xffffffff;
+    for (let i = 4; i < 17; i++) {
+      crc ^= chunk[i];
+      for (let bit = 0; bit < 8; bit++) crc = (crc >>> 1) ^ ((crc & 1) ? 0xedb88320 : 0);
+    }
+    view.setUint32(17, (crc ^ 0xffffffff) >>> 0, false);
+    const output = new Uint8Array(original.length + chunk.length);
+    output.set(original.slice(0, 33), 0);
+    output.set(chunk, 33);
+    output.set(original.slice(33), 33 + chunk.length);
+    return output;
+  }
+
   function downloadPhoto() {
     if (!sourceImage) {
       setStatus("Unggah foto terlebih dahulu.", "error");
@@ -499,11 +526,15 @@
       const link = document.createElement("a");
       const baseName = activeFile ? activeFile.name.replace(/\.[^.]+$/, "") : "pfvisa-photo";
       link.download = baseName + "-" + Math.round(dimensions.widthMm) + "x" + Math.round(dimensions.heightMm) + "mm-" + dimensions.dpi + "dpi.png";
-      link.href = previewCanvas.toDataURL("image/png");
+      const pngBytes = pngWithDpi(previewCanvas.toDataURL("image/png"), dimensions.dpi);
+      const pngBlob = new Blob([pngBytes], { type: "image/png" });
+      const objectUrl = URL.createObjectURL(pngBlob);
+      link.href = objectUrl;
       document.body.appendChild(link);
       link.click();
       link.remove();
-      setStatus("Foto berhasil disiapkan sebagai PNG.", "success");
+      setTimeout(() => URL.revokeObjectURL(objectUrl), 1500);
+      setStatus("Foto PNG berhasil disiapkan dengan metadata resolusi " + dimensions.dpi + " DPI.", "success");
     } catch (error) {
       setStatus("Tidak dapat menyimpan foto. Coba muat ulang file gambar.", "error");
     }
