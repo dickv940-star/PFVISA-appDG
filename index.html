@@ -62,6 +62,34 @@
           </div>
         </div>
 
+        <div class="section-divider"></div>
+        <div class="panel-heading compact">
+          <span class="step">02A</span>
+          <div><h2>Negara & jenis dokumen</h2><p>Pilih tujuan untuk melihat panduan yang relevan.</p></div>
+        </div>
+        <label class="field-label" for="country-select">Negara / wilayah tujuan</label>
+        <select id="country-select" class="select-field">
+          <option value="id">Indonesia</option>
+          <option value="us">Amerika Serikat</option>
+          <option value="schengen">Wilayah Schengen</option>
+          <option value="gb">Britania Raya (UK)</option>
+          <option value="ca">Kanada</option>
+          <option value="au">Australia</option>
+          <option value="in">India</option>
+          <option value="cn">Tiongkok</option>
+          <option value="jp">Jepang</option>
+          <option value="ae">Uni Emirat Arab</option>
+        </select>
+        <label class="field-label" for="document-select">Jenis dokumen</label>
+        <select id="document-select" class="select-field"></select>
+        <section id="requirements-panel" class="requirements-panel" aria-live="polite">
+          <h3 id="requirements-title">Panduan foto</h3>
+          <p id="requirements-summary"></p>
+          <ul id="requirements-list"></ul>
+          <p class="requirements-disclaimer">Panduan ini bersifat informatif, bukan jaminan penerimaan. Ketentuan resmi dapat berubah; periksa instruksi dari kedutaan, imigrasi, atau pusat visa yang menangani permohonan Anda.</p>
+          <a id="official-link" class="official-link" href="https://www.imigrasi.go.id/" target="_blank" rel="noopener noreferrer">Periksa sumber resmi ↗</a>
+        </section>
+
         <label class="field-label" for="dpi">Resolusi ekspor</label>
         <select id="dpi" class="select-field">
           <option value="300">300 DPI — cetak berkualitas tinggi</option>
