@@ -15,6 +15,15 @@
   const requirementsSummary = $("requirements-summary");
   const requirementsList = $("requirements-list");
   const officialLink = $("official-link");
+  const referenceLink = document.createElement("a");
+  referenceLink.id = "visafoto-reference-link";
+  referenceLink.className = "official-link reference-link";
+  referenceLink.href = "https://id.visafoto.com/id-visa-photo";
+  referenceLink.target = "_blank";
+  referenceLink.rel = "noopener noreferrer";
+  referenceLink.textContent = "Rujukan spesifikasi Visafoto ↗";
+  referenceLink.hidden = true;
+  officialLink.insertAdjacentElement("afterend", referenceLink);
   const previewCanvas = $("preview-canvas");
   const cropModeBtn = $("crop-mode-btn");
   const cropControls = $("crop-controls");
@@ -82,7 +91,7 @@
       official: "https://www.imigrasi.go.id/",
       documents: {
         passport: { label: "Paspor Indonesia", preset: "35x45", summary: "Gunakan panduan ukuran awal ini sambil mencocokkan dengan instruksi terbaru kantor imigrasi atau kanal permohonan Anda.", rules: ["Latar belakang, ukuran kepala, dan tampilan wajah harus mengikuti instruksi resmi yang berlaku.", "Gunakan foto terbaru, tajam, dengan wajah terlihat jelas dan ekspresi netral.", "Hindari bayangan keras, pantulan, filter, retouch berlebihan, atau aksesori yang menutupi wajah."] },
-        visa: { label: "Visa ke negara lain", preset: "35x45", summary: "Ukuran foto visa ditentukan oleh negara tujuan dan jenis permohonan, bukan hanya negara asal pemohon.", rules: ["Pilih negara tujuan sebenarnya lalu cocokkan dimensi foto dengan petunjuk kedutaan atau pusat visa.", "Periksa apakah latar belakang, ukuran wajah, dan format digital memiliki aturan khusus.", "Jika permohonan meminta ukuran berbeda, gunakan ukuran khusus dan ikuti persyaratan resmi."] },
+        visa: { label: "Visa Indonesia — 35 × 45 mm", preset: "35x45", summary: "Profil ini mengikuti referensi Visafoto untuk foto Visa Indonesia: ukuran 35 × 45 mm, resolusi 600 DPI, tinggi kepala 34,5 mm, dan jarak tepi atas ke ubun-ubun 3 mm. Periksa kembali instruksi portal visa yang akan Anda gunakan.", rules: ["Ukuran foto: lebar 35 mm × tinggi 45 mm.", "Resolusi kerja: 600 DPI; hasil raster sekitar 827 × 1063 piksel.", "Proporsi acuan: tinggi kepala dari ubun-ubun hingga dagu 34,5 mm; jarak tepi atas ke ubun-ubun 3 mm.", "Gunakan foto berwarna, tajam, wajah menghadap lurus, mata terlihat, pencahayaan merata, dan latar belakang sesuai instruksi permohonan.", "PFVISA membantu ukuran dan crop; pengukuran ubun-ubun/dagu oleh deteksi otomatis hanya perkiraan, bukan pemeriksaan biometrik atau jaminan penerimaan."] },
         id: { label: "Kartu identitas / dokumen umum", preset: "35x45", summary: "Dokumen identitas yang berbeda dapat memakai ukuran dan latar belakang berbeda.", rules: ["Konfirmasikan ukuran dan warna latar dengan instansi penerbit.", "Pastikan wajah dan kedua mata terlihat jelas.", "Jangan menganggap ukuran paspor otomatis berlaku untuk semua kartu identitas."] }
       }
     },
@@ -147,8 +156,7 @@
     de: generalCountryGuide("Jerman", "https://www.auswaertiges-amt.de/"),
     it: generalCountryGuide("Italia", "https://www.esteri.it/"),
     es: generalCountryGuide("Spanyol", "https://www.exteriores.gob.es/"),
-    nl: generalCountryGuide("Belanda", "https://www.netherlandsworldwide.nl/passport-id-card"),
-    ch: generalCountryGuide("Swiss", "https://www.eda.admin.ch/"),
+    nl: generalCountryGuide("Belanda", "https://www.netherlandsworldwide.nl/passport-id-card"),    ch: generalCountryGuide("Swiss", "https://www.eda.admin.ch/"),
     se: generalCountryGuide("Swedia", "https://polisen.se/"),
     no: generalCountryGuide("Norwegia", "https://www.politiet.no/"),
     ru: generalCountryGuide("Rusia", "https://mid.ru/")
@@ -163,7 +171,7 @@
   // kepada pengguna; profil umum tidak boleh dianggap sebagai jaminan penerimaan resmi.
   const photoSpecs = {
     "id:passport": { preset: "35x45", dpi: 600, headMm: null, topMm: null, source: "Panduan paspor Indonesia perlu dikonfirmasi pada kanal Imigrasi yang digunakan." },
-    "id:visa": { preset: "35x45", dpi: 600, headMm: null, topMm: null, source: "Ukuran visa mengikuti negara tujuan dan portal permohonan." },
+    "id:visa": { preset: "35x45", dpi: 600, headMm: 34.5, topMm: 3, source: "Referensi Visafoto untuk Indonesia Visa 35 × 45 mm: tinggi kepala 34,5 mm dan jarak tepi atas ke ubun-ubun 3 mm. Ini bukan standar pemerintah dan harus dicocokkan dengan portal pengajuan." },
     "id:id": { preset: "30x40", dpi: 600, headMm: 30, topMm: 2.5, source: "Referensi format foto 30 × 40 mm; pastikan cocok dengan instansi penerbit." },
 
     "us:passport": { preset: "2x2", dpi: 300, headMm: 32.8, topMm: 6.5, source: "Referensi Visafoto untuk paspor AS; cocokkan panduan resmi." },
@@ -207,6 +215,9 @@
       option.textContent = doc.label;
       documentSelect.appendChild(option);
     });
+    if (countrySelect.value === "id" && guide.documents.visa) {
+      documentSelect.value = "visa";
+    }
     updateRequirements();
   }
 
@@ -297,8 +308,7 @@
     const spec = currentPhotoSpec();
     const presetKey = spec && presets[spec.preset] ? spec.preset : doc.preset;
     requirementsTitle.textContent = "Syarat foto — " + guide.name;
-    requirementsSummary.textContent = doc.summary;
-    requirementsList.replaceChildren();
+    requirementsSummary.textContent = doc.summary;    requirementsList.replaceChildren();
     doc.rules.forEach((rule) => {
       const item = document.createElement("li");
       item.textContent = rule;
@@ -324,6 +334,7 @@
     }
     officialLink.href = guide.official;
     officialLink.textContent = "Buka sumber resmi " + guide.name + " ↗";
+    referenceLink.hidden = !(countrySelect.value === "id" && documentSelect.value === "visa");
     if (presets[presetKey]) {
       resetCrop();
       sizePreset.value = presetKey;
@@ -467,8 +478,7 @@
     const label = widthText + " × " + heightText + " mm";
 
     $("dimension-label").textContent = sizePreset.value === "2x2" ? "2 × 2 inci" : label;
-    $("spec-size").textContent = sizePreset.value === "2x2" ? "2 × 2 inci" : label;
-    $("spec-pixels").textContent = dimensions.widthPx + " × " + dimensions.heightPx + " px";
+    $("spec-size").textContent = sizePreset.value === "2x2" ? "2 × 2 inci" : label;    $("spec-pixels").textContent = dimensions.widthPx + " × " + dimensions.heightPx + " px";
     photoFrame.classList.toggle("square", Math.abs(size.width - size.height) < 0.1);
     photoFrame.classList.toggle("portrait", size.height > size.width);
     photoFrame.classList.toggle("wide", size.width / size.height > 1.2);
