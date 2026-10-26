@@ -156,7 +156,8 @@
     de: generalCountryGuide("Jerman", "https://www.auswaertiges-amt.de/"),
     it: generalCountryGuide("Italia", "https://www.esteri.it/"),
     es: generalCountryGuide("Spanyol", "https://www.exteriores.gob.es/"),
-    nl: generalCountryGuide("Belanda", "https://www.netherlandsworldwide.nl/passport-id-card"),    ch: generalCountryGuide("Swiss", "https://www.eda.admin.ch/"),
+    nl: generalCountryGuide("Belanda", "https://www.netherlandsworldwide.nl/passport-id-card"),
+    ch: generalCountryGuide("Swiss", "https://www.eda.admin.ch/"),
     se: generalCountryGuide("Swedia", "https://polisen.se/"),
     no: generalCountryGuide("Norwegia", "https://www.politiet.no/"),
     ru: generalCountryGuide("Rusia", "https://mid.ru/")
@@ -197,7 +198,6 @@
 
     "jp:passport": { preset: "35x45", dpi: 600, headMm: null, topMm: null, source: "Ukuran foto paspor Jepang harus dicocokkan dengan instruksi permohonan yang dipakai." },
     "jp:visa": { preset: "45x45", dpi: 600, headMm: 27, topMm: 5, source: "Referensi Visafoto untuk salah satu format visa Jepang 45 × 45 mm; persyaratan dapat berbeda menurut aplikasi." },
-
     "ae:visa": { preset: "35x45", dpi: 600, headMm: null, topMm: null, source: "Persyaratan visa UEA dapat berubah menurut emirate, jenis visa, dan portal." },
     "ae:id": { preset: "35x45", dpi: 600, headMm: null, topMm: null, source: "Emirates ID/izin tinggal dapat memiliki spesifikasi digital tersendiri; verifikasi pada portal resmi." }
   };
@@ -308,7 +308,8 @@
     const spec = currentPhotoSpec();
     const presetKey = spec && presets[spec.preset] ? spec.preset : doc.preset;
     requirementsTitle.textContent = "Syarat foto — " + guide.name;
-    requirementsSummary.textContent = doc.summary;    requirementsList.replaceChildren();
+    requirementsSummary.textContent = doc.summary;
+    requirementsList.replaceChildren();
     doc.rules.forEach((rule) => {
       const item = document.createElement("li");
       item.textContent = rule;
