@@ -154,12 +154,22 @@
           </div>
         </div>
         <div class="crop-actions">
-          <button id="crop-mode-btn" class="button button-secondary" type="button" disabled>Atur Crop Foto</button>
+          <button id="auto-crop-btn" class="button button-primary" type="button" disabled>Auto Crop sesuai profil</button>
+          <button id="crop-mode-btn" class="button button-secondary" type="button" disabled>Atur Crop Manual</button>
           <div id="crop-controls" class="crop-controls" hidden>
             <label class="field-label" for="crop-zoom">Perbesar foto <strong id="crop-zoom-label">1.0×</strong></label>
             <input id="crop-zoom" class="crop-zoom" type="range" min="1" max="2.5" step="0.05" value="1">
             <p>Seret foto pada bingkai untuk menggeser posisi. Bingkai mengikuti rasio ukuran yang dipilih. Latar belakang tidak diganti otomatis. Periksa posisi wajah dan tepi foto sebelum menyimpan.</p>
           </div>
+          <section id="measurement-panel" class="measurement-panel" aria-live="polite">
+            <div class="measurement-heading"><strong>Pengukuran foto</strong><span id="measurement-status" class="measurement-badge neutral">Menunggu foto</span></div>
+            <div class="measurement-grid">
+              <div><span>Zoom editor</span><strong id="metric-zoom">100%</strong><small>Skala crop, bukan persentase kepala</small></div>
+              <div><span>Tinggi kepala</span><strong id="metric-head">Belum terukur</strong><small id="metric-head-target">Target mengikuti profil</small></div>
+              <div><span>Jarak tepi atas</span><strong id="metric-top">Belum terukur</strong><small id="metric-top-target">Target mengikuti profil</small></div>
+            </div>
+            <p id="measurement-note" class="measurement-note">Unggah foto lalu tekan Auto Crop. Pengukuran kepala dari deteksi wajah merupakan perkiraan dan perlu diperiksa secara visual.</p>
+          </section>
         </div>
         <div class="preview-note">
           <span class="note-icon" aria-hidden="true">i</span>
