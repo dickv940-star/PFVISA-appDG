@@ -26,6 +26,14 @@
   officialLink.insertAdjacentElement("afterend", referenceLink);
   const previewCanvas = $("preview-canvas");
   const cropModeBtn = $("crop-mode-btn");
+  const autoCropBtn = $("auto-crop-btn");
+  const measurementStatus = $("measurement-status");
+  const metricZoom = $("metric-zoom");
+  const metricHead = $("metric-head");
+  const metricHeadTarget = $("metric-head-target");
+  const metricTop = $("metric-top");
+  const metricTopTarget = $("metric-top-target");
+  const measurementNote = $("measurement-note");
   const cropControls = $("crop-controls");
   const cropZoomInput = $("crop-zoom");
   const cropZoomLabel = $("crop-zoom-label");
