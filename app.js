@@ -298,6 +298,7 @@
       );
     } catch (error) {
       detectedCrop = null;
+      detectedHead = null;
       renderPhoto();
       setStatus("Deteksi otomatis gagal. Pastikan internet aktif, lalu gunakan Atur Crop Foto secara manual.", "error");
     }
