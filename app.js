@@ -481,6 +481,41 @@
     cropModeBtn.disabled = false;
   }
 
+  function updateMeasurements(crop) {
+    const spec = currentPhotoSpec();
+    const dims = getDimensions();
+    metricZoom.textContent = Math.round(cropZoom * 100) + "%";
+    if (!sourceImage || !crop || !detectedHead) {
+      metricHead.textContent = "Belum terukur";
+      metricTop.textContent = "Belum terukur";
+      metricHeadTarget.textContent = spec && spec.headMm != null ? "Target " + mmLabel(spec.headMm) + " mm" : "Target belum diverifikasi";
+      metricTopTarget.textContent = spec && spec.topMm != null ? "Target " + mmLabel(spec.topMm) + " mm" : "Target belum diverifikasi";
+      measurementStatus.textContent = sourceImage ? "Perlu verifikasi" : "Menunggu foto";
+      measurementStatus.className = "measurement-badge neutral";
+      measurementNote.textContent = "Deteksi wajah belum memberi pengukuran yang dapat digunakan. Periksa posisi secara visual.";
+      return;
+    }
+    const headMm = ((detectedHead.chin - detectedHead.top) / crop.height) * dims.heightMm;
+    const topMm = ((detectedHead.top - crop.y) / crop.height) * dims.heightMm;
+    metricHead.textContent = mmLabel(Number(headMm.toFixed(1))) + " mm · " + (headMm / dims.heightMm * 100).toFixed(1) + "%";
+    metricTop.textContent = mmLabel(Number(topMm.toFixed(1))) + " mm";
+    metricHeadTarget.textContent = spec && spec.headMm != null ? "Target " + mmLabel(spec.headMm) + " mm" : "Target belum diverifikasi";
+    metricTopTarget.textContent = spec && spec.topMm != null ? "Target " + mmLabel(spec.topMm) + " mm" : "Target belum diverifikasi";
+    const headOK = spec && spec.headMm != null && Math.abs(headMm - spec.headMm) <= Math.max(1, dims.heightMm * 0.02);
+    const topOK = spec && spec.topMm != null && Math.abs(topMm - spec.topMm) <= Math.max(1, dims.heightMm * 0.02);
+    if (headOK && topOK) {
+      measurementStatus.textContent = "Mendekati target";
+      measurementStatus.className = "measurement-badge good";
+    } else if (spec && spec.headMm != null && spec.topMm != null) {
+      measurementStatus.textContent = "Perlu penyesuaian";
+      measurementStatus.className = "measurement-badge warn";
+    } else {
+      measurementStatus.textContent = "Perlu verifikasi";
+      measurementStatus.className = "measurement-badge neutral";
+    }
+    measurementNote.textContent = "Pengukuran berdasarkan perkiraan landmark wajah, bukan pemeriksaan biometrik resmi. Cocokkan dengan aturan portal visa dan periksa garis ubun-ubun serta dagu secara visual.";
+  }
+
   function updateLabels() {
     const size = getSize();
     const dimensions = getDimensions();
