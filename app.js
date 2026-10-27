@@ -236,6 +236,7 @@
   let dragPoint = null;
   let faceLandmarkerPromise = null;
   let detectedCrop = null;
+  let detectedHead = null;
 
   async function detectAndCropFace(image) {
     setStatus("Mendeteksi wajah dan menyesuaikan crop otomatis…");
