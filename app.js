@@ -355,6 +355,7 @@
       // cannot silently carry over to a country with no verified photo profile.
       dpiSelect.value = spec && spec.dpi ? String(spec.dpi) : "300";
       detectedCrop = null;
+      detectedHead = null;
       renderPhoto();
       if (sourceImage) detectAndCropFace(sourceImage);
     }
