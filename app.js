@@ -480,6 +480,7 @@
     downloadBtn.disabled = false;
     resetBtn.disabled = false;
     cropModeBtn.disabled = false;
+    autoCropBtn.disabled = false;
   }
 
   function updateMeasurements(crop) {
