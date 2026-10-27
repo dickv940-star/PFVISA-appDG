@@ -183,30 +183,30 @@
     "id:visa": { preset: "35x45", dpi: 600, headMm: 34.5, topMm: 3, source: "Referensi Visafoto untuk Indonesia Visa 35 × 45 mm: tinggi kepala 34,5 mm dan jarak tepi atas ke ubun-ubun 3 mm. Ini bukan standar pemerintah dan harus dicocokkan dengan portal pengajuan." },
     "id:id": { preset: "30x40", dpi: 600, headMm: 30, topMm: 2.5, source: "Referensi format foto 30 × 40 mm; pastikan cocok dengan instansi penerbit." },
 
-    "us:passport": { preset: "2x2", dpi: 300, headMm: 32.8, topMm: 6.5, source: "Referensi Visafoto untuk paspor AS; cocokkan panduan resmi." },
-    "us:visa": { preset: "2x2", dpi: 300, headMm: 32.8, topMm: 6.5, source: "Referensi foto visa AS 2 × 2 inci; portal visa dapat menentukan ketentuan digital tersendiri." },
+    "us:passport": { preset: "2x2", dpi: 300, headMm: 32.766, topMm: null, source: "Visafoto: https://id.visafoto.com/us-passport-photo — 2 × 2 inci, 300 DPI, tinggi kepala 1,29 inci (32,8 mm), garis mata 1,18 inci dari tepi bawah. Jarak atas tidak ditetapkan dari angka ini; periksa garis mata dan instruksi resmi." },
+    "us:visa": { preset: "2x2", dpi: 300, headMm: null, topMm: null, source: "Visafoto menyediakan beberapa profil visa AS 2 × 2 inci berdasarkan formulir/kategori. Ukuran kepala dan file harus dipilih sesuai jenis visa; target otomatis belum dikunci untuk profil generik ini." },
 
-    "schengen:visa": { preset: "35x45", dpi: 600, headMm: 33.5, topMm: 5, source: "Referensi format Schengen 35 × 45 mm; konsulat/pusat visa dapat memberi instruksi tambahan." },
+    "schengen:visa": { preset: "35x45", dpi: 600, headMm: null, topMm: null, source: "Visafoto mencantumkan Schengen Visa 35 × 45 mm: https://id.visafoto.com/requirements. Ukuran kepala dan jarak atas tidak dikunci di profil generik ini karena ketentuan konsulat/pusat visa perlu diverifikasi untuk tempat pengajuan." },
     "schengen:residence": { preset: "35x45", dpi: 600, headMm: null, topMm: null, source: "Izin tinggal berbeda menurut negara penerbit; ukuran ini hanya titik awal." },
 
     "gb:passport": { preset: "35x45", dpi: 600, headMm: null, topMm: null, source: "Foto paspor UK digital tidak selalu mengikuti ukuran cetak; ikuti pemeriksaan foto pada layanan GOV.UK." },
-    "gb:visa": { preset: "35x45", dpi: 600, headMm: null, topMm: null, source: "Visa UK dapat memakai foto digital atau pengambilan biometrik; ikuti instruksi permohonan." },
+    "gb:visa": { preset: "35x45", dpi: 600, headMm: 32.8, topMm: 4.9, source: "Visafoto: https://id.visafoto.com/gb-visa-photo — 35 × 45 mm, 600 DPI, tinggi kepala 32,8 mm dan jarak tepi atas 4,9 mm. Cocokkan dengan jalur visa/biometrik yang berlaku." },
 
-    "ca:passport": { preset: "50x70", dpi: 600, headMm: 34, topMm: 5, source: "Paspor Kanada umumnya 50 × 70 mm; ukuran kepala harus diperiksa terhadap panduan resmi." },
-    "ca:visa": { preset: "35x45", dpi: 600, headMm: null, topMm: null, source: "Aplikasi imigrasi Kanada memiliki ketentuan berbeda menurut kategori aplikasi." },
+    "ca:passport": { preset: "50x70", dpi: 600, headMm: 35, topMm: null, source: "Visafoto: https://id.visafoto.com/ca-passport-photo — 50 × 70 mm, 600 DPI, tinggi kepala 35 mm; garis mata 39 mm dari tepi bawah. Jarak atas tidak disimpulkan dari garis mata. Cocokkan dengan panduan resmi Kanada." },
+    "ca:visa": { preset: "35x45", dpi: 305, headMm: 34.7, topMm: 3, source: "Visafoto: https://id.visafoto.com/ca-visa-photo — 35 × 45 mm, 305 DPI, tinggi kepala 34,7 mm dan jarak tepi atas 3 mm. Ukuran file yang dicantumkan Visafoto 60–240 KB; cek instruksi kategori aplikasi terbaru." },
 
-    "au:passport": { preset: "35x45", dpi: 600, headMm: 34, topMm: 5, source: "Panduan resmi paspor Australia: foto 35–40 × 45–50 mm, tinggi wajah 32–36 mm. Profil 35 × 45 mm adalah ukuran kerja." },
-    "au:visa": { preset: "35x45", dpi: 600, headMm: 34, topMm: 5, source: "Persyaratan yang diberikan: kepala 34 mm dan jarak tepi atas 5 mm; periksa kembali subclass/portal visa." },
+    "au:passport": { preset: "35x45", dpi: 600, headMm: 34, topMm: 5, source: "Visafoto: https://id.visafoto.com/au-passport-photo — 35 × 45 mm, 600 DPI, tinggi kepala 34 mm dan jarak atas 5 mm. Panduan resmi Australia mengizinkan rentang ukuran foto yang lebih luas; cocokkan dengan jalur permohonan." },
+    "au:visa": { preset: "35x45", dpi: 600, headMm: 34, topMm: 5, source: "Visafoto: https://id.visafoto.com/au-visa-photo — 35 × 45 mm, 600 DPI, tinggi kepala 34 mm dan jarak atas 5 mm. Persyaratan subclass/portal visa dapat berbeda." },
 
     "in:passport": { preset: "35x45", dpi: 600, headMm: null, topMm: null, source: "India memiliki beberapa format paspor cetak/digital; konfirmasi spesifikasi portal yang digunakan." },
-    "in:visa": { preset: "2x2", dpi: 300, headMm: 32.8, topMm: 6.5, source: "Referensi umum foto visa India 2 × 2 inci; e-Visa dapat meminta ukuran piksel berbeda." },
+    "in:visa": { preset: "2x2", dpi: 300, headMm: 32.766, topMm: null, source: "Visafoto: https://id.visafoto.com/in-visa-photo — 2 × 2 inci, 300 DPI, tinggi kepala 1,29 inci (32,8 mm), garis mata 1,18 inci dari tepi bawah, ukuran file 0–290 KB. Jarak atas tidak disimpulkan dari garis mata; e-Visa dapat memiliki profil digital lain." },
 
     "cn:passport": { preset: "33x48", dpi: 300, headMm: null, topMm: null, source: "Spesifikasi terukur di bawah merujuk foto visa Tiongkok, bukan otomatis foto paspor/dokumen lain." },
-    "cn:visa": { preset: "33x48", dpi: 300, headMm: 30.5, topMm: 4, headMinMm: 28, headMaxMm: 33, topMinMm: 3, topMaxMm: 5, source: "CVASC, Photo requirement for applying for a Chinese visa (27 April 2025): ukuran 33 × 48 mm, tinggi kepala 28–33 mm, lebar kepala 15–22 mm, jarak puncak kepala ke tepi atas 3–5 mm. Auto Crop memakai titik tengah rentang tinggi kepala/jarak atas; lebar kepala masih perlu diperiksa." },
+    "cn:visa": { preset: "33x48", dpi: 600, headMm: 31.5, topMm: 5, headMinMm: 28, headMaxMm: 33, topMinMm: 3, topMaxMm: 5, source: "Visafoto: https://id.visafoto.com/cn-visa-photo — 33 × 48 mm, 600 DPI, tinggi kepala 31,5 mm dan jarak atas 5 mm. Rentang pada panduan CVASC yang ditautkan: tinggi kepala 28–33 mm, lebar kepala 15–22 mm, jarak atas 3–5 mm. Auto Crop memakai angka Visafoto; lebar kepala masih perlu diperiksa." },
 
     "jp:passport": { preset: "35x45", dpi: 600, headMm: null, topMm: null, source: "Ukuran foto paspor Jepang harus dicocokkan dengan instruksi permohonan yang dipakai." },
-    "jp:visa": { preset: "45x45", dpi: 600, headMm: 27, topMm: 5, source: "Referensi Visafoto untuk salah satu format visa Jepang 45 × 45 mm; persyaratan dapat berbeda menurut aplikasi." },
-    "ae:visa": { preset: "35x45", dpi: 600, headMm: null, topMm: null, source: "Persyaratan visa UEA dapat berubah menurut emirate, jenis visa, dan portal." },
+    "jp:visa": { preset: "45x45", dpi: 300, headMm: 27, topMm: 7.5, source: "Visafoto: https://id.visafoto.com/jp-visa-photo — profil visa Jepang 45 × 45 mm, 300 DPI, tinggi kepala 27 mm dan jarak atas 7,5 mm. Ini salah satu profil; Jepang e-Visa memiliki profil berbeda 35 × 45 mm." },
+    "ae:visa": { preset: "35x45", dpi: 600, headMm: null, topMm: null, source: "Visafoto mencantumkan beberapa varian UEA: 43 × 55 mm (Flydubai/Etihad), 600 × 600 px (ICP), 2 × 2 inci (VFS), serta 35 × 45 mm untuk izin tinggal/ICA. Profil 35 × 45 mm di sini hanya titik awal; pilih kanal/portal yang benar sebelum crop otomatis." },
     "ae:id": { preset: "35x45", dpi: 600, headMm: null, topMm: null, source: "Emirates ID/izin tinggal dapat memiliki spesifikasi digital tersendiri; verifikasi pada portal resmi." }
   };
 
