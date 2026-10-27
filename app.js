@@ -302,6 +302,12 @@
       detectedHead = { top: headTop, chin: chin.y };
       cropZoom = 1; cropPanX = 0; cropPanY = 0;
       cropZoomInput.value = "1"; cropZoomLabel.textContent = "100%";
+      // Apply the automatic result immediately, then leave the editor open so
+      // the user can fine-tune position and zoom without running Auto Crop again.
+      cropMode = true;
+      cropControls.hidden = false;
+      photoFrame.classList.add("crop-active");
+      cropModeBtn.textContent = "Selesai Atur Crop";
       renderPhoto();
       const edgeIssue = cropX < 0 || cropY < 0 || cropX + cw > w || cropY + ch > h;
       setStatus(
@@ -313,8 +319,13 @@
     } catch (error) {
       detectedCrop = null;
       detectedHead = null;
+      // Keep the photo editable even if face detection or its external model fails.
+      cropMode = true;
+      cropControls.hidden = false;
+      photoFrame.classList.add("crop-active");
+      cropModeBtn.textContent = "Selesai Atur Crop";
       renderPhoto();
-      setStatus("Deteksi otomatis gagal. Pastikan internet aktif, lalu gunakan Atur Crop Foto secara manual.", "error");
+      setStatus("Deteksi wajah otomatis gagal. Crop rasio dasar sudah tersedia; geser foto dan atur zoom secara manual.", "error");
     }
   }
 
