@@ -329,8 +329,8 @@
     if (spec) {
       const facts = [
         "Profil kerja PFVISA: " + presets[presetKey].label + ", " + spec.dpi + " DPI.",
-        spec.headMm != null ? "Target tinggi kepala (perkiraan ubun-ubun hingga dagu): " + mmLabel(spec.headMm) + " mm." : "Ukuran kepala belum dikunci otomatis karena spesifikasi yang tepat bergantung pada dokumen/portal.",
-        spec.topMm != null ? "Target jarak tepi atas ke ubun-ubun: " + mmLabel(spec.topMm) + " mm." : "Jarak tepi atas kepala belum ditetapkan otomatis; periksa petunjuk resmi.",
+        spec.headMinMm != null && spec.headMaxMm != null ? "Rentang tinggi kepala acuan (perkiraan ubun-ubun hingga dagu): " + mmLabel(spec.headMinMm) + "–" + mmLabel(spec.headMaxMm) + " mm." : spec.headMm != null ? "Target tinggi kepala (perkiraan ubun-ubun hingga dagu): " + mmLabel(spec.headMm) + " mm." : "Ukuran kepala belum dikunci otomatis karena spesifikasi yang tepat bergantung pada dokumen/portal.",
+        spec.topMinMm != null && spec.topMaxMm != null ? "Rentang jarak tepi atas ke puncak kepala: " + mmLabel(spec.topMinMm) + "–" + mmLabel(spec.topMaxMm) + " mm." : spec.topMm != null ? "Target jarak tepi atas ke ubun-ubun: " + mmLabel(spec.topMm) + " mm." : "Jarak tepi atas kepala belum ditetapkan otomatis; periksa petunjuk resmi.",
         spec.source,
         "Profil ini membantu penyesuaian ukuran dan crop, tetapi bukan jaminan penerimaan. Ketentuan resmi dapat berbeda menurut kategori aplikasi."
       ];
@@ -512,7 +512,7 @@
       ? topMm >= spec.topMinMm && topMm <= spec.topMaxMm
       : spec && spec.topMm != null && Math.abs(topMm - spec.topMm) <= Math.max(1, dims.heightMm * 0.02);
     if (headOK && topOK) {
-      measurementStatus.textContent = "Mendekati target";
+      measurementStatus.textContent = spec && spec.headMinMm != null ? "Tinggi & margin sesuai rentang" : "Mendekati target";
       measurementStatus.className = "measurement-badge good";
     } else if (spec && (spec.headMm != null || spec.headMinMm != null) && (spec.topMm != null || spec.topMinMm != null)) {
       measurementStatus.textContent = "Perlu penyesuaian";
@@ -521,7 +521,7 @@
       measurementStatus.textContent = "Perlu verifikasi";
       measurementStatus.className = "measurement-badge neutral";
     }
-    measurementNote.textContent = "Pengukuran berdasarkan perkiraan landmark wajah, bukan pemeriksaan biometrik resmi. Cocokkan dengan aturan portal visa dan periksa garis ubun-ubun serta dagu secara visual.";
+    measurementNote.textContent = spec && countrySelect.value === "cn" && documentSelect.value === "visa" ? "Tinggi kepala dan margin atas dihitung dari perkiraan landmark wajah. Lebar kepala 15–22 mm belum diukur otomatis; periksa secara visual. Hasil ini bukan pemeriksaan biometrik resmi atau jaminan penerimaan." : "Pengukuran berdasarkan perkiraan landmark wajah, bukan pemeriksaan biometrik resmi. Cocokkan dengan aturan portal visa dan periksa garis ubun-ubun serta dagu secara visual.";
   }
 
   function updateLabels() {
