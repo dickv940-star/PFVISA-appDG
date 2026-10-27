@@ -476,6 +476,7 @@
     previewCanvas.hidden = false;
     emptyState.hidden = true;
     updateLabels();
+    updateMeasurements(crop);
     downloadBtn.disabled = false;
     resetBtn.disabled = false;
     cropModeBtn.disabled = false;
