@@ -285,6 +285,7 @@
       // changes the requested head-to-photo proportion. Out-of-frame areas
       // are rendered as the existing white canvas background.
       detectedCrop = { x: cropX, y: cropY, width: cw, height: ch };
+      detectedHead = { top: headTop, chin: chin.y };
       cropZoom = 1; cropPanX = 0; cropPanY = 0;
       cropZoomInput.value = "1"; cropZoomLabel.textContent = "100%";
       renderPhoto();
