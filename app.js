@@ -127,9 +127,9 @@
       passport: { label: "Paspor India", preset: "35x45", summary: "Spesifikasi foto dapat berbeda antara pengajuan paspor, pusat layanan, dan pengunggahan online.", rules: ["Periksa ukuran piksel atau cetak yang diminta pada portal atau pusat layanan.", "Wajah menghadap depan, mata terlihat, pencahayaan merata, dan latar belakang polos.", "Ikuti instruksi resmi untuk proporsi kepala dan format file."] },
       visa: { label: "Visa India / e-Visa", preset: "35x45", summary: "Permohonan e-Visa dapat meminta file foto digital dengan dimensi dan format tertentu.", rules: ["Gunakan spesifikasi unggahan yang tercantum pada portal e-Visa saat mengajukan.", "Pastikan seluruh wajah terlihat dan latar belakang memenuhi ketentuan.", "Periksa batas ukuran file dan format sebelum mengunggah."] }
     }},
-    cn: { name: "Tiongkok", official: "https://www.visaforchina.cn/", documents: {
-      passport: { label: "Paspor / dokumen Tiongkok", preset: "33x48", summary: "Dokumen Tiongkok dapat menggunakan ukuran foto 33 × 48 mm, tetapi ketentuan bergantung pada dokumen dan kanal permohonan.", rules: ["Periksa standar foto yang berlaku pada kantor paspor atau pusat layanan terkait.", "Latar belakang, posisi kepala, dan pakaian dapat memiliki ketentuan khusus.", "Jangan gunakan preset ini tanpa memastikan kecocokan dengan dokumen Anda."] },
-      visa: { label: "Visa Tiongkok", preset: "33x48", summary: "Visa Tiongkok memiliki spesifikasi foto tersendiri; pusat aplikasi dapat menerapkan pemeriksaan teknis tambahan.", rules: ["Pastikan ukuran 33 × 48 mm memang sesuai dengan pusat aplikasi yang menangani permohonan.", "Gunakan foto terbaru, berwarna, tajam, dengan wajah menghadap depan.", "Periksa instruksi terbaru untuk latar belakang, ukuran kepala, dan kualitas file."] }
+    cn: { name: "Tiongkok", official: "https://bio.visaforchina.cn/SGP3_EN/qianzhengyewu/jichuzhishi/changjianwenti/376268253753905152.html", documents: {
+      passport: { label: "Paspor / dokumen Tiongkok", preset: "33x48", summary: "Profil 33 × 48 mm ini khusus mengikuti panduan foto visa Tiongkok yang ditautkan; ketentuan foto paspor/dokumen lain perlu diverifikasi terpisah.", rules: ["Ukuran acuan foto visa: lebar 33 mm × tinggi 48 mm.", "Foto berwarna, diambil dalam 6 bulan terakhir, wajah terlihat penuh, tanpa penutup kepala kecuali alasan keagamaan yang diizinkan.", "Latar belakang putih atau mendekati putih, tanpa bingkai; wajah harus jelas dan berada di tengah.", "Untuk foto visa Tiongkok pada referensi ini: tinggi kepala 28–33 mm, lebar kepala 15–22 mm, dan jarak puncak kepala ke tepi atas 3–5 mm.", "Panduan paspor atau dokumen Tiongkok lain bisa berbeda; periksa instruksi instansi penerbit."] },
+      visa: { label: "Visa Tiongkok", preset: "33x48", summary: "Profil ini menggunakan panduan resmi Chinese Visa Application Service Center (CVASC): foto berwarna 33 × 48 mm, latar putih, dan diambil dalam 6 bulan terakhir.", rules: ["Ukuran foto: 33 mm lebar × 48 mm tinggi.", "Tinggi kepala dari puncak kepala hingga dagu: 28–33 mm; lebar kepala: 15–22 mm.", "Jarak dari puncak kepala ke tepi atas foto: 3–5 mm.", "Wajah menghadap lurus; mata terbuka, bibir tertutup, telinga terlihat bila memungkinkan, dan ekspresi netral.", "Hindari bayangan pada wajah/latar, pantulan atau lensa kacamata berwarna, filter, distorsi, dan objek yang menutupi fitur wajah.", "Auto Crop menggunakan target tengah rentang sebagai titik awal. Periksa lebar kepala dan hasil akhir secara visual; pengukuran otomatis bukan jaminan penerimaan."] }
     }},
     jp: { name: "Jepang", official: "https://www.mofa.go.jp/j_info/visit/visa/", documents: {
       passport: { label: "Paspor Jepang", preset: "35x45", summary: "Persyaratan foto paspor Jepang ditetapkan oleh otoritas penerbit dan dapat berbeda dari foto visa.", rules: ["Periksa ukuran dan format yang diminta otoritas penerbit paspor.", "Gunakan foto terbaru dengan wajah terlihat jelas dan latar belakang sederhana.", "Pastikan tidak ada bayangan, pantulan, atau pengeditan yang mengubah wajah."] },
@@ -201,8 +201,8 @@
     "in:passport": { preset: "35x45", dpi: 600, headMm: null, topMm: null, source: "India memiliki beberapa format paspor cetak/digital; konfirmasi spesifikasi portal yang digunakan." },
     "in:visa": { preset: "2x2", dpi: 300, headMm: 32.8, topMm: 6.5, source: "Referensi umum foto visa India 2 × 2 inci; e-Visa dapat meminta ukuran piksel berbeda." },
 
-    "cn:passport": { preset: "33x48", dpi: 300, headMm: null, topMm: null, source: "Referensi format 33 × 48 mm; verifikasi panduan paspor resmi yang berlaku." },
-    "cn:visa": { preset: "33x48", dpi: 300, headMm: null, topMm: null, source: "Referensi format visa Tiongkok 33 × 48 mm; pusat visa dapat memperbarui persyaratan." },
+    "cn:passport": { preset: "33x48", dpi: 300, headMm: null, topMm: null, source: "Spesifikasi terukur di bawah merujuk foto visa Tiongkok, bukan otomatis foto paspor/dokumen lain." },
+    "cn:visa": { preset: "33x48", dpi: 300, headMm: 30.5, topMm: 4, headMinMm: 28, headMaxMm: 33, topMinMm: 3, topMaxMm: 5, source: "CVASC, Photo requirement for applying for a Chinese visa (27 April 2025): ukuran 33 × 48 mm, tinggi kepala 28–33 mm, lebar kepala 15–22 mm, jarak puncak kepala ke tepi atas 3–5 mm. Auto Crop memakai titik tengah rentang tinggi kepala/jarak atas; lebar kepala masih perlu diperiksa." },
 
     "jp:passport": { preset: "35x45", dpi: 600, headMm: null, topMm: null, source: "Ukuran foto paspor Jepang harus dicocokkan dengan instruksi permohonan yang dipakai." },
     "jp:visa": { preset: "45x45", dpi: 600, headMm: 27, topMm: 5, source: "Referensi Visafoto untuk salah satu format visa Jepang 45 × 45 mm; persyaratan dapat berbeda menurut aplikasi." },
@@ -492,8 +492,8 @@
     if (!sourceImage || !crop || !detectedHead) {
       metricHead.textContent = "Belum terukur";
       metricTop.textContent = "Belum terukur";
-      metricHeadTarget.textContent = spec && spec.headMm != null ? "Target " + mmLabel(spec.headMm) + " mm" : "Target belum diverifikasi";
-      metricTopTarget.textContent = spec && spec.topMm != null ? "Target " + mmLabel(spec.topMm) + " mm" : "Target belum diverifikasi";
+      metricHeadTarget.textContent = spec && spec.headMinMm != null && spec.headMaxMm != null ? "Target " + mmLabel(spec.headMinMm) + "–" + mmLabel(spec.headMaxMm) + " mm" : spec && spec.headMm != null ? "Target " + mmLabel(spec.headMm) + " mm" : "Target belum diverifikasi";
+      metricTopTarget.textContent = spec && spec.topMinMm != null && spec.topMaxMm != null ? "Target " + mmLabel(spec.topMinMm) + "–" + mmLabel(spec.topMaxMm) + " mm" : spec && spec.topMm != null ? "Target " + mmLabel(spec.topMm) + " mm" : "Target belum diverifikasi";
       measurementStatus.textContent = sourceImage ? "Perlu verifikasi" : "Menunggu foto";
       measurementStatus.className = "measurement-badge neutral";
       measurementNote.textContent = "Deteksi wajah belum memberi pengukuran yang dapat digunakan. Periksa posisi secara visual.";
@@ -503,14 +503,18 @@
     const topMm = ((detectedHead.top - crop.y) / crop.height) * dims.heightMm;
     metricHead.textContent = mmLabel(Number(headMm.toFixed(1))) + " mm · " + (headMm / dims.heightMm * 100).toFixed(1) + "%";
     metricTop.textContent = mmLabel(Number(topMm.toFixed(1))) + " mm";
-    metricHeadTarget.textContent = spec && spec.headMm != null ? "Target " + mmLabel(spec.headMm) + " mm" : "Target belum diverifikasi";
-    metricTopTarget.textContent = spec && spec.topMm != null ? "Target " + mmLabel(spec.topMm) + " mm" : "Target belum diverifikasi";
-    const headOK = spec && spec.headMm != null && Math.abs(headMm - spec.headMm) <= Math.max(1, dims.heightMm * 0.02);
-    const topOK = spec && spec.topMm != null && Math.abs(topMm - spec.topMm) <= Math.max(1, dims.heightMm * 0.02);
+    metricHeadTarget.textContent = spec && spec.headMinMm != null && spec.headMaxMm != null ? "Target " + mmLabel(spec.headMinMm) + "–" + mmLabel(spec.headMaxMm) + " mm" : spec && spec.headMm != null ? "Target " + mmLabel(spec.headMm) + " mm" : "Target belum diverifikasi";
+    metricTopTarget.textContent = spec && spec.topMinMm != null && spec.topMaxMm != null ? "Target " + mmLabel(spec.topMinMm) + "–" + mmLabel(spec.topMaxMm) + " mm" : spec && spec.topMm != null ? "Target " + mmLabel(spec.topMm) + " mm" : "Target belum diverifikasi";
+    const headOK = spec && spec.headMinMm != null && spec.headMaxMm != null
+      ? headMm >= spec.headMinMm && headMm <= spec.headMaxMm
+      : spec && spec.headMm != null && Math.abs(headMm - spec.headMm) <= Math.max(1, dims.heightMm * 0.02);
+    const topOK = spec && spec.topMinMm != null && spec.topMaxMm != null
+      ? topMm >= spec.topMinMm && topMm <= spec.topMaxMm
+      : spec && spec.topMm != null && Math.abs(topMm - spec.topMm) <= Math.max(1, dims.heightMm * 0.02);
     if (headOK && topOK) {
       measurementStatus.textContent = "Mendekati target";
       measurementStatus.className = "measurement-badge good";
-    } else if (spec && spec.headMm != null && spec.topMm != null) {
+    } else if (spec && (spec.headMm != null || spec.headMinMm != null) && (spec.topMm != null || spec.topMinMm != null)) {
       measurementStatus.textContent = "Perlu penyesuaian";
       measurementStatus.className = "measurement-badge warn";
     } else {
