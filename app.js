@@ -210,12 +210,26 @@
     "ae:id": { preset: "35x45", dpi: 600, headMm: null, topMm: null, source: "Emirates ID/izin tinggal dapat memiliki spesifikasi digital tersendiri; verifikasi pada portal resmi." }
   };
 
+  function fallbackCountryGuide() {
+    const selected = countrySelect.options[countrySelect.selectedIndex];
+    const name = selected ? selected.textContent : "Negara belum dikenal";
+    const note = "Profil " + name + " belum memiliki spesifikasi Visafoto yang diverifikasi per jenis dokumen. Ukuran 35 × 45 mm hanya ukuran sementara, bukan aturan negara ini. Periksa daftar Visafoto dan portal resmi sebelum menggunakan Auto Crop.";
+    return {
+      name,
+      official: "https://id.visafoto.com/requirements",
+      documents: {
+        passport: { label: "Paspor — profil perlu diverifikasi", preset: "35x45", summary: note, rules: [note, "Jangan menganggap ukuran atau proporsi kepala ini sebagai ketentuan resmi.", "Gunakan Auto Crop hanya sebagai titik awal dan periksa portal penerbit dokumen."] },
+        visa: { label: "Visa — profil perlu diverifikasi", preset: "35x45", summary: note, rules: [note, "Spesifikasi visa dapat berbeda menurut jenis visa, konsulat, dan kanal unggahan.", "Periksa ukuran piksel, batas ukuran file, latar belakang, proporsi kepala, dan posisi mata pada portal resmi."] }
+      }
+    };
+  }
+
   function currentPhotoSpec() {
     return photoSpecs[countrySelect.value + ":" + documentSelect.value] || null;
   }
 
   function populateDocuments() {
-    const guide = countryGuides[countrySelect.value] || countryGuides.id;
+    const guide = countryGuides[countrySelect.value] || fallbackCountryGuide();
     documentSelect.replaceChildren();
     Object.entries(guide.documents).forEach(([key, doc]) => {
       const option = document.createElement("option");
@@ -313,7 +327,7 @@
   }
 
   function updateRequirements() {
-    const guide = countryGuides[countrySelect.value] || countryGuides.id;
+    const guide = countryGuides[countrySelect.value] || fallbackCountryGuide();
     const doc = guide.documents[documentSelect.value] || Object.values(guide.documents)[0];
     if (!doc) return;
     const spec = currentPhotoSpec();
