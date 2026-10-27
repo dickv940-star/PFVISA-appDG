@@ -625,8 +625,8 @@
   });
 
   cropZoomInput.addEventListener("input", () => {
-    cropZoom = clampNumber(cropZoomInput.value, 1, 2.5, 1);
-    cropZoomLabel.textContent = cropZoom.toFixed(1) + "×";
+    cropZoom = clampNumber(cropZoomInput.value, 0.5, 2.5, 1);
+    cropZoomLabel.textContent = Math.round(cropZoom * 100) + "%";
     renderPhoto();
   });
 
