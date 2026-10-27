@@ -277,7 +277,7 @@
       // are rendered as the existing white canvas background.
       detectedCrop = { x: cropX, y: cropY, width: cw, height: ch };
       cropZoom = 1; cropPanX = 0; cropPanY = 0;
-      cropZoomInput.value = "1"; cropZoomLabel.textContent = "1.0×";
+      cropZoomInput.value = "1"; cropZoomLabel.textContent = "100%";
       renderPhoto();
       const edgeIssue = cropX < 0 || cropY < 0 || cropX + cw > w || cropY + ch > h;
       setStatus(
@@ -298,7 +298,7 @@
     cropPanX = 0;
     cropPanY = 0;
     cropZoomInput.value = "1";
-    cropZoomLabel.textContent = "1.0×";
+    cropZoomLabel.textContent = "100%";
   }
 
   function updateRequirements() {
