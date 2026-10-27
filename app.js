@@ -649,6 +649,17 @@
     if (sourceImage) detectAndCropFace(sourceImage);
   });
 
+  autoCropBtn.addEventListener("click", () => {
+    if (!sourceImage) {
+      setStatus("Unggah foto terlebih dahulu untuk mulai Auto Crop.", "error");
+      return;
+    }
+    detectedCrop = null;
+    detectedHead = null;
+    resetCrop();
+    detectAndCropFace(sourceImage);
+  });
+
   cropModeBtn.addEventListener("click", () => {
     if (!sourceImage) {
       setStatus("Unggah foto terlebih dahulu untuk mulai crop.", "error");
