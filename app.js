@@ -577,6 +577,8 @@
     cropModeBtn.textContent = "Atur Crop Foto";
     photoFrame.classList.remove("crop-active");
     cropModeBtn.disabled = true;
+    autoCropBtn.disabled = true;
+    detectedHead = null;
     resetCrop();
     previewCanvas.width = 1;
     previewCanvas.height = 1;
