@@ -269,21 +269,29 @@
     photoFrame.classList.add("crop-active");
     cropModeBtn.textContent = "Selesai Atur Crop";
     renderPhoto();
-    setStatus("Crop rasio " + mmLabel(getSize().width) + " × " + mmLabel(getSize().height) + " mm diterapkan. Menyesuaikan posisi wajah…");
+    setStatus("Auto Crop aktif: memuat deteksi wajah lalu menghitung tinggi kepala, margin atas, dan skala crop…");
     try {
       if (!faceLandmarkerPromise) {
-        faceLandmarkerPromise = import("https://cdn.jsdelivr.net/npm/@mediapipe/tasks-vision@0.10.22/+esm")
-          .then(async (vision) => {
-            const files = await vision.FilesetResolver.forVisionTasks("https://cdn.jsdelivr.net/npm/@mediapipe/tasks-vision@0.10.22/wasm");
-            return vision.FaceLandmarker.createFromOptions(files, {
-              baseOptions: {
-                modelAssetPath: "https://storage.googleapis.com/mediapipe-models/face_landmarker/face_landmarker/float16/1/face_landmarker.task",
-                delegate: "CPU"
-              },
-              runningMode: "IMAGE",
-              numFaces: 1
-            });
+        // Retry through a second CDN if the primary module/WASM host is blocked.
+        faceLandmarkerPromise = (async () => {
+          let vision;
+          let files;
+          try {
+            vision = await import("https://cdn.jsdelivr.net/npm/@mediapipe/tasks-vision@0.10.22/+esm");
+            files = await vision.FilesetResolver.forVisionTasks("https://cdn.jsdelivr.net/npm/@mediapipe/tasks-vision@0.10.22/wasm");
+          } catch (primaryError) {
+            vision = await import("https://unpkg.com/@mediapipe/tasks-vision@0.10.22/+esm");
+            files = await vision.FilesetResolver.forVisionTasks("https://unpkg.com/@mediapipe/tasks-vision@0.10.22/wasm");
+          }
+          return vision.FaceLandmarker.createFromOptions(files, {
+            baseOptions: {
+              modelAssetPath: "https://storage.googleapis.com/mediapipe-models/face_landmarker/face_landmarker/float16/1/face_landmarker.task",
+              delegate: "CPU"
+            },
+            runningMode: "IMAGE",
+            numFaces: 1
           });
+        })();
       }
       const detector = await faceLandmarkerPromise;
       if (sourceImage !== image) return;
@@ -351,15 +359,18 @@
         edgeIssue ? "error" : "success"
       );
     } catch (error) {
+      // Do not cache a rejected model promise forever; the next Auto Crop click
+      // should be able to retry after a transient network/CDN failure.
+      faceLandmarkerPromise = null;
       detectedCrop = null;
       detectedHead = null;
-      // Keep the photo editable even if face detection or its external model fails.
       cropMode = true;
       cropControls.hidden = false;
       photoFrame.classList.add("crop-active");
       cropModeBtn.textContent = "Selesai Atur Crop";
       renderPhoto();
-      setStatus("Deteksi wajah otomatis gagal. Crop rasio dasar sudah tersedia; geser foto dan atur zoom secara manual.", "error");
+      const reason = error && error.message ? error.message : "model wajah tidak tersedia";
+      setStatus("Auto Crop wajah belum berhasil (" + reason + "). Crop rasio dasar tetap tersedia. Periksa koneksi internet lalu tekan Auto Crop sesuai profil untuk mencoba lagi.", "error");
     }
   }
 
@@ -550,7 +561,17 @@
   function updateMeasurements(crop) {
     const spec = currentPhotoSpec();
     const dims = getDimensions();
-    metricZoom.textContent = Math.round(cropZoom * 100) + "%";
+    // Report effective magnification against a plain ratio-fit crop. The
+    // profile-driven auto crop often has a custom crop rectangle, so the manual
+    // slider can correctly remain at 1.0x while the actual zoom is not 100%.
+    const ratio = dims.widthPx / dims.heightPx;
+    const ratioFitHeight = sourceImage
+      ? (sourceImage.naturalWidth / sourceImage.naturalHeight > ratio
+          ? sourceImage.naturalHeight
+          : sourceImage.naturalWidth / ratio)
+      : 0;
+    const effectiveZoom = crop && ratioFitHeight > 0 ? (ratioFitHeight / crop.height) * 100 : cropZoom * 100;
+    metricZoom.textContent = Math.round(effectiveZoom) + "%";
     if (!sourceImage || !crop || !detectedHead) {
       metricHead.textContent = "Belum terukur";
       metricTop.textContent = "Belum terukur";
