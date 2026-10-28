@@ -302,9 +302,23 @@
       const headHeight = chin.y - headTop;
       const spec = currentPhotoSpec();
       const dims = getDimensions();
-      const headFraction = spec && spec.headMm != null ? spec.headMm / dims.heightMm : 0.72;
-      const topMargin = spec && spec.topMm != null ? spec.topMm / dims.heightMm : 0.07;
+      // Prefer exact targets; for documented ranges, use the midpoint.
+      // Profiles without measurements use a clearly approximate fallback.
+      const targetHeadMm = spec && spec.headMm != null
+        ? spec.headMm
+        : spec && spec.headMinMm != null && spec.headMaxMm != null
+          ? (spec.headMinMm + spec.headMaxMm) / 2
+          : null;
+      const targetTopMm = spec && spec.topMm != null
+        ? spec.topMm
+        : spec && spec.topMinMm != null && spec.topMaxMm != null
+          ? (spec.topMinMm + spec.topMaxMm) / 2
+          : null;
+      const headFraction = targetHeadMm != null ? targetHeadMm / dims.heightMm : 0.72;
+      const topMargin = targetTopMm != null ? targetTopMm / dims.heightMm : 0.07;
       const ratio = dims.widthPx / dims.heightPx;
+      // Calculate crop scale from the detected head height, rather than using
+      // a fixed zoom. At 100%, this computed crop matches the selected target.
       const ch = headHeight / headFraction;
       const cw = ch * ratio;
       const centerX = (leftEye.x + rightEye.x) / 2;
@@ -326,10 +340,14 @@
       cropModeBtn.textContent = "Selesai Atur Crop";
       renderPhoto();
       const edgeIssue = cropX < 0 || cropY < 0 || cropX + cw > w || cropY + ch > h;
+      const targetDescription = [
+        targetHeadMm == null ? "tinggi kepala belum diverifikasi" : "target tinggi kepala " + mmLabel(targetHeadMm) + " mm",
+        targetTopMm == null ? "margin atas belum diverifikasi" : "target margin atas " + mmLabel(targetTopMm) + " mm"
+      ].join(", ");
       setStatus(
         edgeIssue
-          ? "Crop otomatis diterapkan, tetapi foto sumber terlalu rapat atau wajah terlalu dekat tepi. Periksa area putih dan atur crop manual bila perlu."
-          : "Crop otomatis diterapkan berdasarkan perkiraan posisi ubun-ubun dan dagu. Periksa hasil sebelum menyimpan.",
+          ? "Auto Crop menghitung posisi dan zoom (" + targetDescription + "), tetapi foto sumber terlalu rapat atau wajah terlalu dekat tepi. Periksa area putih dan atur crop manual bila perlu."
+          : "Auto Crop menghitung posisi wajah, tinggi kepala, margin atas, dan zoom (" + targetDescription + "). Puncak kepala merupakan estimasi; periksa hasil sebelum menyimpan.",
         edgeIssue ? "error" : "success"
       );
     } catch (error) {
