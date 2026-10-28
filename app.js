@@ -186,7 +186,7 @@
     "id:visa": { preset: "35x45", dpi: 600, headMm: 34.5, topMm: 3, source: "Referensi Visafoto untuk Indonesia Visa 35 × 45 mm: tinggi kepala 34,5 mm dan jarak tepi atas ke ubun-ubun 3 mm. Ini bukan standar pemerintah dan harus dicocokkan dengan portal pengajuan." },
     "id:id": { preset: "30x40", dpi: 600, headMm: 30, topMm: 2.5, source: "Referensi format foto 30 × 40 mm; pastikan cocok dengan instansi penerbit." },
 
-    "us:passport": { preset: "2x2", dpi: 300, pixelWidth: 600, pixelHeight: 600, minPixelWidth: 600, maxPixelWidth: 1200, minPixelHeight: 600, maxPixelHeight: 1200, format: "image/jpeg", profileStatus: "reference", headMm: 32.766, topMm: null, source: "Referensi Visafoto: https://id.visafoto.com/us-passport-photo — 2 × 2 inci. Untuk foto digital, dimensi piksel dapat memiliki rentang; 600 × 600 px dipakai sebagai ukuran awal, bukan profil semua sistem. Ikuti instruksi pengajuan yang sebenarnya." },
+    "us:passport": { preset: "2x2", dpi: 300, pixelWidth: 600, pixelHeight: 600, minPixelWidth: 600, maxPixelWidth: 1200, minPixelHeight: 600, maxPixelHeight: 1200, format: "image/jpeg", profileStatus: "reference", headMm: 32.766, topMm: null, eyeLineMm: 29.97, source: "Referensi Visafoto: https://id.visafoto.com/us-passport-photo — 2 × 2 inci. Untuk foto digital, dimensi piksel dapat memiliki rentang; 600 × 600 px dipakai sebagai ukuran awal, bukan profil semua sistem. Ikuti instruksi pengajuan yang sebenarnya." },
     "us:visa": { preset: "2x2", dpi: 300, pixelWidth: 600, pixelHeight: 600, minPixelWidth: 600, maxPixelWidth: 1200, minPixelHeight: 600, maxPixelHeight: 1200, format: "image/jpeg", profileStatus: "reference", headMm: null, topMm: null, source: "Referensi awal 2 × 2 inci / 600 × 600 px. Visa AS memiliki ketentuan berdasarkan formulir dan kanal pengajuan; dimensi ini bukan jaminan untuk setiap kategori. Verifikasi pada instruksi aplikasi yang dipakai." },
 
     "schengen:visa": { preset: "35x45", dpi: 600, headMm: null, topMm: null, source: "Visafoto mencantumkan Schengen Visa 35 × 45 mm: https://id.visafoto.com/requirements. Ukuran kepala dan jarak atas tidak dikunci di profil generik ini karena ketentuan konsulat/pusat visa perlu diverifikasi untuk tempat pengajuan." },
@@ -195,8 +195,8 @@
     "gb:passport": { preset: "35x45", dpi: 600, headMm: null, topMm: null, source: "Foto paspor UK digital tidak selalu mengikuti ukuran cetak; ikuti pemeriksaan foto pada layanan GOV.UK." },
     "gb:visa": { preset: "35x45", dpi: 600, headMm: 32.8, topMm: 4.9, source: "Visafoto: https://id.visafoto.com/gb-visa-photo — 35 × 45 mm, 600 DPI, tinggi kepala 32,8 mm dan jarak tepi atas 4,9 mm. Cocokkan dengan jalur visa/biometrik yang berlaku." },
 
-    "ca:passport": { preset: "50x70", dpi: 600, headMm: 35, topMm: null, source: "Visafoto: https://id.visafoto.com/ca-passport-photo — 50 × 70 mm, 600 DPI, tinggi kepala 35 mm; garis mata 39 mm dari tepi bawah. Jarak atas tidak disimpulkan dari garis mata. Cocokkan dengan panduan resmi Kanada." },
-    "ca:visa": { preset: "35x45", dpi: 305, headMm: 34.7, topMm: 3, source: "Visafoto: https://id.visafoto.com/ca-visa-photo — 35 × 45 mm, 305 DPI, tinggi kepala 34,7 mm dan jarak tepi atas 3 mm. Ukuran file yang dicantumkan Visafoto 60–240 KB; cek instruksi kategori aplikasi terbaru." },
+    "ca:passport": { preset: "50x70", dpi: 600, headMm: 35, topMm: null, eyeLineMm: 39, source: "Visafoto: https://id.visafoto.com/ca-passport-photo — 50 × 70 mm, 600 DPI, tinggi kepala 35 mm; garis mata 39 mm dari tepi bawah. Jarak atas tidak disimpulkan dari garis mata. Cocokkan dengan panduan resmi Kanada." },
+    "ca:visa": { preset: "35x45", dpi: 305, format: "image/jpeg", maxFileKB: 240, headMm: 34.7, topMm: 3, source: "Visafoto: https://id.visafoto.com/ca-visa-photo — 35 × 45 mm, 305 DPI, tinggi kepala 34,7 mm dan jarak tepi atas 3 mm. Ukuran file yang dicantumkan Visafoto 60–240 KB; cek instruksi kategori aplikasi terbaru." },
 
     "au:passport": { preset: "35x45", dpi: 600, headMm: 34, topMm: 5, source: "Visafoto: https://id.visafoto.com/au-passport-photo — 35 × 45 mm, 600 DPI, tinggi kepala 34 mm dan jarak atas 5 mm. Panduan resmi Australia mengizinkan rentang ukuran foto yang lebih luas; cocokkan dengan jalur permohonan." },
     "au:visa": { preset: "35x45", dpi: 600, headMm: 34, topMm: 5, source: "Visafoto: https://id.visafoto.com/au-visa-photo — 35 × 45 mm, 600 DPI, tinggi kepala 34 mm dan jarak atas 5 mm. Persyaratan subclass/portal visa dapat berbeda." },
@@ -346,7 +346,9 @@
       const cw = ch * ratio;
       const centerX = (leftEye.x + rightEye.x) / 2;
       const cropX = centerX - cw / 2;
-      const cropY = headTop - ch * topMargin;
+      const cropY = spec && spec.eyeLineMm != null
+        ? ((leftEye.y + rightEye.y) / 2) - ch * (1 - spec.eyeLineMm / dims.heightMm)
+        : headTop - ch * topMargin;
 
       // Do not shrink the crop to fit the uploaded image: doing so silently
       // changes the requested head-to-photo proportion. Out-of-frame areas
@@ -421,6 +423,7 @@
         "Profil kerja PFVISA: " + presets[presetKey].label + ", " + spec.dpi + " DPI. " + profileStatusLabel(spec, doc) + ".",
         spec.headMinMm != null && spec.headMaxMm != null ? "Rentang tinggi kepala acuan (perkiraan ubun-ubun hingga dagu): " + mmLabel(spec.headMinMm) + "–" + mmLabel(spec.headMaxMm) + " mm." : spec.headMm != null ? "Target tinggi kepala (perkiraan ubun-ubun hingga dagu): " + mmLabel(spec.headMm) + " mm." : "Ukuran kepala belum dikunci otomatis karena spesifikasi yang tepat bergantung pada dokumen/portal.",
         spec.topMinMm != null && spec.topMaxMm != null ? "Rentang jarak tepi atas ke puncak kepala: " + mmLabel(spec.topMinMm) + "–" + mmLabel(spec.topMaxMm) + " mm." : spec.topMm != null ? "Target jarak tepi atas ke ubun-ubun: " + mmLabel(spec.topMm) + " mm." : "Jarak tepi atas kepala belum ditetapkan otomatis; periksa petunjuk resmi.",
+        spec.eyeLineMm != null ? "Target garis mata dari tepi bawah: " + mmLabel(spec.eyeLineMm) + " mm; Auto Crop menggunakan posisi mata sebagai acuan vertikal." : "Garis mata belum ditetapkan otomatis untuk profil ini.",
         spec.source,
         "Profil ini membantu penyesuaian ukuran dan crop, tetapi bukan jaminan penerimaan. Ketentuan resmi dapat berbeda menurut kategori aplikasi."
       ];
