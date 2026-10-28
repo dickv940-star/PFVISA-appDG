@@ -369,6 +369,11 @@
   Object.entries(mmPresetValues).forEach(([key, dimensions]) => {
     if (!presets[key]) presets[key] = { width: dimensions[0], height: dimensions[1], label: dimensions[0] + " × " + dimensions[1] + (key === "2x2" ? " mm (2 × 2 inci)" : " mm") };
   });
+  // Entri digital yang memiliki dimensi piksel eksplisit pada katalog.
+  Object.assign(photoSpecs, {
+    "sg:passport": { preset: "35x45", dpi: 300, pixelWidth: 400, pixelHeight: 514, format: "image/jpeg", profileStatus: "reference", source: "Katalog Visafoto: Singapore passport online 400 × 514 px. Ini adalah ukuran pada katalog pihak ketiga; verifikasi kanal pengajuan yang digunakan: https://id.visafoto.com/requirements." },
+    "sg:visa": { preset: "35x45", dpi: 300, pixelWidth: 400, pixelHeight: 514, format: "image/jpeg", profileStatus: "reference", source: "Katalog Visafoto: Singapore visa online 400 × 514 px. Ini adalah ukuran pada katalog pihak ketiga; verifikasi kanal pengajuan yang digunakan: https://id.visafoto.com/requirements." }
+  });
   Object.entries(visafotoBaseProfiles).forEach(([countryCode, docs]) => {
     Object.entries(docs).forEach(([docKey, presetKey]) => {
       const key = countryCode + ":" + docKey;
