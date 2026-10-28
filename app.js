@@ -615,23 +615,13 @@
     metricTop.textContent = mmLabel(Number(topMm.toFixed(1))) + " mm";
     metricHeadTarget.textContent = spec && spec.headMinMm != null && spec.headMaxMm != null ? "Target " + mmLabel(spec.headMinMm) + "–" + mmLabel(spec.headMaxMm) + " mm" : spec && spec.headMm != null ? "Target " + mmLabel(spec.headMm) + " mm" : "Target belum diverifikasi";
     metricTopTarget.textContent = spec && spec.topMinMm != null && spec.topMaxMm != null ? "Target " + mmLabel(spec.topMinMm) + "–" + mmLabel(spec.topMaxMm) + " mm" : spec && spec.topMm != null ? "Target " + mmLabel(spec.topMm) + " mm" : "Target belum diverifikasi";
-    const headOK = spec && spec.headMinMm != null && spec.headMaxMm != null
-      ? headMm >= spec.headMinMm && headMm <= spec.headMaxMm
-      : spec && spec.headMm != null && Math.abs(headMm - spec.headMm) <= Math.max(1, dims.heightMm * 0.02);
-    const topOK = spec && spec.topMinMm != null && spec.topMaxMm != null
-      ? topMm >= spec.topMinMm && topMm <= spec.topMaxMm
-      : spec && spec.topMm != null && Math.abs(topMm - spec.topMm) <= Math.max(1, dims.heightMm * 0.02);
-    if (headOK && topOK) {
-      measurementStatus.textContent = spec && spec.headMinMm != null ? "Tinggi & margin sesuai rentang" : "Mendekati target";
-      measurementStatus.className = "measurement-badge good";
-    } else if (spec && (spec.headMm != null || spec.headMinMm != null) && (spec.topMm != null || spec.topMinMm != null)) {
-      measurementStatus.textContent = "Perlu penyesuaian";
-      measurementStatus.className = "measurement-badge warn";
-    } else {
-      measurementStatus.textContent = "Perlu verifikasi";
-      measurementStatus.className = "measurement-badge neutral";
-    }
-    measurementNote.textContent = spec && countrySelect.value === "cn" && documentSelect.value === "visa" ? "Tinggi kepala dan margin atas dihitung dari perkiraan landmark wajah. Lebar kepala 15–22 mm belum diukur otomatis; periksa secara visual. Hasil ini bukan pemeriksaan biometrik resmi atau jaminan penerimaan." : "Pengukuran berdasarkan perkiraan landmark wajah, bukan pemeriksaan biometrik resmi. Cocokkan dengan aturan portal visa dan periksa garis ubun-ubun serta dagu secara visual.";
+    const hasTarget = !!(spec && (spec.headMm != null || spec.headMinMm != null || spec.topMm != null || spec.topMinMm != null));
+    // The crop is mathematically fitted using an estimated crown. These values
+    // are not independent biometric verification and cannot establish a pass.
+    measurementStatus.textContent = hasTarget ? "Perlu cek visual" : "Perlu verifikasi";
+    measurementStatus.className = "measurement-badge warn";
+    measurementNote.textContent = "Angka di atas menunjukkan geometri crop berdasarkan perkiraan puncak kepala dari landmark wajah; bukan pengukuran independen ubun-ubun sebenarnya. Periksa rambut/ubun-ubun, dagu, mata, tepi foto, dan instruksi portal secara visual. PFVISA tidak dapat menjamin penerimaan.";
+
   }
 
   function updateLabels() {
@@ -737,6 +727,23 @@
     return output;
   }
 
+  async function jpegWithDpi(blob, dpi) {
+    const input = new Uint8Array(await blob.arrayBuffer());
+    if (input.length < 4 || input[0] !== 0xff || input[1] !== 0xd8) return blob;
+    const density = Math.max(1, Math.min(65535, Math.round(dpi)));
+    if (input[2] === 0xff && input[3] === 0xe0 && input.length >= 20 &&
+        input[6] === 0x4a && input[7] === 0x46 && input[8] === 0x49 && input[9] === 0x46 && input[10] === 0x00) {
+      input[13] = 1;
+      input[14] = (density >> 8) & 255; input[15] = density & 255;
+      input[16] = (density >> 8) & 255; input[17] = density & 255;
+      return new Blob([input], { type: "image/jpeg" });
+    }
+    const segment = new Uint8Array([0xff,0xe0,0x00,0x10,0x4a,0x46,0x49,0x46,0x00,0x01,0x01,0x01,(density>>8)&255,density&255,(density>>8)&255,density&255,0x00,0x00]);
+    const output = new Uint8Array(input.length + segment.length);
+    output.set(input.slice(0,2),0); output.set(segment,2); output.set(input.slice(2),2+segment.length);
+    return new Blob([output], { type: "image/jpeg" });
+  }
+
   async function downloadPhoto() {
     if (!sourceImage) { setStatus("Unggah foto terlebih dahulu.", "error"); return; }
     try {
@@ -757,6 +764,7 @@
         if (maxBytes && blob.size > maxBytes) { setStatus("JPG masih " + Math.ceil(blob.size / 1024) + " KB, melebihi batas profil " + dimensions.maxFileKB + " KB. Periksa aturan portal atau gunakan foto sumber lain.", "error"); return; }
       }
       let finalBlob = blob;
+      if (format === "image/jpeg") finalBlob = await jpegWithDpi(blob, dimensions.dpi);
       if (format === "image/png") {
         const dataUrl = await new Promise((resolve, reject) => { const reader = new FileReader(); reader.onload = () => resolve(reader.result); reader.onerror = reject; reader.readAsDataURL(blob); });
         finalBlob = new Blob([pngWithDpi(dataUrl, dimensions.dpi)], { type: "image/png" });
@@ -767,7 +775,7 @@
       link.download = baseName + "-" + dimensions.widthPx + "x" + dimensions.heightPx + "px." + extension;
       const objectUrl = URL.createObjectURL(finalBlob); link.href = objectUrl; document.body.appendChild(link); link.click(); link.remove();
       setTimeout(() => URL.revokeObjectURL(objectUrl), 1500);
-      setStatus("File " + extension.toUpperCase() + " disiapkan: " + dimensions.widthPx + " × " + dimensions.heightPx + " px, " + Math.ceil(finalBlob.size / 1024) + " KB" + (maxBytes ? " (batas profil " + dimensions.maxFileKB + " KB)" : " (batas file profil belum diketahui)") + ". Metadata DPI ditambahkan pada PNG; JPG tidak diberi metadata DPI khusus. Periksa portal sebelum mengirim.", "success");
+      setStatus("File " + extension.toUpperCase() + " disiapkan: " + dimensions.widthPx + " × " + dimensions.heightPx + " px, " + Math.ceil(finalBlob.size / 1024) + " KB" + (maxBytes ? " (batas profil " + dimensions.maxFileKB + " KB)" : " (batas file profil belum diketahui)") + ". Metadata DPI disertakan pada file hasil. Periksa portal sebelum mengirim.", "success");
     } catch (error) { setStatus("Tidak dapat menyimpan foto: " + (error && error.message ? error.message : "kesalahan ekspor") + ".", "error"); }
   }
   countrySelect.addEventListener("change", populateDocuments);
