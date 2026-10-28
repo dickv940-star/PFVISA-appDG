@@ -9,6 +9,9 @@
   const customWidth = $("custom-width");
   const customHeight = $("custom-height");
   const dpiSelect = $("dpi");
+  const outputFormatSelect = $("output-format");
+  const exportProfileNote = $("export-profile-note");
+  const metricFormat = $("spec-format");
   const countrySelect = $("country-select");
   const documentSelect = $("document-select");
   const requirementsTitle = $("requirements-title");
@@ -60,7 +63,7 @@
       name, official,
       documents: {
         passport: {
-          label: "Paspor " + name, preset: passportPreset,
+          label: "Paspor " + name, preset: passportPreset, profileStatus: "unverified",
           summary: "Ukuran awal di editor ini bukan konfirmasi standar resmi negara ini. Periksa instruksi terbaru otoritas penerbit sebelum menggunakan foto.",
           rules: [
             "Persyaratan paspor berbeda menurut negara, jenis permohonan, dan apakah foto dicetak atau diunggah secara digital.",
@@ -71,7 +74,7 @@
           ]
         },
         visa: {
-          label: "Visa " + name, preset: passportPreset,
+          label: "Visa " + name, preset: passportPreset, profileStatus: "unverified",
           summary: "Persyaratan foto visa ditentukan oleh jenis visa dan kanal pengajuan. Ukuran awal di editor ini bukan standar resmi untuk semua visa.",
           rules: [
             "Buka petunjuk resmi untuk kategori visa dan portal yang benar sebelum memilih ukuran akhir.",
@@ -81,7 +84,7 @@
           ]
         },
         id: {
-          label: "Kartu identitas / izin tinggal", preset: passportPreset,
+          label: "Kartu identitas / izin tinggal", preset: passportPreset, profileStatus: "unverified",
           summary: "Dokumen identitas dan izin tinggal dapat memiliki spesifikasi foto yang berbeda dari paspor.",
           rules: [
             "Ikuti spesifikasi instansi penerbit untuk dokumen yang dipilih.",
@@ -183,8 +186,8 @@
     "id:visa": { preset: "35x45", dpi: 600, headMm: 34.5, topMm: 3, source: "Referensi Visafoto untuk Indonesia Visa 35 × 45 mm: tinggi kepala 34,5 mm dan jarak tepi atas ke ubun-ubun 3 mm. Ini bukan standar pemerintah dan harus dicocokkan dengan portal pengajuan." },
     "id:id": { preset: "30x40", dpi: 600, headMm: 30, topMm: 2.5, source: "Referensi format foto 30 × 40 mm; pastikan cocok dengan instansi penerbit." },
 
-    "us:passport": { preset: "2x2", dpi: 300, headMm: 32.766, topMm: null, source: "Visafoto: https://id.visafoto.com/us-passport-photo — 2 × 2 inci, 300 DPI, tinggi kepala 1,29 inci (32,8 mm), garis mata 1,18 inci dari tepi bawah. Jarak atas tidak ditetapkan dari angka ini; periksa garis mata dan instruksi resmi." },
-    "us:visa": { preset: "2x2", dpi: 300, headMm: null, topMm: null, source: "Visafoto menyediakan beberapa profil visa AS 2 × 2 inci berdasarkan formulir/kategori. Ukuran kepala dan file harus dipilih sesuai jenis visa; target otomatis belum dikunci untuk profil generik ini." },
+    "us:passport": { preset: "2x2", dpi: 300, pixelWidth: 600, pixelHeight: 600, minPixelWidth: 600, maxPixelWidth: 1200, minPixelHeight: 600, maxPixelHeight: 1200, format: "image/jpeg", profileStatus: "reference", headMm: 32.766, topMm: null, source: "Referensi Visafoto: https://id.visafoto.com/us-passport-photo — 2 × 2 inci. Untuk foto digital, dimensi piksel dapat memiliki rentang; 600 × 600 px dipakai sebagai ukuran awal, bukan profil semua sistem. Ikuti instruksi pengajuan yang sebenarnya." },
+    "us:visa": { preset: "2x2", dpi: 300, pixelWidth: 600, pixelHeight: 600, minPixelWidth: 600, maxPixelWidth: 1200, minPixelHeight: 600, maxPixelHeight: 1200, format: "image/jpeg", profileStatus: "reference", headMm: null, topMm: null, source: "Referensi awal 2 × 2 inci / 600 × 600 px. Visa AS memiliki ketentuan berdasarkan formulir dan kanal pengajuan; dimensi ini bukan jaminan untuk setiap kategori. Verifikasi pada instruksi aplikasi yang dipakai." },
 
     "schengen:visa": { preset: "35x45", dpi: 600, headMm: null, topMm: null, source: "Visafoto mencantumkan Schengen Visa 35 × 45 mm: https://id.visafoto.com/requirements. Ukuran kepala dan jarak atas tidak dikunci di profil generik ini karena ketentuan konsulat/pusat visa perlu diverifikasi untuk tempat pengajuan." },
     "schengen:residence": { preset: "35x45", dpi: 600, headMm: null, topMm: null, source: "Izin tinggal berbeda menurut negara penerbit; ukuran ini hanya titik awal." },
@@ -205,7 +208,7 @@
     "cn:visa": { preset: "33x48", dpi: 600, headMm: 31.5, topMm: 5, headMinMm: 28, headMaxMm: 33, topMinMm: 3, topMaxMm: 5, source: "Visafoto: https://id.visafoto.com/cn-visa-photo — 33 × 48 mm, 600 DPI, tinggi kepala 31,5 mm dan jarak atas 5 mm. Rentang pada panduan CVASC yang ditautkan: tinggi kepala 28–33 mm, lebar kepala 15–22 mm, jarak atas 3–5 mm. Auto Crop memakai angka Visafoto; lebar kepala masih perlu diperiksa." },
 
     "jp:passport": { preset: "35x45", dpi: 600, headMm: null, topMm: null, source: "Ukuran foto paspor Jepang harus dicocokkan dengan instruksi permohonan yang dipakai." },
-    "jp:visa": { preset: "35x45", dpi: 300, headMm: null, topMm: null, source: "Profil pengajuan visa Jepang di Indonesia: JVAC/VFS mencantumkan foto 35 × 45 mm, berwarna, latar polos, wajah menghadap lurus dan jelas, diambil dalam 6 bulan terakhir: https://www.vfsglobal.com/one-pager/japan/indonesia/english/index.html. Kedutaan Jepang di Indonesia juga menyebut foto 4,5 × 3,5 cm dan bukan hasil editing: https://www.id.emb-japan.go.jp/visa_3.html. Tidak ada angka DPI, tinggi kepala, atau margin atas yang dikunci oleh dua ringkasan ini; 300 DPI adalah setelan ekspor editor, bukan klaim aturan resmi. Aturan e-Visa atau pengajuan di negara lain dapat berbeda." },
+    "jp:visa": { preset: "35x45", dpi: 300, format: "image/jpeg", profileStatus: "official-size-reference", headMm: null, topMm: null, source: "Profil pengajuan visa Jepang di Indonesia: JVAC/VFS mencantumkan foto 35 × 45 mm, berwarna, latar polos, wajah menghadap lurus dan jelas, diambil dalam 6 bulan terakhir: https://www.vfsglobal.com/one-pager/japan/indonesia/english/index.html. Kedutaan Jepang di Indonesia juga menyebut foto 4,5 × 3,5 cm dan bukan hasil editing: https://www.id.emb-japan.go.jp/visa_3.html. Tidak ada angka DPI, tinggi kepala, atau margin atas yang dikunci oleh dua ringkasan ini; 300 DPI adalah setelan ekspor editor, bukan klaim aturan resmi. Aturan e-Visa atau pengajuan di negara lain dapat berbeda." },
     "ae:visa": { preset: "35x45", dpi: 600, headMm: null, topMm: null, source: "Visafoto mencantumkan beberapa varian UEA: 43 × 55 mm (Flydubai/Etihad), 600 × 600 px (ICP), 2 × 2 inci (VFS), serta 35 × 45 mm untuk izin tinggal/ICA. Profil 35 × 45 mm di sini hanya titik awal; pilih kanal/portal yang benar sebelum crop otomatis." },
     "ae:id": { preset: "35x45", dpi: 600, headMm: null, topMm: null, source: "Emirates ID/izin tinggal dapat memiliki spesifikasi digital tersendiri; verifikasi pada portal resmi." }
   };
@@ -226,6 +229,18 @@
 
   function currentPhotoSpec() {
     return photoSpecs[countrySelect.value + ":" + documentSelect.value] || null;
+  }
+
+  function profileStatusLabel(spec, doc) {
+    const state = (spec && spec.profileStatus) || (doc && doc.profileStatus) || "unverified";
+    if (state === "verified-official") return "Profil terverifikasi dari sumber resmi";
+    if (state === "official-size-reference") return "Ukuran dasar dirujuk ke sumber resmi; detail biometrik belum lengkap";
+    if (state === "reference") return "Profil referensi — cocokkan dengan portal permohonan";
+    return "Profil belum lengkap / belum diverifikasi untuk jenis dokumen ini";
+  }
+
+  function selectedExportFormat(spec) {
+    return spec && spec.format ? spec.format : (outputFormatSelect ? outputFormatSelect.value : "image/jpeg");
   }
 
   function populateDocuments() {
@@ -462,12 +477,18 @@
   function getDimensions() {
     const size = getSize();
     const dpi = clampNumber(dpiSelect.value, 72, 1200, 300);
+    const spec = currentPhotoSpec();
+    const widthPx = spec && Number.isFinite(spec.pixelWidth) ? spec.pixelWidth : Math.max(1, Math.round((size.width / 25.4) * dpi));
+    const heightPx = spec && Number.isFinite(spec.pixelHeight) ? spec.pixelHeight : Math.max(1, Math.round((size.height / 25.4) * dpi));
     return {
       widthMm: size.width,
       heightMm: size.height,
-      widthPx: Math.max(1, Math.round((size.width / 25.4) * dpi)),
-      heightPx: Math.max(1, Math.round((size.height / 25.4) * dpi)),
-      dpi
+      widthPx,
+      heightPx,
+      dpi,
+      pixelRange: spec && spec.minPixelWidth ? { minWidth: spec.minPixelWidth, maxWidth: spec.maxPixelWidth || spec.minPixelWidth, minHeight: spec.minPixelHeight || spec.minPixelWidth, maxHeight: spec.maxPixelHeight || spec.maxPixelWidth || spec.minPixelWidth } : null,
+      maxFileKB: spec && spec.maxFileKB ? spec.maxFileKB : null,
+      format: selectedExportFormat(spec)
     };
   }
 
