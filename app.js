@@ -234,6 +234,155 @@
     "ae:id": { preset: "35x45", dpi: 600, headMm: null, topMm: null, source: "Emirates ID/izin tinggal dapat memiliki spesifikasi digital tersendiri; verifikasi pada portal resmi." }
   };
 
+
+  // Profil ukuran dasar tambahan dari entri Visafoto. Ini hanya variasi paspor/visa
+  // yang tercantum pada indeks; jangan menyimpulkan biometrik, DPI, format, atau batas
+  // file yang tidak dicantumkan. Profil yang lebih spesifik di atas selalu diprioritaskan.
+  const visafotoBaseProfiles = {
+    af: { passport:"50x50", visa:"35x45" },
+    al: { visa:"35x45" },
+    am: { visa:"35x45" },
+    ao: { visa:"30x40" },
+    ar: { passport:"40x40", visa:"40x40" },
+    at: { passport:"35x45", visa:"35x45", id:"35x45" },
+    az: { visa:"30x40", id:"30x40" },
+    bh: { passport:"40x60", visa:"40x60" },
+    bd: { passport:"40x50", visa:"45x35" },
+    be: { passport:"35x45", visa:"35x45", id:"35x45", residence:"35x45" },
+    bb: { passport:"50x50", visa:"50x50" },
+    bz: { passport:"2x2", visa:"2x2" },
+    bj: { passport:"35x45", visa:"35x45" },
+    bn: { passport:"50x40" },
+    bo: { passport:"40x50", visa:"30x30", id:"30x30" },
+    ba: { visa:"35x45" },
+    bw: { passport:"30x40", visa:"30x40", residence:"30x40" },
+    bg: { passport:"35x45", visa:"35x45", id:"35x45", residence:"35x45" },
+    bf: { passport:"45x35", visa:"45x35" },
+    br: { passport:"50x70", visa:"2x2", id:"30x40" },
+    bs: { passport:"2x2", visa:"2x2" },
+    bt: { passport:"45x35" },
+    ca: { passport:"50x70", visa:"35x45", residence:"50x70" },
+    cd: { passport:"35x45" },
+    cg: { passport:"35x45", visa:"40x40" },
+    ch: { passport:"35x45", visa:"35x45", id:"35x45" },
+    ci: { visa:"45x35" },
+    cl: { passport:"45x45", visa:"50x50" },
+    cm: { passport:"40x40", visa:"40x40" },
+    cn: { passport:"33x48", visa:"33x48", id:"26x32" },
+    co: { visa:"30x40", id:"40x50" },
+    cr: { passport:"2x2", visa:"2x2", id:"40x45" },
+    cu: { visa:"45x45" },
+    cy: { passport:"40x50", visa:"35x45", id:"35x45" },
+    cz: { passport:"35x45", visa:"35x45", id:"35x45", residence:"35x45" },
+    de: { passport:"35x45", visa:"35x45", id:"35x45", residence:"35x45" },
+    dj: { passport:"35x35", visa:"2x2", id:"35x35" },
+    dk: { passport:"35x45", visa:"35x45", id:"35x45" },
+    do: { passport:"2x2", visa:"40x50" },
+    dz: { passport:"35x45", visa:"35x45", id:"35x45", residence:"35x45" },
+    ec: { visa:"50x50" },
+    ee: { passport:"40x50", visa:"40x50", id:"40x50" },
+    eg: { passport:"40x60", visa:"40x60" },
+    es: { passport:"30x40", visa:"35x45", id:"32x26" },
+    et: { passport:"30x40", visa:"30x40" },
+    fi: { passport:"36x47", visa:"36x47", id:"36x47", residence:"36x47" },
+    fj: { passport:"35x45" },
+    fr: { passport:"35x45", visa:"35x45", id:"35x45" },
+    ga: { visa:"35x45" },
+    ge: { passport:"35x45", visa:"35x45", id:"35x45" },
+    gh: { passport:"35x45", visa:"35x45" },
+    gr: { passport:"40x60", visa:"35x45", id:"36x36", residence:"40x60" },
+    hk: { passport:"40x50", visa:"40x50", id:"40x50" },
+    hr: { passport:"35x45", visa:"35x45", id:"35x45" },
+    hu: { passport:"35x45", visa:"35x45", id:"35x45" },
+    ie: { passport:"35x45", visa:"35x45" },
+    il: { passport:"35x45", visa:"35x45", id:"35x45" },
+    iq: { passport:"2x2" },
+    is: { passport:"35x45", visa:"35x45", id:"35x45" },
+    it: { passport:"35x45", visa:"35x45", id:"35x45" },
+    jm: { passport:"35x45" },
+    jo: { passport:"35x45", visa:"35x45", id:"35x45", residence:"35x45" },
+    kg: { visa:"50x60", passport:"30x40" },
+    kh: { passport:"35x45", visa:"35x45" },
+    kw: { passport:"40x60", visa:"40x60" },
+    kz: { passport:"35x45", visa:"35x45" },
+    lb: { passport:"35x45", visa:"35x45" },
+    lk: { passport:"35x45", visa:"35x45" },
+    ma: { passport:"35x45", visa:"35x45" },
+    md: { passport:"35x45", visa:"35x45" },
+    me: { passport:"35x45", visa:"35x45" },
+    mk: { passport:"35x45", visa:"35x45" },
+    mm: { passport:"35x45", visa:"35x45" },
+    mx: { passport:"35x45", visa:"35x45" },
+    my: { passport:"35x50", visa:"35x45" },
+    mz: { visa:"35x45" },
+    na: { passport:"37x52", visa:"37x52" },
+    ne: { visa:"2x2" },
+    ng: { passport:"35x45", visa:"35x45" },
+    nl: { passport:"35x45", visa:"35x45", id:"35x45" },
+    no: { passport:"35x45", visa:"35x45" },
+    np: { visa:"35x45" },
+    om: { passport:"40x60", visa:"40x60", id:"40x60", residence:"40x60" },
+    pa: { passport:"35x45", visa:"2x2" },
+    pe: { visa:"35x45", id:"35x45" },
+    pg: { passport:"35x45" },
+    ph: { passport:"45x35", visa:"2x2" },
+    pk: { passport:"35x45", id:"35x45" },
+    pl: { passport:"35x45", visa:"35x45" },
+    pt: { passport:"35x45", visa:"35x45" },
+    qa: { passport:"40x60", visa:"40x60" },
+    ro: { passport:"35x45", visa:"35x45" },
+    ru: { passport:"35x45", visa:"35x45" },
+    sa: { passport:"40x60", visa:"2x2", id:"40x60" },
+    se: { passport:"35x45", visa:"35x45", id:"35x45" },
+    sg: { passport:"400x514", visa:"400x514" },
+    si: { passport:"35x45", visa:"35x45" },
+    sk: { passport:"35x45", visa:"35x45" },
+    sn: { passport:"45x35", visa:"45x35" },
+    so: { visa:"35x45", id:"40x60" },
+    sd: { passport:"40x50", visa:"40x50", id:"40x50" },
+    sr: { passport:"45x35", visa:"45x35" },
+    sy: { passport:"40x60", visa:"40x60", id:"40x60" },
+    th: { passport:"40x60", visa:"40x60" },
+    tj: { passport:"35x45", visa:"50x60" },
+    tg: { passport:"45x35", visa:"45x35" },
+    tm: { passport:"30x40", visa:"50x60" },
+    tn: { passport:"35x45", visa:"35x45" },
+    tr: { passport:"50x60", visa:"50x60" },
+    tw: { passport:"35x45", visa:"35x45" },
+    tz: { visa:"40x45" },
+    ua: { passport:"35x45", visa:"30x40", residence:"35x45" },
+    ug: { passport:"2x2", visa:"2x2" },
+    uy: { passport:"40x40", visa:"40x40" },
+    ve: { passport:"35x45", visa:"35x45" },
+    vn: { passport:"40x60", visa:"40x60" },
+    za: { passport:"35x45", visa:"35x45" },
+    zm: { passport:"35x45", visa:"35x45" },
+    zw: { passport:"35x45", visa:"35x45" }
+  };
+  const mmPresetValues = {
+    "30x30": [30,30], "32x26": [32,26], "35x35": [35,35], "35x50": [35,50],
+    "36x36": [36,36], "36x47": [36,47], "37x52": [37,52], "40x40": [40,40],
+    "40x45": [40,45], "40x50": [40,50], "40x60": [40,60], "45x35": [45,35],
+    "45x45": [45,45], "45x50": [45,50], "50x50": [50,50], "50x60": [50,60],
+    "50x70": [50,70], "2x2": [50.8,50.8], "400x514": [35,45]
+  };
+  Object.entries(mmPresetValues).forEach(([key, dimensions]) => {
+    if (!presets[key]) presets[key] = { width: dimensions[0], height: dimensions[1], label: dimensions[0] + " × " + dimensions[1] + (key === "2x2" ? " mm (2 × 2 inci)" : " mm") };
+  });
+  Object.entries(visafotoBaseProfiles).forEach(([countryCode, docs]) => {
+    Object.entries(docs).forEach(([docKey, presetKey]) => {
+      const key = countryCode + ":" + docKey;
+      if (!photoSpecs[key] && presets[presetKey]) {
+        photoSpecs[key] = {
+          preset: presetKey,
+          dpi: 300,
+          profileStatus: "reference",
+          source: "Ukuran dasar diambil dari entri katalog Visafoto untuk variasi dokumen ini: https://id.visafoto.com/requirements. Profil ini belum memuat seluruh persyaratan biometrik, DPI, format, latar, atau batas file; cocokkan dengan entri tepat dan portal pengajuan."
+        };
+      }
+    });
+  });
+
   function fallbackCountryGuide() {
     const selected = countrySelect.options[countrySelect.selectedIndex];
     const name = selected ? selected.textContent : "Negara belum dikenal";
