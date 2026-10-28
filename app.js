@@ -772,6 +772,10 @@
         const dataUrl = await new Promise((resolve, reject) => { const reader = new FileReader(); reader.onload = () => resolve(reader.result); reader.onerror = reject; reader.readAsDataURL(blob); });
         finalBlob = new Blob([pngWithDpi(dataUrl, dimensions.dpi)], { type: "image/png" });
       }
+      if (maxBytes && finalBlob.size > maxBytes) {
+        setStatus("File setelah metadata DPI ditambahkan melewati batas profil " + dimensions.maxFileKB + " KB. Pilih format yang diizinkan atau periksa persyaratan portal.", "error");
+        return;
+      }
       const baseName = activeFile ? activeFile.name.replace(/\.[^.]+$/, "") : "pfvisa-photo";
       const extension = format === "image/png" ? "png" : "jpg";
       const link = document.createElement("a");
