@@ -124,13 +124,19 @@
           <a id="official-link" class="official-link" href="https://www.imigrasi.go.id/" target="_blank" rel="noopener noreferrer">Periksa sumber resmi ↗</a>
         </section>
 
-        <label class="field-label" for="dpi">Resolusi ekspor</label>
+        <label class="field-label" for="dpi">Resolusi metadata / cetak</label>
         <select id="dpi" class="select-field">
-          <option value="300">300 DPI — cetak berkualitas tinggi</option>
-          <option value="305">305 DPI — profil Kanada (Visafoto)</option>
-          <option value="600">600 DPI — resolusi tinggi</option>
-          <option value="150">150 DPI — file lebih kecil</option>
+          <option value="300">300 DPI</option>
+          <option value="305">305 DPI — profil referensi tertentu</option>
+          <option value="600">600 DPI</option>
+          <option value="150">150 DPI</option>
         </select>
+        <label class="field-label" for="output-format">Format file hasil</label>
+        <select id="output-format" class="select-field">
+          <option value="image/jpeg">JPG — ukuran file lebih kecil</option>
+          <option value="image/png">PNG — tanpa kompresi lossy</option>
+        </select>
+        <p id="export-profile-note" class="field-help">Format dan batas file mengikuti profil jika datanya tersedia; periksa aturan portal tujuan.</p>
 
         <div class="action-stack">
           <button id="download-btn" class="button button-primary" type="button" disabled>Simpan foto PNG <span aria-hidden="true">↗</span></button>
@@ -179,7 +185,7 @@
         <div class="specs">
           <div><span>Ukuran cetak</span><strong id="spec-size">35 × 45 mm</strong></div>
           <div><span>Resolusi gambar</span><strong id="spec-pixels">413 × 531 px</strong></div>
-          <div><span>Format file</span><strong>PNG</strong></div>
+          <div><span>Format file</span><strong id="spec-format">JPG</strong></div>
         </div>
       </div>
     </section>
