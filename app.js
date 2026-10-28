@@ -21,7 +21,7 @@
   referenceLink.href = "https://id.visafoto.com/id-visa-photo";
   referenceLink.target = "_blank";
   referenceLink.rel = "noopener noreferrer";
-  referenceLink.textContent = "Rujukan spesifikasi Visafoto ↗";
+  referenceLink.textContent = "Lihat profil & variasi ukuran di Visafoto ↗";
   referenceLink.hidden = true;
   officialLink.insertAdjacentElement("afterend", referenceLink);
   const previewCanvas = $("preview-canvas");
@@ -387,7 +387,10 @@
     }
     officialLink.href = guide.official;
     officialLink.textContent = "Buka sumber resmi " + guide.name + " ↗";
-    referenceLink.hidden = !(countrySelect.value === "id" && documentSelect.value === "visa");
+    // The Visafoto index includes many document-specific variants per country.
+    // Keep the reference available for every selection; the index is a catalog,
+    // not proof that the currently selected profile is fully verified.
+    referenceLink.hidden = false;
     if (presets[presetKey]) {
       resetCrop();
       sizePreset.value = presetKey;
