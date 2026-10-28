@@ -253,7 +253,23 @@
   let detectedHead = null;
 
   async function detectAndCropFace(image) {
-    setStatus("Mendeteksi wajah dan menyesuaikan crop otomatis…");
+    // Show a real crop using the currently selected output ratio immediately,
+    // while the optional face model loads. This prevents a long blank/no-op
+    // feeling when the external face-detection model is slow or unavailable.
+    if (sourceImage !== image) return;
+    detectedCrop = null;
+    detectedHead = null;
+    cropZoom = 1;
+    cropPanX = 0;
+    cropPanY = 0;
+    cropZoomInput.value = "1";
+    cropZoomLabel.textContent = "100%";
+    cropMode = true;
+    cropControls.hidden = false;
+    photoFrame.classList.add("crop-active");
+    cropModeBtn.textContent = "Selesai Atur Crop";
+    renderPhoto();
+    setStatus("Crop rasio " + mmLabel(getSize().width) + " × " + mmLabel(getSize().height) + " mm diterapkan. Menyesuaikan posisi wajah…");
     try {
       if (!faceLandmarkerPromise) {
         faceLandmarkerPromise = import("https://cdn.jsdelivr.net/npm/@mediapipe/tasks-vision@0.10.22/+esm")
@@ -558,6 +574,9 @@
 
     $("dimension-label").textContent = sizePreset.value === "2x2" ? "2 × 2 inci" : label;
     $("spec-size").textContent = sizePreset.value === "2x2" ? "2 × 2 inci" : label;    $("spec-pixels").textContent = dimensions.widthPx + " × " + dimensions.heightPx + " px";
+    // The visible frame must follow the selected print ratio exactly, including
+    // uncommon ratios and custom sizes; CSS presets alone are not sufficient.
+    photoFrame.style.aspectRatio = String(size.width) + " / " + String(size.height);
     photoFrame.classList.toggle("square", Math.abs(size.width - size.height) < 0.1);
     photoFrame.classList.toggle("portrait", size.height > size.width);
     photoFrame.classList.toggle("wide", size.width / size.height > 1.2);
