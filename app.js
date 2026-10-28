@@ -173,6 +173,27 @@
     no: generalCountryGuide("Norwegia", "https://www.politiet.no/"),
     ru: generalCountryGuide("Rusia", "https://mid.ru/")
   };
+
+  // Direktori negara/wilayah diperluas mengikuti cakupan katalog Visafoto.
+  // Hanya profil yang mempunyai spesifikasi tersendiri di photoSpecs yang mengunci
+  // dimensi/format; negara lain tetap diberi status belum diverifikasi, bukan angka tebakan.
+  const visafotoCountryDirectory = [
+    ["af","Afghanistan"],["al","Albania"],["dz","Aljazair"],["ao","Angola"],["ag","Antigua dan Barbuda"],["ar","Argentina"],["am","Armenia"],["az","Azerbaijan"],["bs","Bahama"],["bh","Bahrain"],["bb","Barbados"],["by","Belarus"],["be","Belgia"],["bz","Belize"],["bj","Benin"],["bt","Bhutan"],["bo","Bolivia"],["ba","Bosnia dan Herzegovina"],["bw","Botswana"],["bn","Brunei Darussalam"],["bg","Bulgaria"],["bf","Burkina Faso"],["bi","Burundi"],["kh","Kamboja"],["cm","Kamerun"],["cv","Tanjung Verde"],["cf","Republik Afrika Tengah"],["td","Chad"],["cl","Cile"],["co","Kolombia"],["km","Komoro"],["cg","Republik Kongo"],["cd","Republik Demokratik Kongo"],["cr","Kosta Rika"],["ci","Pantai Gading"],["hr","Kroasia"],["cu","Kuba"],["cy","Siprus"],["cz","Ceko"],["dk","Denmark"],["dj","Djibouti"],["dm","Dominika"],["do","Republik Dominika"],["ec","Ekuador"],["sv","El Salvador"],["gq","Guinea Khatulistiwa"],["er","Eritrea"],["ee","Estonia"],["sz","Eswatini"],["et","Ethiopia"],["fj","Fiji"],["fi","Finlandia"],["ga","Gabon"],["gm","Gambia"],["ge","Georgia"],["gh","Ghana"],["gr","Yunani"],["gd","Grenada"],["gt","Guatemala"],["gn","Guinea"],["gw","Guinea-Bissau"],["gy","Guyana"],["ht","Haiti"],["hn","Honduras"],["hu","Hungaria"],["is","Islandia"],["iq","Irak"],["ir","Iran"],["il","Israel"],["jm","Jamaika"],["jo","Yordania"],["kz","Kazakhstan"],["ke","Kenya"],["ki","Kiribati"],["kw","Kuwait"],["kg","Kirgizstan"],["la","Laos"],["lv","Latvia"],["lb","Lebanon"],["ls","Lesotho"],["lr","Liberia"],["ly","Libya"],["li","Liechtenstein"],["lt","Lituania"],["lu","Luksemburg"],["mg","Madagaskar"],["mw","Malawi"],["mv","Maladewa"],["ml","Mali"],["mt","Malta"],["mh","Kepulauan Marshall"],["mr","Mauritania"],["mu","Mauritius"],["fm","Mikronesia"],["md","Moldova"],["mc","Monako"],["mn","Mongolia"],["me","Montenegro"],["ma","Maroko"],["mz","Mozambik"],["mm","Myanmar"],["na","Namibia"],["nr","Nauru"],["ni","Nikaragua"],["ne","Niger"],["mk","Makedonia Utara"],["om","Oman"],["pw","Palau"],["pa","Panama"],["pg","Papua Nugini"],["py","Paraguay"],["pe","Peru"],["pl","Polandia"],["pt","Portugal"],["pr","Puerto Riko"],["ro","Rumania"],["rw","Rwanda"],["kn","Saint Kitts dan Nevis"],["lc","Saint Lucia"],["vc","Saint Vincent dan Grenadines"],["ws","Samoa"],["sm","San Marino"],["st","Sao Tome dan Principe"],["sn","Senegal"],["rs","Serbia"],["sc","Seychelles"],["sl","Sierra Leone"],["sk","Slovakia"],["si","Slovenia"],["sb","Kepulauan Solomon"],["so","Somalia"],["ss","Sudan Selatan"],["lk","Sri Lanka"],["sd","Sudan"],["sr","Suriname"],["sy","Suriah"],["tj","Tajikistan"],["tz","Tanzania"],["tl","Timor-Leste"],["tg","Togo"],["to","Tonga"],["tt","Trinidad dan Tobago"],["tn","Tunisia"],["tm","Turkmenistan"],["tv","Tuvalu"],["ug","Uganda"],["ua","Ukraina"],["uy","Uruguay"],["uz","Uzbekistan"],["vu","Vanuatu"],["va","Vatikan"],["ve","Venezuela"],["ye","Yaman"],["zm","Zambia"],["zw","Zimbabwe"],["ps","Wilayah Palestina"],["xk","Kosovo"],["fo","Kepulauan Faroe"],["gl","Greenland"],["mo","Makau"],["any","Any Country (Generic)"],["universities","Universitas / Perguruan Tinggi"]
+  ];
+  const existingCountryCodes = new Set(Array.from(countrySelect.options, (option) => option.value));
+  visafotoCountryDirectory.forEach(([code, name]) => {
+    if (!countryGuides[code]) {
+      countryGuides[code] = generalCountryGuide(name, "https://id.visafoto.com/requirements");
+    }
+    if (!existingCountryCodes.has(code)) {
+      const option = document.createElement("option");
+      option.value = code;
+      option.textContent = name;
+      countrySelect.appendChild(option);
+      existingCountryCodes.add(code);
+    }
+  });
+
   const extraPresets = {
     "50x70": { width: 50, height: 70, label: "50 × 70 mm" },
     "33x48": { width: 33, height: 48, label: "33 × 48 mm" }
