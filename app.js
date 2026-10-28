@@ -334,7 +334,7 @@
     ru: { passport:"35x45", visa:"35x45" },
     sa: { passport:"40x60", visa:"2x2", id:"40x60" },
     se: { passport:"35x45", visa:"35x45", id:"35x45" },
-    sg: { passport:"400x514", visa:"400x514" },
+    sg: { passport:"35x45", visa:"35x45" },
     si: { passport:"35x45", visa:"35x45" },
     sk: { passport:"35x45", visa:"35x45" },
     sn: { passport:"45x35", visa:"45x35" },
@@ -415,6 +415,23 @@
 
   function populateDocuments() {
     const guide = countryGuides[countrySelect.value] || fallbackCountryGuide();
+    const baseProfiles = visafotoBaseProfiles[countrySelect.value] || {};
+    // Tampilkan variasi dokumen yang tersedia dalam katalog dasar, termasuk izin tinggal.
+    Object.entries(baseProfiles).forEach(([key, presetKey]) => {
+      if (!guide.documents[key]) {
+        guide.documents[key] = {
+          label: ({ passport: "Paspor", visa: "Visa", id: "Kartu identitas", residence: "Izin tinggal" }[key] || key) + " — ukuran referensi Visafoto",
+          preset: presetKey,
+          summary: "Ukuran dasar dari katalog referensi Visafoto. Variasi aplikasi atau portal dapat berbeda.",
+          profileStatus: "reference",
+          rules: [
+            "Referensi katalog: https://id.visafoto.com/requirements",
+            "Ukuran ini merujuk pada variasi dokumen di katalog, bukan jaminan aturan resmi untuk semua kanal pengajuan.",
+            "Tinggi kepala, jarak atas, latar, DPI, format, dan batas file yang tidak dicantumkan tetap perlu diverifikasi."
+          ]
+        };
+      }
+    });
     documentSelect.replaceChildren();
     Object.entries(guide.documents).forEach(([key, doc]) => {
       const option = document.createElement("option");
