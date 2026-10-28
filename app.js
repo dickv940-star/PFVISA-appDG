@@ -404,7 +404,12 @@
     const spec = currentPhotoSpec();
     const presetKey = spec && presets[spec.preset] ? spec.preset : doc.preset;
     requirementsTitle.textContent = "Syarat foto — " + guide.name;
-    requirementsSummary.textContent = doc.summary;
+    requirementsSummary.textContent = doc.summary + " Status profil: " + profileStatusLabel(spec, doc) + ".";
+    if (exportProfileNote) {
+      exportProfileNote.textContent = spec && spec.maxFileKB
+        ? "Batas file profil " + spec.maxFileKB + " KB. Cocokkan format dan ukuran akhir dengan portal resmi."
+        : "Batas file dan format khusus belum ditetapkan pada profil ini. Periksa portal tujuan; hasil ekspor belum tentu memenuhi semua aturan.";
+    }
     requirementsList.replaceChildren();
     doc.rules.forEach((rule) => {
       const item = document.createElement("li");
@@ -413,7 +418,7 @@
     });
     if (spec) {
       const facts = [
-        "Profil kerja PFVISA: " + presets[presetKey].label + ", " + spec.dpi + " DPI.",
+        "Profil kerja PFVISA: " + presets[presetKey].label + ", " + spec.dpi + " DPI. " + profileStatusLabel(spec, doc) + ".",
         spec.headMinMm != null && spec.headMaxMm != null ? "Rentang tinggi kepala acuan (perkiraan ubun-ubun hingga dagu): " + mmLabel(spec.headMinMm) + "–" + mmLabel(spec.headMaxMm) + " mm." : spec.headMm != null ? "Target tinggi kepala (perkiraan ubun-ubun hingga dagu): " + mmLabel(spec.headMm) + " mm." : "Ukuran kepala belum dikunci otomatis karena spesifikasi yang tepat bergantung pada dokumen/portal.",
         spec.topMinMm != null && spec.topMaxMm != null ? "Rentang jarak tepi atas ke puncak kepala: " + mmLabel(spec.topMinMm) + "–" + mmLabel(spec.topMaxMm) + " mm." : spec.topMm != null ? "Target jarak tepi atas ke ubun-ubun: " + mmLabel(spec.topMm) + " mm." : "Jarak tepi atas kepala belum ditetapkan otomatis; periksa petunjuk resmi.",
         spec.source,
@@ -442,6 +447,7 @@
       // Always reset DPI when switching country/document so a previous selection
       // cannot silently carry over to a country with no verified photo profile.
       dpiSelect.value = spec && spec.dpi ? String(spec.dpi) : "300";
+      if (outputFormatSelect) outputFormatSelect.value = spec && spec.format ? spec.format : "image/jpeg";
       detectedCrop = null;
       detectedHead = null;
       renderPhoto();
@@ -636,7 +642,9 @@
     const label = widthText + " × " + heightText + " mm";
 
     $("dimension-label").textContent = sizePreset.value === "2x2" ? "2 × 2 inci" : label;
-    $("spec-size").textContent = sizePreset.value === "2x2" ? "2 × 2 inci" : label;    $("spec-pixels").textContent = dimensions.widthPx + " × " + dimensions.heightPx + " px";
+    $("spec-size").textContent = sizePreset.value === "2x2" ? "2 × 2 inci" : label;
+    $("spec-pixels").textContent = dimensions.widthPx + " × " + dimensions.heightPx + " px" + (dimensions.pixelRange ? " (rentang profil " + dimensions.pixelRange.minWidth + "–" + dimensions.pixelRange.maxWidth + " px)" : "");
+    if (metricFormat) metricFormat.textContent = dimensions.format === "image/png" ? "PNG" : "JPG";
     // The visible frame must follow the selected print ratio exactly, including
     // uncommon ratios and custom sizes; CSS presets alone are not sufficient.
     photoFrame.style.aspectRatio = String(size.width) + " / " + String(size.height);
@@ -729,30 +737,39 @@
     return output;
   }
 
-  function downloadPhoto() {
-    if (!sourceImage) {
-      setStatus("Unggah foto terlebih dahulu.", "error");
-      return;
-    }
+  async function downloadPhoto() {
+    if (!sourceImage) { setStatus("Unggah foto terlebih dahulu.", "error"); return; }
     try {
       const dimensions = getDimensions();
-      const link = document.createElement("a");
+      const format = dimensions.format || "image/jpeg";
+      const maxBytes = dimensions.maxFileKB ? dimensions.maxFileKB * 1024 : null;
+      let blob = null;
+      if (format === "image/png") {
+        blob = await new Promise((resolve) => previewCanvas.toBlob(resolve, "image/png"));
+        if (!blob) throw new Error("Browser gagal membuat PNG");
+        if (maxBytes && blob.size > maxBytes) { setStatus("PNG " + Math.ceil(blob.size / 1024) + " KB melebihi batas profil " + dimensions.maxFileKB + " KB. Pilih JPG jika diizinkan portal.", "error"); return; }
+      } else {
+        for (let quality = 0.92; quality >= 0.49; quality -= 0.06) {
+          blob = await new Promise((resolve) => previewCanvas.toBlob(resolve, "image/jpeg", quality));
+          if (blob && (!maxBytes || blob.size <= maxBytes)) break;
+        }
+        if (!blob) throw new Error("Browser gagal membuat JPG");
+        if (maxBytes && blob.size > maxBytes) { setStatus("JPG masih " + Math.ceil(blob.size / 1024) + " KB, melebihi batas profil " + dimensions.maxFileKB + " KB. Periksa aturan portal atau gunakan foto sumber lain.", "error"); return; }
+      }
+      let finalBlob = blob;
+      if (format === "image/png") {
+        const dataUrl = await new Promise((resolve, reject) => { const reader = new FileReader(); reader.onload = () => resolve(reader.result); reader.onerror = reject; reader.readAsDataURL(blob); });
+        finalBlob = new Blob([pngWithDpi(dataUrl, dimensions.dpi)], { type: "image/png" });
+      }
       const baseName = activeFile ? activeFile.name.replace(/\.[^.]+$/, "") : "pfvisa-photo";
-      link.download = baseName + "-" + Math.round(dimensions.widthMm) + "x" + Math.round(dimensions.heightMm) + "mm-" + dimensions.dpi + "dpi.png";
-      const pngBytes = pngWithDpi(previewCanvas.toDataURL("image/png"), dimensions.dpi);
-      const pngBlob = new Blob([pngBytes], { type: "image/png" });
-      const objectUrl = URL.createObjectURL(pngBlob);
-      link.href = objectUrl;
-      document.body.appendChild(link);
-      link.click();
-      link.remove();
+      const extension = format === "image/png" ? "png" : "jpg";
+      const link = document.createElement("a");
+      link.download = baseName + "-" + dimensions.widthPx + "x" + dimensions.heightPx + "px." + extension;
+      const objectUrl = URL.createObjectURL(finalBlob); link.href = objectUrl; document.body.appendChild(link); link.click(); link.remove();
       setTimeout(() => URL.revokeObjectURL(objectUrl), 1500);
-      setStatus("Foto PNG berhasil disiapkan dengan metadata resolusi " + dimensions.dpi + " DPI.", "success");
-    } catch (error) {
-      setStatus("Tidak dapat menyimpan foto. Coba muat ulang file gambar.", "error");
-    }
+      setStatus("File " + extension.toUpperCase() + " disiapkan: " + dimensions.widthPx + " × " + dimensions.heightPx + " px, " + Math.ceil(finalBlob.size / 1024) + " KB" + (maxBytes ? " (batas profil " + dimensions.maxFileKB + " KB)" : " (batas file profil belum diketahui)") + ". Metadata DPI ditambahkan pada PNG; JPG tidak diberi metadata DPI khusus. Periksa portal sebelum mengirim.", "success");
+    } catch (error) { setStatus("Tidak dapat menyimpan foto: " + (error && error.message ? error.message : "kesalahan ekspor") + ".", "error"); }
   }
-
   countrySelect.addEventListener("change", populateDocuments);
   documentSelect.addEventListener("change", updateRequirements);
   fileInput.addEventListener("change", (event) => loadFile(event.target.files && event.target.files[0]));
@@ -815,6 +832,14 @@
   customWidth.addEventListener("input", renderPhoto);
   customHeight.addEventListener("input", renderPhoto);
   dpiSelect.addEventListener("change", renderPhoto);
+  if (outputFormatSelect) outputFormatSelect.addEventListener("change", () => {
+    const spec = currentPhotoSpec();
+    if (spec && spec.format) {
+      outputFormatSelect.value = spec.format;
+      setStatus("Format ditetapkan oleh profil yang dipilih. Verifikasi aturan portal sebelum mengirim.", "error");
+    }
+    updateLabels();
+  });
   downloadBtn.addEventListener("click", downloadPhoto);
   resetBtn.addEventListener("click", resetPhoto);
 
