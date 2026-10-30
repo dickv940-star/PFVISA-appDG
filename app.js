@@ -483,12 +483,28 @@
         faceLandmarkerPromise = (async () => {
           let vision;
           let files;
-          try {
-            vision = await import("https://cdn.jsdelivr.net/npm/@mediapipe/tasks-vision@0.10.22/+esm");
-            files = await vision.FilesetResolver.forVisionTasks("https://cdn.jsdelivr.net/npm/@mediapipe/tasks-vision@0.10.22/wasm");
-          } catch (primaryError) {
-            vision = await import("https://unpkg.com/@mediapipe/tasks-vision@0.10.22/+esm");
-            files = await vision.FilesetResolver.forVisionTasks("https://unpkg.com/@mediapipe/tasks-vision@0.10.22/wasm");
+          const mediapipeVersion = "0.10.32";
+          const cdnBases = [
+            "https://cdn.jsdelivr.net/npm/@mediapipe/tasks-vision@" + mediapipeVersion,
+            "https://unpkg.com/@mediapipe/tasks-vision@" + mediapipeVersion
+          ];
+          let lastCdnError;
+          for (const cdnBase of cdnBases) {
+            try {
+              // Use the package's published ESM bundle. The old 0.10.22
+              // version was not a stable published release, and the +esm
+              // transform URL returned 404 on both CDNs.
+              vision = await import(cdnBase + "/vision_bundle.mjs");
+              files = await vision.FilesetResolver.forVisionTasks(cdnBase + "/wasm");
+              break;
+            } catch (cdnError) {
+              lastCdnError = cdnError;
+              vision = null;
+              files = null;
+            }
+          }
+          if (!vision || !files) {
+            throw new Error("MediaPipe gagal dimuat dari CDN: " + (lastCdnError && lastCdnError.message ? lastCdnError.message : "sumber tidak tersedia"));
           }
           return vision.FaceLandmarker.createFromOptions(files, {
             baseOptions: {
@@ -500,7 +516,15 @@
           });
         })();
       }
-      const detector = await faceLandmarkerPromise;
+      let detector;
+      try {
+        detector = await faceLandmarkerPromise;
+      } catch (loadError) {
+        // Clear a rejected cached promise so the user can retry Auto Crop
+        // after a temporary network/CDN failure.
+        faceLandmarkerPromise = null;
+        throw loadError;
+      }
       if (sourceImage !== image) return;
       const result = detector.detect(image);
       const marks = result.faceLandmarks && result.faceLandmarks[0];
@@ -519,6 +543,9 @@
       const dims = getDimensions();
       // Prefer exact targets; for documented ranges, use the midpoint.
       // Profiles without measurements use a clearly approximate fallback.
+      // Resolve targets from the currently selected country/document
+      // profile every time Auto Crop runs. Exact values take precedence;
+      // documented ranges use their midpoint as an initial crop target.
       const targetHeadMm = spec && spec.headMm != null
         ? spec.headMm
         : spec && spec.headMinMm != null && spec.headMaxMm != null
@@ -529,8 +556,12 @@
         : spec && spec.topMinMm != null && spec.topMaxMm != null
           ? (spec.topMinMm + spec.topMaxMm) / 2
           : null;
-      const headFraction = targetHeadMm != null ? targetHeadMm / dims.heightMm : 0.72;
-      const topMargin = targetTopMm != null ? targetTopMm / dims.heightMm : 0.07;
+      // Profiles without biometric dimensions get a neutral composition only.
+      // Never present the fallback as a country/document compliance target.
+      const hasHeadTarget = targetHeadMm != null;
+      const hasTopTarget = targetTopMm != null;
+      const headFraction = hasHeadTarget ? targetHeadMm / dims.heightMm : 0.72;
+      const topMargin = hasTopTarget ? targetTopMm / dims.heightMm : 0.07;
       const ratio = dims.widthPx / dims.heightPx;
       // Calculate crop scale from the detected head height, rather than using
       // a fixed zoom. At 100%, this computed crop matches the selected target.
@@ -538,9 +569,15 @@
       const cw = ch * ratio;
       const centerX = (leftEye.x + rightEye.x) / 2;
       const cropX = centerX - cw / 2;
-      const cropY = spec && spec.eyeLineMm != null
-        ? ((leftEye.y + rightEye.y) / 2) - ch * (1 - spec.eyeLineMm / dims.heightMm)
-        : headTop - ch * topMargin;
+      const eyeCenterY = (leftEye.y + rightEye.y) / 2;
+      // A configured top margin is the primary vertical anchor. Use eye-line
+      // only when the profile has no top-margin rule; this avoids silently
+      // overriding one explicit requirement with another.
+      const cropY = hasTopTarget
+        ? headTop - ch * topMargin
+        : spec && spec.eyeLineMm != null
+          ? eyeCenterY - ch * (1 - spec.eyeLineMm / dims.heightMm)
+          : headTop - ch * topMargin;
 
       // Do not shrink the crop to fit the uploaded image: doing so silently
       // changes the requested head-to-photo proportion. Out-of-frame areas
@@ -558,14 +595,18 @@
       renderPhoto();
       const edgeIssue = cropX < 0 || cropY < 0 || cropX + cw > w || cropY + ch > h;
       const targetDescription = [
-        targetHeadMm == null ? "tinggi kepala belum diverifikasi" : "target tinggi kepala " + mmLabel(targetHeadMm) + " mm",
-        targetTopMm == null ? "margin atas belum diverifikasi" : "target margin atas " + mmLabel(targetTopMm) + " mm"
+        targetHeadMm == null ? "target tinggi kepala belum ditetapkan" : "target tinggi kepala " + mmLabel(targetHeadMm) + " mm",
+        targetTopMm == null ? "target margin atas belum ditetapkan" : "target margin atas " + mmLabel(targetTopMm) + " mm"
       ].join(", ");
+      const profileVerified = spec && spec.profileStatus === "verified-official";
+      const compositionNote = hasHeadTarget || hasTopTarget
+        ? "Crop mengikuti parameter profil yang tersedia"
+        : "Crop memakai komposisi awal karena profil belum menetapkan ukuran kepala/margin";
       setStatus(
         edgeIssue
-          ? "Auto Crop menghitung posisi dan zoom (" + targetDescription + "), tetapi foto sumber terlalu rapat atau wajah terlalu dekat tepi. Periksa area putih dan atur crop manual bila perlu."
-          : "Auto Crop menghitung posisi wajah, tinggi kepala, margin atas, dan zoom (" + targetDescription + "). Puncak kepala merupakan estimasi; periksa hasil sebelum menyimpan.",
-        edgeIssue ? "error" : "success"
+          ? compositionNote + " (" + targetDescription + "), tetapi foto sumber terlalu rapat atau wajah terlalu dekat tepi. Periksa area putih dan atur crop manual."
+          : compositionNote + " (" + targetDescription + "). Puncak kepala merupakan estimasi; status profil " + (profileVerified ? "bersumber resmi" : "tetap perlu diverifikasi") + ". Periksa hasil sebelum menyimpan.",
+        edgeIssue ? "error" : (hasHeadTarget || hasTopTarget ? "success" : "")
       );
     } catch (error) {
       // Do not cache a rejected model promise forever; the next Auto Crop click
@@ -679,8 +720,19 @@
     const size = getSize();
     const dpi = clampNumber(dpiSelect.value, 72, 1200, 300);
     const spec = currentPhotoSpec();
-    const widthPx = spec && Number.isFinite(spec.pixelWidth) ? spec.pixelWidth : Math.max(1, Math.round((size.width / 25.4) * dpi));
-    const heightPx = spec && Number.isFinite(spec.pixelHeight) ? spec.pixelHeight : Math.max(1, Math.round((size.height / 25.4) * dpi));
+    // Use profile-specific pixel dimensions only while the profile's own
+    // preset is selected. A user-selected alternate/custom print size must
+    // determine the output dimensions instead of silently inheriting pixels
+    // from the country's default preset.
+    const profilePresetSelected = Boolean(
+      spec && spec.preset && sizePreset.value === spec.preset && sizePreset.value !== "custom"
+    );
+    const widthPx = profilePresetSelected && Number.isFinite(spec.pixelWidth)
+      ? spec.pixelWidth
+      : Math.max(1, Math.round((size.width / 25.4) * dpi));
+    const heightPx = profilePresetSelected && Number.isFinite(spec.pixelHeight)
+      ? spec.pixelHeight
+      : Math.max(1, Math.round((size.height / 25.4) * dpi));
     return {
       widthMm: size.width,
       heightMm: size.height,
@@ -1038,6 +1090,11 @@
   previewCanvas.addEventListener("pointercancel", endCropDrag);
   customWidth.addEventListener("input", renderPhoto);
   customHeight.addEventListener("input", renderPhoto);
+  // Recompute the face-aware crop after a custom dimension is committed so
+  // the crop ratio cannot remain tied to the previous output size.
+  [customWidth, customHeight].forEach((field) => field.addEventListener("change", () => {
+    if (sourceImage && sizePreset.value === "custom") detectAndCropFace(sourceImage);
+  }));
   dpiSelect.addEventListener("change", renderPhoto);
   if (outputFormatSelect) outputFormatSelect.addEventListener("change", () => {
     const spec = currentPhotoSpec();
