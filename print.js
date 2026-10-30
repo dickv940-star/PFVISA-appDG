@@ -2,7 +2,11 @@
   "use strict";
   const photoCanvas = document.getElementById("preview-canvas");
   const previewPanel = document.querySelector(".preview-panel");
-  if (!photoCanvas || !previewPanel) return;
+  const editorWorkspace = document.querySelector(".workspace");
+  const introSection = document.querySelector(".intro");
+  const pageRoot = document.querySelector("main.page");
+  const cropActions = document.querySelector(".crop-actions");
+  if (!photoCanvas || !previewPanel || !editorWorkspace || !pageRoot || !cropActions) return;
 
   const DPI = 300;
   const SHEET_W_MM = 100;
@@ -54,7 +58,59 @@
       <button type="button" class="button button-secondary" id="print-download" disabled>Simpan lembar JPG</button>
       <button type="button" class="button button-primary" id="print-now" disabled>Cetak lembar 10 × 15 cm</button>
     </div>`;
-  previewPanel.insertAdjacentElement("afterend", panel);
+  const printPage = document.createElement("section");
+  printPage.className = "print-page";
+  printPage.id = "print-page";
+  printPage.hidden = true;
+  printPage.setAttribute("aria-label", "Halaman pengaturan dan cetak foto");
+  const pageNav = document.createElement("div");
+  pageNav.className = "print-page-nav";
+  pageNav.innerHTML = '<button type="button" class="button button-secondary" id="print-back-editor">← Kembali ke editor</button><div class="print-step-indicator"><span class="done">01 · Crop foto</span><span class="active">02 · Atur & cetak</span></div>';
+  printPage.appendChild(pageNav);
+  printPage.appendChild(panel);
+  editorWorkspace.insertAdjacentElement("afterend", printPage);
+
+  const continueButton = document.createElement("button");
+  continueButton.type = "button";
+  continueButton.id = "open-print-page";
+  continueButton.className = "button button-primary";
+  continueButton.textContent = "Lanjut ke halaman cetak 10 × 15 cm →";
+  continueButton.disabled = true;
+  cropActions.appendChild(continueButton);
+
+  const navStyle = document.createElement("style");
+  navStyle.textContent = `
+    .print-page{margin-top:24px}
+    .print-page-nav{display:flex;align-items:center;justify-content:space-between;gap:14px;margin-bottom:16px}
+    .print-step-indicator{display:flex;gap:8px;flex-wrap:wrap;font-size:11px;font-weight:750}
+    .print-step-indicator span{padding:8px 11px;border-radius:999px;background:#edf2f4;color:#617587}
+    .print-step-indicator .done{background:#e3f5ed;color:#08745f}
+    .print-step-indicator .active{background:#e5f2ef;color:#176b62}
+    #open-print-page{width:100%;margin-top:4px}
+    @media(max-width:520px){.print-page-nav{align-items:flex-start;flex-direction:column}}
+  `;
+  document.head.appendChild(navStyle);
+
+  function showPrintPage() {
+    if (photoCanvas.hidden || !photoCanvas.width || !photoCanvas.height) {
+      const status = document.getElementById("status");
+      if (status) status.textContent = "Selesaikan crop foto terlebih dahulu sebelum membuka halaman cetak.";
+      return;
+    }
+    if (!drawCollage()) return;
+    if (introSection) introSection.hidden = true;
+    editorWorkspace.hidden = true;
+    printPage.hidden = false;
+    window.scrollTo({ top: 0, behavior: "smooth" });
+  }
+  function showEditorPage() {
+    printPage.hidden = true;
+    editorWorkspace.hidden = false;
+    if (introSection) introSection.hidden = false;
+    window.scrollTo({ top: 0, behavior: "smooth" });
+  }
+  continueButton.addEventListener("click", showPrintPage);
+  pageNav.querySelector("#print-back-editor").addEventListener("click", showEditorPage);
 
   const style = document.createElement("style");
   style.textContent = `
@@ -122,6 +178,7 @@
     if (photoCanvas.hidden || !photoCanvas.width || !photoCanvas.height) {
       info.textContent = "Unggah foto dan selesaikan crop terlebih dahulu.";
       refreshButton.disabled = downloadButton.disabled = printButton.disabled = true;
+      continueButton.disabled = true;
       return false;
     }
     const count = selectedCount();
@@ -170,6 +227,7 @@
     $("print-green-balance-value").textContent = greenBalanceInput.value;
     $("print-blue-balance-value").textContent = blueBalanceInput.value;
     refreshButton.disabled = downloadButton.disabled = printButton.disabled = false;
+    continueButton.disabled = false;
     return true;
   }
 
