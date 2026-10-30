@@ -454,6 +454,7 @@
   let cropPanX = 0;
   let cropPanY = 0;
   let cropMode = false;
+  let originalPreview = false;
   let dragPoint = null;
   let faceLandmarkerPromise = null;
   let detectedCrop = null;
@@ -799,7 +800,6 @@
 
     const dimensions = getDimensions();
     const ratio = dimensions.widthPx / dimensions.heightPx;
-    const crop = cropRect(sourceImage.naturalWidth, sourceImage.naturalHeight, ratio);
 
     if (previewCanvas.width !== dimensions.widthPx) previewCanvas.width = dimensions.widthPx;
     if (previewCanvas.height !== dimensions.heightPx) previewCanvas.height = dimensions.heightPx;
@@ -808,6 +808,34 @@
     context.imageSmoothingQuality = "high";
     context.fillStyle = "#ffffff";
     context.fillRect(0, 0, previewCanvas.width, previewCanvas.height);
+
+    if (originalPreview) {
+      // Before Auto Crop, show the entire source photo without cutting off
+      // any edges. The output canvas remains at the selected/custom ratio.
+      const scale = Math.min(
+        previewCanvas.width / sourceImage.naturalWidth,
+        previewCanvas.height / sourceImage.naturalHeight
+      );
+      const drawWidth = sourceImage.naturalWidth * scale;
+      const drawHeight = sourceImage.naturalHeight * scale;
+      context.drawImage(
+        sourceImage,
+        (previewCanvas.width - drawWidth) / 2,
+        (previewCanvas.height - drawHeight) / 2,
+        drawWidth,
+        drawHeight
+      );
+      previewCanvas.hidden = false;
+      emptyState.hidden = true;
+      updateLabels();
+      downloadBtn.disabled = true;
+      resetBtn.disabled = false;
+      cropModeBtn.disabled = false;
+      autoCropBtn.disabled = false;
+      return;
+    }
+
+    const crop = cropRect(sourceImage.naturalWidth, sourceImage.naturalHeight, ratio);
     const outsideSource =
       crop.x < 0 || crop.y < 0 ||
       crop.x + crop.width > sourceImage.naturalWidth ||
@@ -920,9 +948,16 @@
     image.onload = () => {
       sourceImage = image;
       detectedCrop = null;
+      detectedHead = null;
+      originalPreview = true;
+      cropMode = false;
+      cropControls.hidden = true;
+      photoFrame.classList.remove("crop-active");
+      cropModeBtn.textContent = "Atur Crop Foto";
+      resetCrop();
       fileName.textContent = file.name + " · " + image.naturalWidth + " × " + image.naturalHeight + " px";
       renderPhoto();
-      detectAndCropFace(image);
+      setStatus("Foto asli ditampilkan utuh. Pilih ukuran khusus bila perlu, lalu tekan Auto Crop atau Atur Crop Foto.");
     };
     image.onerror = () => {
       sourceImage = null;
@@ -1048,7 +1083,7 @@
     resetCrop();
     detectedCrop = null;
     renderPhoto();
-    if (sourceImage) detectAndCropFace(sourceImage);
+    if (sourceImage && !originalPreview) detectAndCropFace(sourceImage);
   });
 
   autoCropBtn.addEventListener("click", () => {
@@ -1056,6 +1091,7 @@
       setStatus("Unggah foto terlebih dahulu untuk mulai Auto Crop.", "error");
       return;
     }
+    originalPreview = false;
     detectedCrop = null;
     detectedHead = null;
     resetCrop();
@@ -1066,6 +1102,12 @@
     if (!sourceImage) {
       setStatus("Unggah foto terlebih dahulu untuk mulai crop.", "error");
       return;
+    }
+    if (originalPreview) {
+      originalPreview = false;
+      detectedCrop = null;
+      detectedHead = null;
+      resetCrop();
     }
     cropMode = !cropMode;
     cropControls.hidden = !cropMode;
