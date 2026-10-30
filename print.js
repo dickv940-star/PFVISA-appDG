@@ -194,11 +194,20 @@
   }
   function photoRects() {
     const margin = Number(marginSelect.value), gap = Number(gapSelect.value);
-    const groups = [{ size: selectedSize("A"), count: selectedCount("A") }];
-    if (sizeMode.value === "mixed") groups.push({ size: selectedSize("B"), count: selectedCount("B") });
+    const groups = [{ key: "A", size: selectedSize("A"), count: selectedCount("A") }];
+    if (sizeMode.value === "mixed") groups.push({ key: "B", size: selectedSize("B"), count: selectedCount("B") });
     const items = [];
-    groups.forEach(g => { for (let i = 0; i < g.count; i++) items.push({ index: items.length, w: g.size.width * MM_TO_PX, h: g.size.height * MM_TO_PX }); });
-    // Place larger photos first so mixed-size groups can fit on the fixed sheet.
+    groups.forEach(g => {
+      const angle = ((rotations[g.key] % 360) + 360) % 360;
+      const swapOrientation = angle === 90 || angle === 270;
+      const width = swapOrientation ? g.size.height : g.size.width;
+      const height = swapOrientation ? g.size.width : g.size.height;
+      for (let i = 0; i < g.count; i++) {
+        items.push({ index: items.length, group: g.key, w: width * MM_TO_PX, h: height * MM_TO_PX });
+      }
+    });
+    // A quarter-turn rotates the physical photo frame too: 30x40 becomes
+    // 40x30. The paper remains portrait 100x150 mm.
     items.sort((a, b) => (b.h - a.h) || (b.w - a.w));
     const left = margin * MM_TO_PX, right = (SHEET_W_MM - margin) * MM_TO_PX, bottom = (SHEET_H_MM - margin) * MM_TO_PX;
     let x = left, y = left, rowH = 0;
@@ -208,7 +217,7 @@
       if (x + item.w > right + .01) { x = left; y += rowH + gap * MM_TO_PX; rowH = 0; }
       if (y + item.h > bottom + .01) return null;
       const saved = manualPositions.get(item.index);
-      result.push({ index:item.index, x:saved ? saved.x : x, y:saved ? saved.y : y, w:item.w, h:item.h });
+      result.push({ index:item.index, group:item.group, x:saved ? saved.x : x, y:saved ? saved.y : y, w:item.w, h:item.h });
       x += item.w + gap * MM_TO_PX; rowH = Math.max(rowH,item.h);
     }
     return result;
@@ -278,7 +287,7 @@
     }
     ctx.filter="brightness("+brightnessInput.value+"%) contrast("+contrastInput.value+"%) saturate("+saturationInput.value+"%)";
     rects.forEach(rect=>{
-      drawPhotoCover(ctx,rect,rect.index < selectedCount("A") ? "A" : "B");
+      drawPhotoCover(ctx,rect,rect.group);
       if(strokeEnabledInput.checked){ctx.save();ctx.strokeStyle=strokeColorInput.value;ctx.lineWidth=Number(strokeWidthInput.value)*MM_TO_PX;const inset=ctx.lineWidth/2;ctx.strokeRect(rect.x+inset,rect.y+inset,rect.w-ctx.lineWidth,rect.h-ctx.lineWidth);ctx.restore();}
     });
     ctx.filter="none";
@@ -354,6 +363,7 @@
   function updateRotation(group, delta) {
     rotations[group] = (rotations[group] + delta + 360) % 360;
     $("print-rotate-value-" + group.toLowerCase()).textContent = rotations[group] + "°";
+    manualPositions.clear();
     drawCollage();
   }
   ["A", "B"].forEach(group => {
@@ -362,6 +372,7 @@
     $("print-rotate-reset-" + group.toLowerCase()).addEventListener("click", () => {
       rotations[group] = 0;
       $("print-rotate-value-" + group.toLowerCase()).textContent = "0°";
+      manualPositions.clear();
       drawCollage();
     });
   });
