@@ -309,26 +309,26 @@
     const push = (part) => { chunks.push(part); total += part.length; };
     const obj = (n, body) => {
       offsets[n] = total;
-      push(enc.encode(n + " 0 obj\\n" + body + "\\nendobj\\n"));
+      push(enc.encode(n + " 0 obj\n" + body + "\nendobj\n"));
     };
-    push(enc.encode("%PDF-1.4\\n%PFVISA\\n"));
+    push(enc.encode("%PDF-1.4\n%PFVISA\n"));
     obj(1, "<< /Type /Catalog /Pages 2 0 R >>");
     obj(2, "<< /Type /Pages /Kids [3 0 R] /Count 1 >>");
     obj(3, "<< /Type /Page /Parent 2 0 R /MediaBox [0 0 " + pageW.toFixed(5) + " " + pageH.toFixed(5) + "] /Resources << /XObject << /Im0 4 0 R >> >> /Contents 5 0 R >>");
     offsets[4] = total;
-    push(enc.encode("4 0 obj\\n<< /Type /XObject /Subtype /Image /Width " + sheetCanvas.width + " /Height " + sheetCanvas.height + " /ColorSpace /DeviceRGB /BitsPerComponent 8 /Filter /DCTDecode /Length " + jpeg.length + " >>\\nstream\\n"));
+    push(enc.encode("4 0 obj\n<< /Type /XObject /Subtype /Image /Width " + sheetCanvas.width + " /Height " + sheetCanvas.height + " /ColorSpace /DeviceRGB /BitsPerComponent 8 /Filter /DCTDecode /Length " + jpeg.length + " >>\nstream\n"));
     push(jpeg);
-    push(enc.encode("\\nendstream\\nendobj\\n"));
-    const stream = "q\\n" + pageW.toFixed(5) + " 0 0 " + pageH.toFixed(5) + " 0 0 cm\\n/Im0 Do\\nQ\\n";
+    push(enc.encode("\nendstream\nendobj\n"));
+    const stream = "q\n" + pageW.toFixed(5) + " 0 0 " + pageH.toFixed(5) + " 0 0 cm\n/Im0 Do\nQ\n";
     const streamBytes = enc.encode(stream);
     offsets[5] = total;
-    push(enc.encode("5 0 obj\\n<< /Length " + streamBytes.length + " >>\\nstream\\n"));
+    push(enc.encode("5 0 obj\n<< /Length " + streamBytes.length + " >>\nstream\n"));
     push(streamBytes);
-    push(enc.encode("endstream\\nendobj\\n"));
+    push(enc.encode("endstream\nendobj\n"));
     const xrefOffset = total;
-    let xref = "xref\\n0 6\\n0000000000 65535 f \\n";
-    for (let i = 1; i <= 5; i++) xref += String(offsets[i]).padStart(10, "0") + " 00000 n \\n";
-    xref += "trailer\\n<< /Size 6 /Root 1 0 R >>\\nstartxref\\n" + xrefOffset + "\\n%%EOF";
+    let xref = "xref\n0 6\n0000000000 65535 f \n";
+    for (let i = 1; i <= 5; i++) xref += String(offsets[i]).padStart(10, "0") + " 00000 n \n";
+    xref += "trailer\n<< /Size 6 /Root 1 0 R >>\nstartxref\n" + xrefOffset + "\n%%EOF";
     push(enc.encode(xref));
     return new Blob(chunks, { type: "application/pdf" });
   }
