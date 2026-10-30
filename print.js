@@ -256,7 +256,8 @@
         ctx.save();
         ctx.strokeStyle = strokeColorInput.value;
         ctx.lineWidth = Number(strokeWidthInput.value) * MM_TO_PX;
-        ctx.strokeRect(x, y, w, h);
+        const inset = ctx.lineWidth / 2;
+        ctx.strokeRect(x + inset, y + inset, Math.max(0, w - ctx.lineWidth), Math.max(0, h - ctx.lineWidth));
         ctx.restore();
       }
     }
