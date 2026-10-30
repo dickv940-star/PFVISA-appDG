@@ -483,12 +483,28 @@
         faceLandmarkerPromise = (async () => {
           let vision;
           let files;
-          try {
-            vision = await import("https://cdn.jsdelivr.net/npm/@mediapipe/tasks-vision@0.10.22/+esm");
-            files = await vision.FilesetResolver.forVisionTasks("https://cdn.jsdelivr.net/npm/@mediapipe/tasks-vision@0.10.22/wasm");
-          } catch (primaryError) {
-            vision = await import("https://unpkg.com/@mediapipe/tasks-vision@0.10.22/+esm");
-            files = await vision.FilesetResolver.forVisionTasks("https://unpkg.com/@mediapipe/tasks-vision@0.10.22/wasm");
+          const mediapipeVersion = "0.10.32";
+          const cdnBases = [
+            "https://cdn.jsdelivr.net/npm/@mediapipe/tasks-vision@" + mediapipeVersion,
+            "https://unpkg.com/@mediapipe/tasks-vision@" + mediapipeVersion
+          ];
+          let lastCdnError;
+          for (const cdnBase of cdnBases) {
+            try {
+              // Use the package's published ESM bundle. The old 0.10.22
+              // version was not a stable published release, and the +esm
+              // transform URL returned 404 on both CDNs.
+              vision = await import(cdnBase + "/vision_bundle.mjs");
+              files = await vision.FilesetResolver.forVisionTasks(cdnBase + "/wasm");
+              break;
+            } catch (cdnError) {
+              lastCdnError = cdnError;
+              vision = null;
+              files = null;
+            }
+          }
+          if (!vision || !files) {
+            throw new Error("MediaPipe gagal dimuat dari CDN: " + (lastCdnError && lastCdnError.message ? lastCdnError.message : "sumber tidak tersedia"));
           }
           return vision.FaceLandmarker.createFromOptions(files, {
             baseOptions: {
@@ -500,7 +516,15 @@
           });
         })();
       }
-      const detector = await faceLandmarkerPromise;
+      let detector;
+      try {
+        detector = await faceLandmarkerPromise;
+      } catch (loadError) {
+        // Clear a rejected cached promise so the user can retry Auto Crop
+        // after a temporary network/CDN failure.
+        faceLandmarkerPromise = null;
+        throw loadError;
+      }
       if (sourceImage !== image) return;
       const result = detector.detect(image);
       const marks = result.faceLandmarks && result.faceLandmarks[0];
