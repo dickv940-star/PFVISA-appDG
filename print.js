@@ -353,7 +353,7 @@
     }
     const imageUrl = getJpegUrl();
     popup.document.open();
-    popup.document.write('<!doctype html><html><head><meta charset="utf-8"><title>PFVISA Print</title><style>@page{size:' + SHEET_W_MM + 'mm ' + SHEET_H_MM + 'mm;margin:0}html,body{margin:0;padding:0;width:' + SHEET_W_MM + 'mm;height:' + SHEET_H_MM + 'mm;background:#fff}img{display:block;width:' + SHEET_W_MM + 'mm;height:' + SHEET_H_MM + 'mm}</style></head><body><img src="' + imageUrl + '" alt="Kolase foto cetak"><script>window.onload=function(){setTimeout(function(){window.focus();window.print()},250)};<\\/script></body></html>');
+    popup.document.write('<!doctype html><html><head><meta charset="utf-8"><title>PFVISA Print</title><style>@page{size:' + SHEET_W_MM + 'mm ' + SHEET_H_MM + 'mm;margin:0}html,body{margin:0;padding:0;width:' + SHEET_W_MM + 'mm;height:' + SHEET_H_MM + 'mm;background:#fff}img{display:block;width:' + SHEET_W_MM + 'mm;height:' + SHEET_H_MM + 'mm}</style></head><body><img src="' + imageUrl + '" alt="Kolase foto cetak"><script>window.onload=function(){setTimeout(function(){window.focus();window.print()},250)};</script></body></html>');
     popup.document.close();
   }
 
