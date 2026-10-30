@@ -204,23 +204,23 @@
   // kepada pengguna; profil umum tidak boleh dianggap sebagai jaminan penerimaan resmi.
   const photoSpecs = {
     "id:passport": { preset: "35x45", dpi: 600, headMm: null, topMm: null, source: "Panduan paspor Indonesia perlu dikonfirmasi pada kanal Imigrasi yang digunakan." },
-    "id:visa": { preset: "35x45", dpi: 600, headMm: 34.5, topMm: 3, source: "Referensi Visafoto untuk Indonesia Visa 35 × 45 mm: tinggi kepala 34,5 mm dan jarak tepi atas ke ubun-ubun 3 mm. Ini bukan standar pemerintah dan harus dicocokkan dengan portal pengajuan." },
+    "id:visa": { preset: "35x45", dpi: 300, headMinFraction: 0.50, headMaxFraction: 0.60, eyeLineMinFraction: 0.50, eyeLineMaxFraction: 0.60, profileStatus: "reference", source: "Panduan resmi e-Visa Indonesia: foto berwarna JPG/JPEG/PNG, minimum 400 × 600 px, maksimum 2 MB; tinggi kepala termasuk rambut 50–60% tinggi gambar dan posisi garis mata 50–60% dari tepi bawah. Ukuran cetak 35 × 45 mm bukan ketentuan yang dinyatakan pada panduan ini. Sumber: https://www.imigrasi.go.id/upload/file/Syarat%20Foto.pdf." },
     "id:id": { preset: "30x40", dpi: 600, headMm: 30, topMm: 2.5, source: "Referensi format foto 30 × 40 mm; pastikan cocok dengan instansi penerbit." },
 
-    "us:passport": { preset: "2x2", dpi: 300, pixelWidth: 600, pixelHeight: 600, minPixelWidth: 600, maxPixelWidth: 1200, minPixelHeight: 600, maxPixelHeight: 1200, format: "image/jpeg", profileStatus: "reference", headMm: 32.766, topMm: null, eyeLineMm: 29.97, source: "Referensi Visafoto: https://id.visafoto.com/us-passport-photo — 2 × 2 inci. Untuk foto digital, dimensi piksel dapat memiliki rentang; 600 × 600 px dipakai sebagai ukuran awal, bukan profil semua sistem. Ikuti instruksi pengajuan yang sebenarnya." },
-    "us:visa": { preset: "2x2", dpi: 300, pixelWidth: 600, pixelHeight: 600, minPixelWidth: 600, maxPixelWidth: 1200, minPixelHeight: 600, maxPixelHeight: 1200, format: "image/jpeg", profileStatus: "reference", headMm: null, topMm: null, source: "Referensi awal 2 × 2 inci / 600 × 600 px. Visa AS memiliki ketentuan berdasarkan formulir dan kanal pengajuan; dimensi ini bukan jaminan untuk setiap kategori. Verifikasi pada instruksi aplikasi yang dipakai." },
+    "us:passport": { preset: "2x2", dpi: 300, pixelWidth: 600, pixelHeight: 600, minPixelWidth: 600, maxPixelWidth: 1200, minPixelHeight: 600, maxPixelHeight: 1200, format: "image/jpeg", profileStatus: "reference", headMinMm: 25, headMaxMm: 35, eyeLineMinMm: 28, eyeLineMaxMm: 35, source: "Referensi Visafoto: https://id.visafoto.com/us-passport-photo — 2 × 2 inci. Untuk foto digital, dimensi piksel dapat memiliki rentang; 600 × 600 px dipakai sebagai ukuran awal, bukan profil semua sistem. Ikuti instruksi pengajuan yang sebenarnya." },
+    "us:visa": { preset: "2x2", dpi: 300, pixelWidth: 600, pixelHeight: 600, minPixelWidth: 600, maxPixelWidth: 1200, minPixelHeight: 600, maxPixelHeight: 1200, format: "image/jpeg", profileStatus: "reference", headMinFraction: 0.50, headMaxFraction: 0.69, eyeLineMinFraction: 0.56, eyeLineMaxFraction: 0.69, source: "Referensi awal 2 × 2 inci / 600 × 600 px. Visa AS memiliki ketentuan berdasarkan formulir dan kanal pengajuan; dimensi ini bukan jaminan untuk setiap kategori. Verifikasi pada instruksi aplikasi yang dipakai." },
 
     "schengen:visa": { preset: "35x45", dpi: 600, headMm: null, topMm: null, source: "Visafoto mencantumkan Schengen Visa 35 × 45 mm: https://id.visafoto.com/requirements. Ukuran kepala dan jarak atas tidak dikunci di profil generik ini karena ketentuan konsulat/pusat visa perlu diverifikasi untuk tempat pengajuan." },
     "schengen:residence": { preset: "35x45", dpi: 600, headMm: null, topMm: null, source: "Izin tinggal berbeda menurut negara penerbit; ukuran ini hanya titik awal." },
 
-    "gb:passport": { preset: "35x45", dpi: 600, headMm: null, topMm: null, source: "Foto paspor UK digital tidak selalu mengikuti ukuran cetak; ikuti pemeriksaan foto pada layanan GOV.UK." },
+    "gb:passport": { preset: "35x45", dpi: 600, headMinFraction: 0.64, headMaxFraction: 0.76, profileStatus: "reference", source: "Foto paspor UK digital tidak selalu mengikuti ukuran cetak; ikuti pemeriksaan foto pada layanan GOV.UK." },
     "gb:visa": { preset: "35x45", dpi: 600, headMm: 32.8, topMm: 4.9, source: "Visafoto: https://id.visafoto.com/gb-visa-photo — 35 × 45 mm, 600 DPI, tinggi kepala 32,8 mm dan jarak tepi atas 4,9 mm. Cocokkan dengan jalur visa/biometrik yang berlaku." },
 
-    "ca:passport": { preset: "50x70", dpi: 600, headMm: 35, topMm: null, eyeLineMm: 39, source: "Visafoto: https://id.visafoto.com/ca-passport-photo — 50 × 70 mm, 600 DPI, tinggi kepala 35 mm; garis mata 39 mm dari tepi bawah. Jarak atas tidak disimpulkan dari garis mata. Cocokkan dengan panduan resmi Kanada." },
+    "ca:passport": { preset: "50x70", dpi: 600, headMinMm: 31, headMaxMm: 36, eyeLineMm: 39, source: "Visafoto: https://id.visafoto.com/ca-passport-photo — 50 × 70 mm, 600 DPI, tinggi kepala 35 mm; garis mata 39 mm dari tepi bawah. Jarak atas tidak disimpulkan dari garis mata. Cocokkan dengan panduan resmi Kanada." },
     "ca:visa": { preset: "35x45", dpi: 305, format: "image/jpeg", maxFileKB: 240, headMm: 34.7, topMm: 3, source: "Visafoto: https://id.visafoto.com/ca-visa-photo — 35 × 45 mm, 305 DPI, tinggi kepala 34,7 mm dan jarak tepi atas 3 mm. Ukuran file yang dicantumkan Visafoto 60–240 KB; cek instruksi kategori aplikasi terbaru." },
 
-    "au:passport": { preset: "35x45", dpi: 600, headMm: 34, topMm: 5, source: "Visafoto: https://id.visafoto.com/au-passport-photo — 35 × 45 mm, 600 DPI, tinggi kepala 34 mm dan jarak atas 5 mm. Panduan resmi Australia mengizinkan rentang ukuran foto yang lebih luas; cocokkan dengan jalur permohonan." },
-    "au:visa": { preset: "35x45", dpi: 600, headMm: 34, topMm: 5, source: "Visafoto: https://id.visafoto.com/au-visa-photo — 35 × 45 mm, 600 DPI, tinggi kepala 34 mm dan jarak atas 5 mm. Persyaratan subclass/portal visa dapat berbeda." },
+    "au:passport": { preset: "35x45", dpi: 600, headMinMm: 32, headMaxMm: 36, profileStatus: "reference", source: "Visafoto: https://id.visafoto.com/au-passport-photo — 35 × 45 mm, 600 DPI, tinggi kepala 34 mm dan jarak atas 5 mm. Panduan resmi Australia mengizinkan rentang ukuran foto yang lebih luas; cocokkan dengan jalur permohonan." },
+    "au:visa": { preset: "35x45", dpi: 600, headMinMm: 32, headMaxMm: 36, profileStatus: "reference", source: "Visafoto: https://id.visafoto.com/au-visa-photo — 35 × 45 mm, 600 DPI, tinggi kepala 34 mm dan jarak atas 5 mm. Persyaratan subclass/portal visa dapat berbeda." },
 
     "in:passport": { preset: "35x45", dpi: 600, headMm: null, topMm: null, source: "India memiliki beberapa format paspor cetak/digital; konfirmasi spesifikasi portal yang digunakan." },
     "in:visa": { preset: "2x2", dpi: 300, headMm: 32.766, topMm: null, source: "Visafoto: https://id.visafoto.com/in-visa-photo — 2 × 2 inci, 300 DPI, tinggi kepala 1,29 inci (32,8 mm), garis mata 1,18 inci dari tepi bawah, ukuran file 0–290 KB. Jarak atas tidak disimpulkan dari garis mata; e-Visa dapat memiliki profil digital lain." },
@@ -551,16 +551,22 @@
         : spec && spec.headMinMm != null && spec.headMaxMm != null
           ? (spec.headMinMm + spec.headMaxMm) / 2
           : null;
+      const targetHeadFraction = spec && spec.headMinFraction != null && spec.headMaxFraction != null
+        ? (spec.headMinFraction + spec.headMaxFraction) / 2
+        : null;
       const targetTopMm = spec && spec.topMm != null
         ? spec.topMm
         : spec && spec.topMinMm != null && spec.topMaxMm != null
           ? (spec.topMinMm + spec.topMaxMm) / 2
           : null;
+      const targetEyeLineFraction = spec && spec.eyeLineMinFraction != null && spec.eyeLineMaxFraction != null
+        ? (spec.eyeLineMinFraction + spec.eyeLineMaxFraction) / 2
+        : null;
       // Profiles without biometric dimensions get a neutral composition only.
       // Never present the fallback as a country/document compliance target.
-      const hasHeadTarget = targetHeadMm != null;
+      const hasHeadTarget = targetHeadMm != null || targetHeadFraction != null;
       const hasTopTarget = targetTopMm != null;
-      const headFraction = hasHeadTarget ? targetHeadMm / dims.heightMm : 0.72;
+      const headFraction = targetHeadFraction != null ? targetHeadFraction : hasHeadTarget ? targetHeadMm / dims.heightMm : 0.72;
       const topMargin = hasTopTarget ? targetTopMm / dims.heightMm : 0.07;
       const ratio = dims.widthPx / dims.heightPx;
       // Calculate crop scale from the detected head height, rather than using
@@ -573,11 +579,16 @@
       // A configured top margin is the primary vertical anchor. Use eye-line
       // only when the profile has no top-margin rule; this avoids silently
       // overriding one explicit requirement with another.
+      const targetEyeLineMm = spec && spec.eyeLineMinMm != null && spec.eyeLineMaxMm != null
+        ? (spec.eyeLineMinMm + spec.eyeLineMaxMm) / 2
+        : spec && spec.eyeLineMm != null ? spec.eyeLineMm : null;
       const cropY = hasTopTarget
         ? headTop - ch * topMargin
-        : spec && spec.eyeLineMm != null
-          ? eyeCenterY - ch * (1 - spec.eyeLineMm / dims.heightMm)
-          : headTop - ch * topMargin;
+        : targetEyeLineFraction != null
+          ? eyeCenterY - ch * (1 - targetEyeLineFraction)
+          : targetEyeLineMm != null
+            ? eyeCenterY - ch * (1 - targetEyeLineMm / dims.heightMm)
+            : headTop - ch * topMargin;
 
       // Do not shrink the crop to fit the uploaded image: doing so silently
       // changes the requested head-to-photo proportion. Out-of-frame areas
@@ -595,7 +606,7 @@
       renderPhoto();
       const edgeIssue = cropX < 0 || cropY < 0 || cropX + cw > w || cropY + ch > h;
       const targetDescription = [
-        targetHeadMm == null ? "target tinggi kepala belum ditetapkan" : "target tinggi kepala " + mmLabel(targetHeadMm) + " mm",
+        targetHeadFraction != null ? "target tinggi kepala " + Math.round(targetHeadFraction * 100) + "% tinggi foto" : targetHeadMm == null ? "target tinggi kepala belum ditetapkan" : "target tinggi kepala " + mmLabel(targetHeadMm) + " mm",
         targetTopMm == null ? "target margin atas belum ditetapkan" : "target margin atas " + mmLabel(targetTopMm) + " mm"
       ].join(", ");
       const profileVerified = spec && spec.profileStatus === "verified-official";
@@ -654,9 +665,9 @@
     if (spec) {
       const facts = [
         "Profil kerja PFVISA: " + presets[presetKey].label + ", " + spec.dpi + " DPI. " + profileStatusLabel(spec, doc) + ".",
-        spec.headMinMm != null && spec.headMaxMm != null ? "Rentang tinggi kepala acuan (perkiraan ubun-ubun hingga dagu): " + mmLabel(spec.headMinMm) + "–" + mmLabel(spec.headMaxMm) + " mm." : spec.headMm != null ? "Target tinggi kepala (perkiraan ubun-ubun hingga dagu): " + mmLabel(spec.headMm) + " mm." : "Ukuran kepala belum dikunci otomatis karena spesifikasi yang tepat bergantung pada dokumen/portal.",
+        spec.headMinFraction != null && spec.headMaxFraction != null ? "Rentang tinggi kepala acuan: " + Math.round(spec.headMinFraction * 100) + "–" + Math.round(spec.headMaxFraction * 100) + "% tinggi foto." : spec.headMinMm != null && spec.headMaxMm != null ? "Rentang tinggi kepala acuan (perkiraan ubun-ubun hingga dagu): " + mmLabel(spec.headMinMm) + "–" + mmLabel(spec.headMaxMm) + " mm." : spec.headMm != null ? "Target tinggi kepala (perkiraan ubun-ubun hingga dagu): " + mmLabel(spec.headMm) + " mm." : "Ukuran kepala belum dikunci otomatis karena spesifikasi yang tepat bergantung pada dokumen/portal.",
         spec.topMinMm != null && spec.topMaxMm != null ? "Rentang jarak tepi atas ke puncak kepala: " + mmLabel(spec.topMinMm) + "–" + mmLabel(spec.topMaxMm) + " mm." : spec.topMm != null ? "Target jarak tepi atas ke ubun-ubun: " + mmLabel(spec.topMm) + " mm." : "Jarak tepi atas kepala belum ditetapkan otomatis; periksa petunjuk resmi.",
-        spec.eyeLineMm != null ? "Target garis mata dari tepi bawah: " + mmLabel(spec.eyeLineMm) + " mm; Auto Crop menggunakan posisi mata sebagai acuan vertikal." : "Garis mata belum ditetapkan otomatis untuk profil ini.",
+        spec.eyeLineMinFraction != null && spec.eyeLineMaxFraction != null ? "Rentang posisi garis mata dari tepi bawah: " + Math.round(spec.eyeLineMinFraction * 100) + "–" + Math.round(spec.eyeLineMaxFraction * 100) + "% tinggi foto." : spec.eyeLineMinMm != null && spec.eyeLineMaxMm != null ? "Rentang garis mata dari tepi bawah: " + mmLabel(spec.eyeLineMinMm) + "–" + mmLabel(spec.eyeLineMaxMm) + " mm." : spec.eyeLineMm != null ? "Target garis mata dari tepi bawah: " + mmLabel(spec.eyeLineMm) + " mm; Auto Crop menggunakan posisi mata sebagai acuan vertikal." : "Garis mata belum ditetapkan otomatis untuk profil ini.",
         spec.source,
         "Profil ini membantu penyesuaian ukuran dan crop, tetapi bukan jaminan penerimaan. Ketentuan resmi dapat berbeda menurut kategori aplikasi."
       ];
@@ -849,7 +860,7 @@
     if (!sourceImage || !crop || !detectedHead) {
       metricHead.textContent = "Belum terukur";
       metricTop.textContent = "Belum terukur";
-      metricHeadTarget.textContent = spec && spec.headMinMm != null && spec.headMaxMm != null ? "Target " + mmLabel(spec.headMinMm) + "–" + mmLabel(spec.headMaxMm) + " mm" : spec && spec.headMm != null ? "Target " + mmLabel(spec.headMm) + " mm" : "Target belum diverifikasi";
+      metricHeadTarget.textContent = spec && spec.headMinFraction != null && spec.headMaxFraction != null ? "Target " + Math.round(spec.headMinFraction * 100) + "–" + Math.round(spec.headMaxFraction * 100) + "%" : spec && spec.headMinMm != null && spec.headMaxMm != null ? "Target " + mmLabel(spec.headMinMm) + "–" + mmLabel(spec.headMaxMm) + " mm" : spec && spec.headMm != null ? "Target " + mmLabel(spec.headMm) + " mm" : "Target belum diverifikasi";
       metricTopTarget.textContent = spec && spec.topMinMm != null && spec.topMaxMm != null ? "Target " + mmLabel(spec.topMinMm) + "–" + mmLabel(spec.topMaxMm) + " mm" : spec && spec.topMm != null ? "Target " + mmLabel(spec.topMm) + " mm" : "Target belum diverifikasi";
       measurementStatus.textContent = sourceImage ? "Perlu verifikasi" : "Menunggu foto";
       measurementStatus.className = "measurement-badge neutral";
@@ -860,9 +871,9 @@
     const topMm = ((detectedHead.top - crop.y) / crop.height) * dims.heightMm;
     metricHead.textContent = mmLabel(Number(headMm.toFixed(1))) + " mm · " + (headMm / dims.heightMm * 100).toFixed(1) + "%";
     metricTop.textContent = mmLabel(Number(topMm.toFixed(1))) + " mm";
-    metricHeadTarget.textContent = spec && spec.headMinMm != null && spec.headMaxMm != null ? "Target " + mmLabel(spec.headMinMm) + "–" + mmLabel(spec.headMaxMm) + " mm" : spec && spec.headMm != null ? "Target " + mmLabel(spec.headMm) + " mm" : "Target belum diverifikasi";
+    metricHeadTarget.textContent = spec && spec.headMinFraction != null && spec.headMaxFraction != null ? "Target " + Math.round(spec.headMinFraction * 100) + "–" + Math.round(spec.headMaxFraction * 100) + "%" : spec && spec.headMinMm != null && spec.headMaxMm != null ? "Target " + mmLabel(spec.headMinMm) + "–" + mmLabel(spec.headMaxMm) + " mm" : spec && spec.headMm != null ? "Target " + mmLabel(spec.headMm) + " mm" : "Target belum diverifikasi";
     metricTopTarget.textContent = spec && spec.topMinMm != null && spec.topMaxMm != null ? "Target " + mmLabel(spec.topMinMm) + "–" + mmLabel(spec.topMaxMm) + " mm" : spec && spec.topMm != null ? "Target " + mmLabel(spec.topMm) + " mm" : "Target belum diverifikasi";
-    const hasTarget = !!(spec && (spec.headMm != null || spec.headMinMm != null || spec.topMm != null || spec.topMinMm != null));
+    const hasTarget = !!(spec && (spec.headMm != null || spec.headMinMm != null || spec.headMinFraction != null || spec.topMm != null || spec.topMinMm != null));
     // The crop is mathematically fitted using an estimated crown. These values
     // are not independent biometric verification and cannot establish a pass.
     measurementStatus.textContent = hasTarget ? "Perlu cek visual" : "Perlu verifikasi";
