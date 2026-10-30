@@ -58,6 +58,7 @@
     </div>
     <div class="print-sheet-stage"><canvas id="print-sheet-preview" aria-label="Pratinjau kolase cetak 10 x 15 cm"></canvas></div>
     <p id="print-layout-info" class="print-layout-info">Unggah dan crop foto untuk membuat kolase.</p>
+    <p class="print-instructions">Tip: klik atau sentuh salah satu foto pada kanvas, lalu seret untuk memindahkan posisinya. Ukuran foto dan ukuran kertas 10 × 15 cm tetap.</p>
     <p id="print-paper-guide" class="print-instructions">Epson: pilih ukuran kertas 10 × 15 cm (4 × 6 inci), jenis media Glossy Photo Paper yang paling sesuai dengan kertas glossy Anda, kualitas High/Best Photo, orientasi potret, dan skala 100% / Actual size. Matikan “Fit to page”. Nama opsi media dapat berbeda menurut model Epson dan merek kertas.</p>
     <div class="print-collage-actions">
       <button type="button" class="button button-primary" id="print-now" disabled><span aria-hidden="true">🖨</span> Print Foto 10 × 15 cm</button>
@@ -126,7 +127,7 @@
     .print-collage-controls output{float:right;color:#14736b;font-variant-numeric:tabular-nums}
     .print-collage-controls .print-check-control{display:flex;align-items:center;gap:8px;min-height:42px;font-size:12px}.print-check-control input{width:17px;height:17px;accent-color:#176b62}.print-collage-controls input[type="color"]{min-height:42px;padding:4px;cursor:pointer}
     .print-sheet-stage{display:grid;place-items:center;padding:18px;background:#edf2f2;border:1px solid #e0e9e9;border-radius:14px}
-    #print-sheet-preview{display:block;width:min(100%,320px);height:auto;aspect-ratio:2/3;background:#fff;box-shadow:0 12px 28px rgba(16,38,59,.18);border:1px solid #dce4e4}
+    #print-sheet-preview{display:block;width:min(100%,320px);height:auto;aspect-ratio:2/3;background:#fff;box-shadow:0 12px 28px rgba(16,38,59,.18);border:1px solid #dce4e4;cursor:grab;touch-action:none;user-select:none}#print-sheet-preview.is-dragging{cursor:grabbing}
     .print-layout-info{margin:12px 0 0;color:#176b62;font-size:12px;font-weight:700;text-align:center}
     .print-instructions{margin:12px 0;padding:12px;border-radius:10px;background:#f3f8f7;color:#536875;font-size:11px;line-height:1.65}
     .print-collage-actions{display:grid;grid-template-columns:minmax(220px,360px);justify-content:center;gap:9px;margin-top:14px}
@@ -157,6 +158,8 @@
   const printButton = $("print-now");
   outputCanvas.width = sheetCanvas.width;
   outputCanvas.height = sheetCanvas.height;
+  const manualPositions = new Map();
+  let activeDrag = null;
 
   function selectedCount() {
     return countSelect.value === "custom"
@@ -245,10 +248,13 @@
     for (let i = 0; i < count; i++) {
       const col = i % layout.cols;
       const row = Math.floor(i / layout.cols);
-      const x = (startX + col * (layout.width + gap)) * MM_TO_PX;
-      const y = (startY + row * (layout.height + gap)) * MM_TO_PX;
+      const defaultX = (startX + col * (layout.width + gap)) * MM_TO_PX;
+      const defaultY = (startY + row * (layout.height + gap)) * MM_TO_PX;
       const w = layout.width * MM_TO_PX;
       const h = layout.height * MM_TO_PX;
+      const saved = manualPositions.get(i);
+      const x = saved ? saved.x : defaultX;
+      const y = saved ? saved.y : defaultY;
       ctx.drawImage(photoCanvas, x, y, w, h);
       if (strokeEnabledInput.checked) {
         ctx.save();
@@ -286,6 +292,69 @@
     continueButton.disabled = false;
     return true;
   }
+
+  function canvasPoint(event) {
+    const rect = outputCanvas.getBoundingClientRect();
+    return {
+      x: (event.clientX - rect.left) * (outputCanvas.width / rect.width),
+      y: (event.clientY - rect.top) * (outputCanvas.height / rect.height)
+    };
+  }
+
+  function photoRects() {
+    const count = selectedCount();
+    const margin = Number(marginSelect.value);
+    const gap = Number(gapSelect.value);
+    const size = selectedPhotoSize();
+    const layout = calculateLayout(count, size.width, size.height, margin, gap);
+    if (!layout) return [];
+    const startX = (SHEET_W_MM - layout.usedW) / 2;
+    const startY = (SHEET_H_MM - layout.usedH) / 2;
+    return Array.from({ length: count }, (_, i) => {
+      const col = i % layout.cols;
+      const row = Math.floor(i / layout.cols);
+      const w = layout.width * MM_TO_PX;
+      const h = layout.height * MM_TO_PX;
+      const fallbackX = (startX + col * (layout.width + gap)) * MM_TO_PX;
+      const fallbackY = (startY + row * (layout.height + gap)) * MM_TO_PX;
+      const saved = manualPositions.get(i);
+      return { index: i, x: saved ? saved.x : fallbackX, y: saved ? saved.y : fallbackY, w, h };
+    });
+  }
+
+  outputCanvas.addEventListener("pointerdown", (event) => {
+    if (printButton.disabled) return;
+    const point = canvasPoint(event);
+    const hit = photoRects().slice().reverse().find((rect) =>
+      point.x >= rect.x && point.x <= rect.x + rect.w &&
+      point.y >= rect.y && point.y <= rect.y + rect.h
+    );
+    if (!hit) return;
+    activeDrag = { index: hit.index, offsetX: point.x - hit.x, offsetY: point.y - hit.y };
+    outputCanvas.setPointerCapture(event.pointerId);
+    outputCanvas.classList.add("is-dragging");
+    event.preventDefault();
+  });
+
+  outputCanvas.addEventListener("pointermove", (event) => {
+    if (!activeDrag) return;
+    const point = canvasPoint(event);
+    const rect = photoRects().find((item) => item.index === activeDrag.index);
+    if (!rect) return;
+    const x = Math.max(0, Math.min(outputCanvas.width - rect.w, point.x - activeDrag.offsetX));
+    const y = Math.max(0, Math.min(outputCanvas.height - rect.h, point.y - activeDrag.offsetY));
+    manualPositions.set(activeDrag.index, { x, y });
+    drawCollage();
+    event.preventDefault();
+  });
+
+  function finishCanvasDrag() {
+    activeDrag = null;
+    outputCanvas.classList.remove("is-dragging");
+  }
+  outputCanvas.addEventListener("pointerup", finishCanvasDrag);
+  outputCanvas.addEventListener("pointercancel", finishCanvasDrag);
+  outputCanvas.addEventListener("lostpointercapture", finishCanvasDrag);
 
   function getJpegUrl() { return sheetCanvas.toDataURL("image/jpeg", 0.96); }
   function printSheet() {
