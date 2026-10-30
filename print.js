@@ -178,7 +178,7 @@
     }
     const value = preset?.value || "35x45";
     if (value === "2x2") return { width: 50.8, height: 50.8 };
-    const match = value.match(/^(\\d+(?:\\.\\d+)?)x(\\d+(?:\\.\\d+)?)$/);
+    const match = value.match(/^(\d+(?:\\.\\d+)?)x(\\d+(?:\\.\\d+)?)$/);
     return match ? { width: Number(match[1]), height: Number(match[2]) } : { width: 35, height: 45 };
   }
 
@@ -200,6 +200,22 @@
     return best;
   }
 
+  function maximumFit(photoW, photoH, margin, gap) {
+    const usableW = SHEET_W_MM - margin * 2;
+    const usableH = SHEET_H_MM - margin * 2;
+    let max = 0;
+    const maxCols = Math.floor((usableW + gap) / (photoW + gap));
+    const maxRows = Math.floor((usableH + gap) / (photoH + gap));
+    for (let cols = 1; cols <= maxCols; cols++) {
+      for (let rows = 1; rows <= maxRows; rows++) {
+        const usedW = cols * photoW + (cols - 1) * gap;
+        const usedH = rows * photoH + (rows - 1) * gap;
+        if (usedW <= usableW + 0.001 && usedH <= usableH + 0.001) max = Math.max(max, cols * rows);
+      }
+    }
+    return max;
+  }
+
   function drawCollage() {
     if (photoCanvas.hidden || !photoCanvas.width || !photoCanvas.height) {
       info.textContent = "Unggah foto dan selesaikan crop terlebih dahulu.";
@@ -216,8 +232,7 @@
     ctx.fillStyle = "#fff";
     ctx.fillRect(0, 0, sheetCanvas.width, sheetCanvas.height);
     if (!layout) {
-      const maxFit = calculateLayout(30, photoSize.width, photoSize.height, margin, gap);
-      const fitCount = maxFit ? maxFit.cols * maxFit.rows : 0;
+      const fitCount = maximumFit(photoSize.width, photoSize.height, margin, gap);
       info.textContent = "Jumlah " + count + " foto tidak muat pada kertas 10 × 15 cm dengan ukuran asli " + photoSize.width + " × " + photoSize.height + " mm. Kurangi jumlah foto (perkiraan kapasitas maksimal: " + fitCount + ").";
       refreshButton.disabled = downloadButton.disabled = printButton.disabled = true;
       continueButton.disabled = true;
