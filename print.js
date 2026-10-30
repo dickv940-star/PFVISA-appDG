@@ -243,19 +243,20 @@
   }
   function drawPhotoCover(ctx, rect, group) {
     const source = getRotatedSource(group);
-    const zoom = 1;
 
-    // Use the full uploaded source (not the editor's cropped preview), then
-    // contain it within the exact physical print frame without clipping.
-    const fitScale = Math.min(rect.w / source.width, rect.h / source.height);
-    const drawW = source.width * fitScale * zoom;
-    const drawH = source.height * fitScale * zoom;
-    const overflowX = Math.max(0, drawW - rect.w);
-    const overflowY = Math.max(0, drawH - rect.h);
-    const spareX = Math.max(0, rect.w - drawW);
-    const spareY = Math.max(0, rect.h - drawH);
-    const offsetX = spareX / 2;
-    const offsetY = spareY / 2;
+    // Treat the editor's finished crop as the master image. For each print
+    // size, make a centered secondary crop to the exact target aspect ratio,
+    // then fill the physical frame edge-to-edge without stretching or bars.
+    const targetRatio = rect.w / rect.h;
+    const sourceRatio = source.width / source.height;
+    let sx = 0, sy = 0, sw = source.width, sh = source.height;
+    if (sourceRatio > targetRatio) {
+      sw = source.height * targetRatio;
+      sx = (source.width - sw) / 2;
+    } else if (sourceRatio < targetRatio) {
+      sh = source.width / targetRatio;
+      sy = (source.height - sh) / 2;
+    }
 
     ctx.save();
     ctx.beginPath();
@@ -263,7 +264,7 @@
     ctx.clip();
     ctx.fillStyle = "#fff";
     ctx.fillRect(rect.x, rect.y, rect.w, rect.h);
-    ctx.drawImage(source.image, rect.x + offsetX, rect.y + offsetY, drawW, drawH);
+    ctx.drawImage(source.image, sx, sy, sw, sh, rect.x, rect.y, rect.w, rect.h);
     ctx.restore();
   }
 
