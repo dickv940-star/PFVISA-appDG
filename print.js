@@ -9,8 +9,8 @@
   if (!photoCanvas || !previewPanel || !editorWorkspace || !pageRoot || !cropActions) return;
 
   const DPI = 300;
-  let SHEET_W_MM = 100;
-  let SHEET_H_MM = 150;
+  const SHEET_W_MM = 100;
+  const SHEET_H_MM = 150;
   const MM_TO_PX = DPI / 25.4;
   const sheetCanvas = document.createElement("canvas");
   sheetCanvas.width = Math.round(SHEET_W_MM * MM_TO_PX);
@@ -19,15 +19,17 @@
   const panel = document.createElement("section");
   panel.className = "print-collage-panel";
   panel.innerHTML = `
-    <div class="print-collage-heading"><span class="step">04</span><div><h2>Print / Auto Collage</h2><p>Pilih orientasi kertas dan gabungkan dua ukuran foto dalam satu lembar.</p></div></div>
+    <div class="print-collage-heading"><span class="step">04</span><div><h2>Print / Auto Collage</h2><p>Atur orientasi masing-masing foto, lalu susun beberapa ukuran pada satu canvas cetak 10 × 15 cm.</p></div></div>
     <div class="print-collage-controls">
-      <label>Orientasi kertas</label>
-      <div class="print-orientation"><button type="button" id="print-portrait" class="button button-primary" aria-pressed="true">▯ Portrait</button><button type="button" id="print-landscape" class="button button-secondary" aria-pressed="false">▱ Landscape</button></div>
+      <label for="print-orientation-a">Orientasi foto A</label>
+      <select id="print-orientation-a"><option value="portrait" selected>Portrait</option><option value="landscape">Landscape</option></select>
       <label for="print-size-mode">Mode ukuran foto</label>
       <select id="print-size-mode"><option value="mixed" selected>Dua ukuran</option><option value="single">Satu ukuran saja</option></select>
       <label for="print-size-a">Ukuran foto A</label>
       <select id="print-size-a"><option value="2x3">2 × 3 cm</option><option value="3x4" selected>3 × 4 cm</option><option value="4x6">4 × 6 cm</option><option value="custom">Ukuran bebas</option></select>
       <label for="print-count-a">Jumlah foto A</label><input id="print-count-a" type="number" min="0" max="30" value="4">
+      <label for="print-orientation-b">Orientasi foto B</label>
+      <select id="print-orientation-b"><option value="portrait" selected>Portrait</option><option value="landscape">Landscape</option></select>
       <div class="print-custom-size" id="print-custom-a" hidden><label>Lebar A (mm)<input id="print-width-a" type="number" min="5" max="100" value="30"></label><label>Tinggi A (mm)<input id="print-height-a" type="number" min="5" max="100" value="40"></label></div>
       <label for="print-size-b">Ukuran foto B</label>
       <select id="print-size-b"><option value="2x3">2 × 3 cm</option><option value="3x4">3 × 4 cm</option><option value="4x6" selected>4 × 6 cm</option><option value="custom">Ukuran bebas</option></select>
@@ -125,7 +127,6 @@
     .print-collage-panel{grid-column:1/-1;margin-top:2px;padding:26px;background:#fff;border:1px solid #dce7e8;border-radius:22px;box-shadow:0 12px 34px rgba(18,48,63,.055)}
     .print-collage-heading{display:flex;align-items:flex-start;gap:12px;margin-bottom:18px}.print-collage-heading h2{margin:0;font-size:17px;color:#142f40}.print-collage-heading p{margin:4px 0 0;color:#627587;font-size:12px}
     .print-collage-controls{display:grid;grid-template-columns:repeat(6,minmax(0,1fr));gap:9px;align-items:center;margin-bottom:16px}
-    .print-orientation{display:flex;gap:6px}.print-orientation button{flex:1;padding:9px 5px;font-size:11px}
     .print-custom-size{grid-column:span 3;display:flex;gap:8px}.print-custom-size[hidden]{display:none}.print-custom-size label{flex:1}.print-custom-size input{display:block;width:100%;margin-top:5px}
     .print-collage-controls label{font-size:11px;font-weight:700;color:#39475a}.print-collage-controls select,.print-collage-controls input:not([type="range"]){width:100%;min-height:42px;padding:0 10px;border:1px solid #d4e1e3;border-radius:10px;background:#fff;color:#142a3b;font:inherit;font-size:12px}
     .print-collage-controls input[type="range"]{width:100%;accent-color:#177e78;min-height:30px}
@@ -142,7 +143,7 @@
   document.head.appendChild(style);
 
   const $ = (id) => document.getElementById(id);
-  const orientationPortrait = $("print-portrait"), orientationLandscape = $("print-landscape");
+  const orientationA = $("print-orientation-a"), orientationB = $("print-orientation-b");
   const sizeMode = $("print-size-mode"), sizeA = $("print-size-a"), sizeB = $("print-size-b");
   const countA = $("print-count-a"), countB = $("print-count-b");
   const marginSelect = $("print-margin");
@@ -169,12 +170,20 @@
 
   function selectedSize(which) {
     const select = which === "A" ? sizeA : sizeB;
-    if (select.value === "custom") return {
-      width: Math.max(5, Number($(which === "A" ? "print-width-a" : "print-width-b").value) || 30),
-      height: Math.max(5, Number($(which === "A" ? "print-height-a" : "print-height-b").value) || 40)
-    };
-    const dims = select.value.split("x").map(Number);
-    return { width: dims[0] * 10, height: dims[1] * 10 };
+    let dimensions;
+    if (select.value === "custom") {
+      dimensions = {
+        width: Math.max(5, Number($(which === "A" ? "print-width-a" : "print-width-b").value) || 30),
+        height: Math.max(5, Number($(which === "A" ? "print-height-a" : "print-height-b").value) || 40)
+      };
+    } else {
+      const dims = select.value.split("x").map(Number);
+      dimensions = { width: dims[0] * 10, height: dims[1] * 10 };
+    }
+    const orientation = (which === "A" ? orientationA : orientationB).value;
+    return orientation === "landscape"
+      ? { width: Math.max(dimensions.width, dimensions.height), height: Math.min(dimensions.width, dimensions.height) }
+      : { width: Math.min(dimensions.width, dimensions.height), height: Math.max(dimensions.width, dimensions.height) };
   }
   function selectedCount(which) {
     return Math.max(0, Math.min(30, Math.round(Number((which === "A" ? countA : countB).value) || 0)));
@@ -295,16 +304,10 @@
     popup.document.close();
   }
 
-  function setOrientation(landscape) {
-    SHEET_W_MM=landscape?150:100; SHEET_H_MM=landscape?100:150;
-    sheetCanvas.width=Math.round(SHEET_W_MM*MM_TO_PX);sheetCanvas.height=Math.round(SHEET_H_MM*MM_TO_PX);
-    outputCanvas.width=sheetCanvas.width;outputCanvas.height=sheetCanvas.height;outputCanvas.style.aspectRatio=SHEET_W_MM+" / "+SHEET_H_MM;
-    orientationPortrait.setAttribute("aria-pressed",String(!landscape));orientationLandscape.setAttribute("aria-pressed",String(landscape));
-    orientationPortrait.className="button "+(landscape?"button-secondary":"button-primary");orientationLandscape.className="button "+(landscape?"button-primary":"button-secondary");
-    manualPositions.clear();drawCollage();
-  }
-  orientationPortrait.addEventListener("click",()=>setOrientation(false));
-  orientationLandscape.addEventListener("click",()=>setOrientation(true));
+  [orientationA, orientationB].forEach(el => el.addEventListener("change", () => {
+    manualPositions.clear();
+    drawCollage();
+  }));
   function updateSizeControls(){
     $("print-custom-a").hidden=sizeA.value!=="custom";
     $("print-custom-b").hidden=sizeMode.value!=="mixed"||sizeB.value!=="custom";
