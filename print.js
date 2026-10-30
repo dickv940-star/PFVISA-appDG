@@ -41,24 +41,6 @@
       <select id="print-size-b"><option value="2x3">2 × 3 cm</option><option value="3x4">3 × 4 cm</option><option value="4x6" selected>4 × 6 cm</option><option value="custom">Ukuran bebas</option></select>
       <label for="print-count-b">Jumlah foto B</label><input id="print-count-b" type="number" min="0" max="30" value="2">
       <div class="print-custom-size" id="print-custom-b" hidden><label>Lebar B (mm)<input id="print-width-b" type="number" min="5" max="100" value="40"></label><label>Tinggi B (mm)<input id="print-height-b" type="number" min="5" max="100" value="60"></label></div>
-      <div class="print-crop-group">
-        <strong>Crop khusus foto A</strong>
-        <label for="print-crop-zoom-a">Zoom A <output id="print-crop-zoom-a-value">100%</output></label>
-        <input id="print-crop-zoom-a" type="range" min="100" max="200" value="100" step="1">
-        <label for="print-crop-x-a">Posisi horizontal A <output id="print-crop-x-a-value">50%</output></label>
-        <input id="print-crop-x-a" type="range" min="0" max="100" value="50" step="1">
-        <label for="print-crop-y-a">Posisi vertikal A <output id="print-crop-y-a-value">50%</output></label>
-        <input id="print-crop-y-a" type="range" min="0" max="100" value="50" step="1">
-      </div>
-      <div class="print-crop-group" id="print-crop-group-b">
-        <strong>Crop khusus foto B</strong>
-        <label for="print-crop-zoom-b">Zoom B <output id="print-crop-zoom-b-value">100%</output></label>
-        <input id="print-crop-zoom-b" type="range" min="100" max="200" value="100" step="1">
-        <label for="print-crop-x-b">Posisi horizontal B <output id="print-crop-x-b-value">50%</output></label>
-        <input id="print-crop-x-b" type="range" min="0" max="100" value="50" step="1">
-        <label for="print-crop-y-b">Posisi vertikal B <output id="print-crop-y-b-value">50%</output></label>
-        <input id="print-crop-y-b" type="range" min="0" max="100" value="50" step="1">
-      </div>
       <label for="print-margin">Margin kertas</label>
       <select id="print-margin"><option value="2">2 mm</option><option value="3" selected>3 mm</option><option value="5">5 mm</option></select>
       <label for="print-gap">Jarak antar foto</label>
@@ -152,7 +134,7 @@
     .print-collage-heading{display:flex;align-items:flex-start;gap:12px;margin-bottom:18px}.print-collage-heading h2{margin:0;font-size:17px;color:#142f40}.print-collage-heading p{margin:4px 0 0;color:#627587;font-size:12px}
     .print-collage-controls{display:grid;grid-template-columns:repeat(6,minmax(0,1fr));gap:9px;align-items:center;margin-bottom:16px}
     .print-custom-size{grid-column:span 3;display:flex;gap:8px}.print-custom-size[hidden]{display:none}.print-custom-size label{flex:1}.print-custom-size input{display:block;width:100%;margin-top:5px}
-    .print-rotate-group{grid-column:span 3;display:grid;gap:8px;padding:12px;border:1px solid #dce7e8;border-radius:12px;background:#f7fbfa}.print-rotate-group strong{font-size:12px;color:#176b62}.print-rotate-group>div{display:flex;gap:6px;flex-wrap:wrap}.print-rotate-group button{min-height:36px;padding:0 12px;font-size:11px}.print-rotate-group output{font-size:11px;color:#176b62;font-weight:700}.print-crop-group{grid-column:span 3;display:grid;grid-template-columns:1fr;gap:5px;padding:12px;border:1px solid #dce7e8;border-radius:12px;background:#f7fbfa}.print-crop-group strong{font-size:12px;color:#176b62}.print-crop-group label{display:flex;justify-content:space-between;gap:8px;margin-top:4px}.print-crop-group output{color:#176b62;font-variant-numeric:tabular-nums}.print-crop-group input{width:100%;accent-color:#176b62}
+    .print-rotate-group{grid-column:span 3;display:grid;gap:8px;padding:12px;border:1px solid #dce7e8;border-radius:12px;background:#f7fbfa}.print-rotate-group strong{font-size:12px;color:#176b62}.print-rotate-group>div{display:flex;gap:6px;flex-wrap:wrap}.print-rotate-group button{min-height:36px;padding:0 12px;font-size:11px}.print-rotate-group output{font-size:11px;color:#176b62;font-weight:700}
     .print-collage-controls label{font-size:11px;font-weight:700;color:#39475a}.print-collage-controls select,.print-collage-controls input:not([type="range"]){width:100%;min-height:42px;padding:0 10px;border:1px solid #d4e1e3;border-radius:10px;background:#fff;color:#142a3b;font:inherit;font-size:12px}
     .print-collage-controls input[type="range"]{width:100%;accent-color:#177e78;min-height:30px}
     .print-collage-controls output{float:right;color:#14736b;font-variant-numeric:tabular-nums}
@@ -171,7 +153,6 @@
   const rotations = { A: 0, B: 0 };
   const sizeMode = $("print-size-mode"), sizeA = $("print-size-a"), sizeB = $("print-size-b");
   const countA = $("print-count-a"), countB = $("print-count-b");
-  const cropControls = { A: { zoom:$("print-crop-zoom-a"), x:$("print-crop-x-a"), y:$("print-crop-y-a") }, B: { zoom:$("print-crop-zoom-b"), x:$("print-crop-x-b"), y:$("print-crop-y-b") } };
   const marginSelect = $("print-margin");
   const gapSelect = $("print-gap");
   const paperSelect = $("print-paper");
@@ -247,8 +228,7 @@
   }
   function drawPhotoCover(ctx, rect, group) {
     const source = getRotatedSource(group);
-    const controls = cropControls[group];
-    const zoom = Math.max(1, Number(controls.zoom.value) / 100);
+    const zoom = 1;
 
     // Fit the complete rotated image inside the fixed print frame.
     // Rotation must never crop the source at the default 100% zoom.
@@ -259,8 +239,8 @@
     const overflowY = Math.max(0, drawH - rect.h);
     const spareX = Math.max(0, rect.w - drawW);
     const spareY = Math.max(0, rect.h - drawH);
-    const offsetX = spareX / 2 - overflowX * (Number(controls.x.value) / 100);
-    const offsetY = spareY / 2 - overflowY * (Number(controls.y.value) / 100);
+    const offsetX = spareX / 2;
+    const offsetY = spareY / 2;
 
     ctx.save();
     ctx.beginPath();
@@ -378,19 +358,12 @@
   function updateSizeControls(){
     $("print-custom-a").hidden=sizeA.value!=="custom";
     $("print-custom-b").hidden=sizeMode.value!=="mixed"||sizeB.value!=="custom";
-    sizeB.disabled=sizeMode.value!=="mixed";countB.disabled=sizeMode.value!=="mixed";$("print-crop-group-b").hidden=sizeMode.value!=="mixed";$("print-rotate-group-b").hidden=sizeMode.value!=="mixed";
+    sizeB.disabled=sizeMode.value!=="mixed";countB.disabled=sizeMode.value!=="mixed";$("print-rotate-group-b").hidden=sizeMode.value!=="mixed";
     manualPositions.clear();drawCollage();
   }
   [sizeMode,sizeA,sizeB].forEach(el=>el.addEventListener("change",updateSizeControls));
   [countA,countB,$("print-width-a"),$("print-height-a"),$("print-width-b"),$("print-height-b")].forEach(el=>el.addEventListener("input",()=>{manualPositions.clear();drawCollage();}));
   [marginSelect,gapSelect,brightnessInput,contrastInput,saturationInput,redBalanceInput,greenBalanceInput,blueBalanceInput,strokeEnabledInput,strokeColorInput,strokeWidthInput].forEach(el=>el.addEventListener("input",drawCollage));
-  Object.entries(cropControls).forEach(([group, controls]) => {
-    Object.entries(controls).forEach(([key, el]) => el.addEventListener("input", () => {
-      const value=key==="zoom" ? el.value+"%" : el.value+"%";
-      $("print-crop-"+key+"-"+group.toLowerCase()+"-value").textContent=value;
-      drawCollage();
-    }));
-  });
   updateSizeControls();
   [strokeEnabledInput, strokeColorInput].forEach((el) => el.addEventListener("change", drawCollage));
   [marginSelect, gapSelect].forEach((el) => el.addEventListener("change", drawCollage));
