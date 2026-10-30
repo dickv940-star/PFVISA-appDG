@@ -194,6 +194,8 @@
     if (sizeMode.value === "mixed") groups.push({ size: selectedSize("B"), count: selectedCount("B") });
     const items = [];
     groups.forEach(g => { for (let i = 0; i < g.count; i++) items.push({ index: items.length, w: g.size.width * MM_TO_PX, h: g.size.height * MM_TO_PX }); });
+    // Place larger photos first so mixed-size groups can fit on the fixed sheet.
+    items.sort((a, b) => (b.h - a.h) || (b.w - a.w));
     const left = margin * MM_TO_PX, right = (SHEET_W_MM - margin) * MM_TO_PX, bottom = (SHEET_H_MM - margin) * MM_TO_PX;
     let x = left, y = left, rowH = 0;
     const result = [];
