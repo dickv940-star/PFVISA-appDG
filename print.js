@@ -19,17 +19,23 @@
   const panel = document.createElement("section");
   panel.className = "print-collage-panel";
   panel.innerHTML = `
-    <div class="print-collage-heading"><span class="step">04</span><div><h2>Print / Auto Collage</h2><p>Atur orientasi masing-masing foto, lalu susun beberapa ukuran pada satu canvas cetak 10 × 15 cm.</p></div></div>
+    <div class="print-collage-heading"><span class="step">04</span><div><h2>Print / Auto Collage</h2><p>Putar Foto A dan Foto B secara terpisah, lalu susun beberapa ukuran pada satu canvas cetak 10 × 15 cm.</p></div></div>
     <div class="print-collage-controls">
-      <label for="print-orientation-a">Orientasi foto A</label>
-      <select id="print-orientation-a"><option value="portrait" selected>Portrait</option><option value="landscape">Landscape</option></select>
+      <div class="print-rotate-group">
+        <strong>Rotasi Foto A</strong>
+        <div><button type="button" class="button button-secondary" id="print-rotate-left-a" aria-label="Putar Foto A 90 derajat ke kiri">↶ 90°</button><button type="button" class="button button-secondary" id="print-rotate-right-a" aria-label="Putar Foto A 90 derajat ke kanan">↷ 90°</button><button type="button" class="button button-secondary" id="print-rotate-reset-a">Reset</button></div>
+        <output id="print-rotate-value-a">0°</output>
+      </div>
       <label for="print-size-mode">Mode ukuran foto</label>
       <select id="print-size-mode"><option value="mixed" selected>Dua ukuran</option><option value="single">Satu ukuran saja</option></select>
       <label for="print-size-a">Ukuran foto A</label>
       <select id="print-size-a"><option value="2x3">2 × 3 cm</option><option value="3x4" selected>3 × 4 cm</option><option value="4x6">4 × 6 cm</option><option value="custom">Ukuran bebas</option></select>
       <label for="print-count-a">Jumlah foto A</label><input id="print-count-a" type="number" min="0" max="30" value="4">
-      <label for="print-orientation-b">Orientasi foto B</label>
-      <select id="print-orientation-b"><option value="portrait" selected>Portrait</option><option value="landscape">Landscape</option></select>
+      <div class="print-rotate-group" id="print-rotate-group-b">
+        <strong>Rotasi Foto B</strong>
+        <div><button type="button" class="button button-secondary" id="print-rotate-left-b" aria-label="Putar Foto B 90 derajat ke kiri">↶ 90°</button><button type="button" class="button button-secondary" id="print-rotate-right-b" aria-label="Putar Foto B 90 derajat ke kanan">↷ 90°</button><button type="button" class="button button-secondary" id="print-rotate-reset-b">Reset</button></div>
+        <output id="print-rotate-value-b">0°</output>
+      </div>
       <div class="print-custom-size" id="print-custom-a" hidden><label>Lebar A (mm)<input id="print-width-a" type="number" min="5" max="100" value="30"></label><label>Tinggi A (mm)<input id="print-height-a" type="number" min="5" max="100" value="40"></label></div>
       <label for="print-size-b">Ukuran foto B</label>
       <select id="print-size-b"><option value="2x3">2 × 3 cm</option><option value="3x4">3 × 4 cm</option><option value="4x6" selected>4 × 6 cm</option><option value="custom">Ukuran bebas</option></select>
@@ -146,7 +152,7 @@
     .print-collage-heading{display:flex;align-items:flex-start;gap:12px;margin-bottom:18px}.print-collage-heading h2{margin:0;font-size:17px;color:#142f40}.print-collage-heading p{margin:4px 0 0;color:#627587;font-size:12px}
     .print-collage-controls{display:grid;grid-template-columns:repeat(6,minmax(0,1fr));gap:9px;align-items:center;margin-bottom:16px}
     .print-custom-size{grid-column:span 3;display:flex;gap:8px}.print-custom-size[hidden]{display:none}.print-custom-size label{flex:1}.print-custom-size input{display:block;width:100%;margin-top:5px}
-    .print-crop-group{grid-column:span 3;display:grid;grid-template-columns:1fr;gap:5px;padding:12px;border:1px solid #dce7e8;border-radius:12px;background:#f7fbfa}.print-crop-group strong{font-size:12px;color:#176b62}.print-crop-group label{display:flex;justify-content:space-between;gap:8px;margin-top:4px}.print-crop-group output{color:#176b62;font-variant-numeric:tabular-nums}.print-crop-group input{width:100%;accent-color:#176b62}
+    .print-rotate-group{grid-column:span 3;display:grid;gap:8px;padding:12px;border:1px solid #dce7e8;border-radius:12px;background:#f7fbfa}.print-rotate-group strong{font-size:12px;color:#176b62}.print-rotate-group>div{display:flex;gap:6px;flex-wrap:wrap}.print-rotate-group button{min-height:36px;padding:0 12px;font-size:11px}.print-rotate-group output{font-size:11px;color:#176b62;font-weight:700}.print-crop-group{grid-column:span 3;display:grid;grid-template-columns:1fr;gap:5px;padding:12px;border:1px solid #dce7e8;border-radius:12px;background:#f7fbfa}.print-crop-group strong{font-size:12px;color:#176b62}.print-crop-group label{display:flex;justify-content:space-between;gap:8px;margin-top:4px}.print-crop-group output{color:#176b62;font-variant-numeric:tabular-nums}.print-crop-group input{width:100%;accent-color:#176b62}
     .print-collage-controls label{font-size:11px;font-weight:700;color:#39475a}.print-collage-controls select,.print-collage-controls input:not([type="range"]){width:100%;min-height:42px;padding:0 10px;border:1px solid #d4e1e3;border-radius:10px;background:#fff;color:#142a3b;font:inherit;font-size:12px}
     .print-collage-controls input[type="range"]{width:100%;accent-color:#177e78;min-height:30px}
     .print-collage-controls output{float:right;color:#14736b;font-variant-numeric:tabular-nums}
@@ -162,7 +168,7 @@
   document.head.appendChild(style);
 
   const $ = (id) => document.getElementById(id);
-  const orientationA = $("print-orientation-a"), orientationB = $("print-orientation-b");
+  const rotations = { A: 0, B: 0 };
   const sizeMode = $("print-size-mode"), sizeA = $("print-size-a"), sizeB = $("print-size-b");
   const countA = $("print-count-a"), countB = $("print-count-b");
   const cropControls = { A: { zoom:$("print-crop-zoom-a"), x:$("print-crop-x-a"), y:$("print-crop-y-a") }, B: { zoom:$("print-crop-zoom-b"), x:$("print-crop-x-b"), y:$("print-crop-y-b") } };
@@ -200,10 +206,7 @@
       const dims = select.value.split("x").map(Number);
       dimensions = { width: dims[0] * 10, height: dims[1] * 10 };
     }
-    const orientation = (which === "A" ? orientationA : orientationB).value;
-    return orientation === "landscape"
-      ? { width: Math.max(dimensions.width, dimensions.height), height: Math.min(dimensions.width, dimensions.height) }
-      : { width: Math.min(dimensions.width, dimensions.height), height: Math.max(dimensions.width, dimensions.height) };
+    return dimensions;
   }
   function selectedCount(which) {
     return Math.max(0, Math.min(30, Math.round(Number((which === "A" ? countA : countB).value) || 0)));
@@ -229,17 +232,31 @@
     }
     return result;
   }
+  function getRotatedSource(group) {
+    const angle = ((rotations[group] % 360) + 360) % 360;
+    if (!angle) return photoCanvas;
+    const rotated = document.createElement("canvas");
+    const quarterTurn = angle === 90 || angle === 270;
+    rotated.width = quarterTurn ? photoCanvas.height : photoCanvas.width;
+    rotated.height = quarterTurn ? photoCanvas.width : photoCanvas.height;
+    const rctx = rotated.getContext("2d");
+    rctx.translate(rotated.width / 2, rotated.height / 2);
+    rctx.rotate(angle * Math.PI / 180);
+    rctx.drawImage(photoCanvas, -photoCanvas.width / 2, -photoCanvas.height / 2);
+    return rotated;
+  }
   function drawPhotoCover(ctx, rect, group) {
-    const ratio = rect.w / rect.h, sourceRatio = photoCanvas.width / photoCanvas.height;
+    const source = getRotatedSource(group);
+    const ratio = rect.w / rect.h, sourceRatio = source.width / source.height;
     let sw, sh;
-    if (sourceRatio > ratio) { sh=photoCanvas.height; sw=sh*ratio; }
-    else { sw=photoCanvas.width; sh=sw/ratio; }
+    if (sourceRatio > ratio) { sh=source.height; sw=sh*ratio; }
+    else { sw=source.width; sh=sw/ratio; }
     const controls=cropControls[group];
     const zoom=Math.max(1,Number(controls.zoom.value)/100);
     sw/=zoom; sh/=zoom;
-    const maxX=Math.max(0,photoCanvas.width-sw), maxY=Math.max(0,photoCanvas.height-sh);
+    const maxX=Math.max(0,source.width-sw), maxY=Math.max(0,source.height-sh);
     const sx=maxX*(Number(controls.x.value)/100), sy=maxY*(Number(controls.y.value)/100);
-    ctx.drawImage(photoCanvas,sx,sy,sw,sh,rect.x,rect.y,rect.w,rect.h);
+    ctx.drawImage(source,sx,sy,sw,sh,rect.x,rect.y,rect.w,rect.h);
   }
 
   function drawCollage() {
@@ -331,14 +348,24 @@
     popup.document.close();
   }
 
-  [orientationA, orientationB].forEach(el => el.addEventListener("change", () => {
-    manualPositions.clear();
+  function updateRotation(group, delta) {
+    rotations[group] = (rotations[group] + delta + 360) % 360;
+    $("print-rotate-value-" + group.toLowerCase()).textContent = rotations[group] + "°";
     drawCollage();
-  }));
+  }
+  ["A", "B"].forEach(group => {
+    $("print-rotate-left-" + group.toLowerCase()).addEventListener("click", () => updateRotation(group, -90));
+    $("print-rotate-right-" + group.toLowerCase()).addEventListener("click", () => updateRotation(group, 90));
+    $("print-rotate-reset-" + group.toLowerCase()).addEventListener("click", () => {
+      rotations[group] = 0;
+      $("print-rotate-value-" + group.toLowerCase()).textContent = "0°";
+      drawCollage();
+    });
+  });
   function updateSizeControls(){
     $("print-custom-a").hidden=sizeA.value!=="custom";
     $("print-custom-b").hidden=sizeMode.value!=="mixed"||sizeB.value!=="custom";
-    sizeB.disabled=sizeMode.value!=="mixed";countB.disabled=sizeMode.value!=="mixed";$("print-crop-group-b").hidden=sizeMode.value!=="mixed";
+    sizeB.disabled=sizeMode.value!=="mixed";countB.disabled=sizeMode.value!=="mixed";$("print-crop-group-b").hidden=sizeMode.value!=="mixed";$("print-rotate-group-b").hidden=sizeMode.value!=="mixed";
     manualPositions.clear();drawCollage();
   }
   [sizeMode,sizeA,sizeB].forEach(el=>el.addEventListener("change",updateSizeControls));
