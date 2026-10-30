@@ -9,8 +9,8 @@
   if (!photoCanvas || !previewPanel || !editorWorkspace || !pageRoot || !cropActions) return;
 
   const DPI = 300;
-  const SHEET_W_MM = 100;
-  const SHEET_H_MM = 150;
+  let SHEET_W_MM = 100;
+  let SHEET_H_MM = 150;
   const MM_TO_PX = DPI / 25.4;
   const sheetCanvas = document.createElement("canvas");
   sheetCanvas.width = Math.round(SHEET_W_MM * MM_TO_PX);
@@ -19,17 +19,20 @@
   const panel = document.createElement("section");
   panel.className = "print-collage-panel";
   panel.innerHTML = `
-    <div class="print-collage-heading"><span class="step">04</span><div><h2>Print / Auto Collage</h2><p>Susun beberapa salinan foto otomatis pada kertas 10 × 15 cm.</p></div></div>
+    <div class="print-collage-heading"><span class="step">04</span><div><h2>Print / Auto Collage</h2><p>Pilih orientasi kertas dan gabungkan dua ukuran foto dalam satu lembar.</p></div></div>
     <div class="print-collage-controls">
-      <label for="print-count">Jumlah foto</label>
-      <select id="print-count">
-        <option value="1">1 foto</option><option value="2">2 foto</option>
-        <option value="4" selected>4 foto</option><option value="6">6 foto</option>
-        <option value="8">8 foto</option><option value="10">10 foto</option>
-        <option value="12">12 foto</option><option value="16">16 foto</option>
-        <option value="20">20 foto</option><option value="custom">Jumlah khusus</option>
-      </select>
-      <input id="print-custom-count" type="number" min="1" max="30" value="4" aria-label="Jumlah foto khusus" hidden>
+      <label>Orientasi kertas</label>
+      <div class="print-orientation"><button type="button" id="print-portrait" class="button button-primary" aria-pressed="true">▯ Portrait</button><button type="button" id="print-landscape" class="button button-secondary" aria-pressed="false">▱ Landscape</button></div>
+      <label for="print-size-mode">Mode ukuran foto</label>
+      <select id="print-size-mode"><option value="mixed" selected>Dua ukuran</option><option value="single">Satu ukuran saja</option></select>
+      <label for="print-size-a">Ukuran foto A</label>
+      <select id="print-size-a"><option value="2x3">2 × 3 cm</option><option value="3x4" selected>3 × 4 cm</option><option value="4x6">4 × 6 cm</option><option value="custom">Ukuran bebas</option></select>
+      <label for="print-count-a">Jumlah foto A</label><input id="print-count-a" type="number" min="0" max="30" value="4">
+      <div class="print-custom-size" id="print-custom-a" hidden><label>Lebar A (mm)<input id="print-width-a" type="number" min="5" max="100" value="30"></label><label>Tinggi A (mm)<input id="print-height-a" type="number" min="5" max="100" value="40"></label></div>
+      <label for="print-size-b">Ukuran foto B</label>
+      <select id="print-size-b"><option value="2x3">2 × 3 cm</option><option value="3x4">3 × 4 cm</option><option value="4x6" selected>4 × 6 cm</option><option value="custom">Ukuran bebas</option></select>
+      <label for="print-count-b">Jumlah foto B</label><input id="print-count-b" type="number" min="0" max="30" value="2">
+      <div class="print-custom-size" id="print-custom-b" hidden><label>Lebar B (mm)<input id="print-width-b" type="number" min="5" max="100" value="40"></label><label>Tinggi B (mm)<input id="print-height-b" type="number" min="5" max="100" value="60"></label></div>
       <label for="print-margin">Margin kertas</label>
       <select id="print-margin"><option value="2">2 mm</option><option value="3" selected>3 mm</option><option value="5">5 mm</option></select>
       <label for="print-gap">Jarak antar foto</label>
@@ -122,6 +125,8 @@
     .print-collage-panel{grid-column:1/-1;margin-top:2px;padding:26px;background:#fff;border:1px solid #dce7e8;border-radius:22px;box-shadow:0 12px 34px rgba(18,48,63,.055)}
     .print-collage-heading{display:flex;align-items:flex-start;gap:12px;margin-bottom:18px}.print-collage-heading h2{margin:0;font-size:17px;color:#142f40}.print-collage-heading p{margin:4px 0 0;color:#627587;font-size:12px}
     .print-collage-controls{display:grid;grid-template-columns:repeat(6,minmax(0,1fr));gap:9px;align-items:center;margin-bottom:16px}
+    .print-orientation{display:flex;gap:6px}.print-orientation button{flex:1;padding:9px 5px;font-size:11px}
+    .print-custom-size{grid-column:span 3;display:flex;gap:8px}.print-custom-size[hidden]{display:none}.print-custom-size label{flex:1}.print-custom-size input{display:block;width:100%;margin-top:5px}
     .print-collage-controls label{font-size:11px;font-weight:700;color:#39475a}.print-collage-controls select,.print-collage-controls input:not([type="range"]){width:100%;min-height:42px;padding:0 10px;border:1px solid #d4e1e3;border-radius:10px;background:#fff;color:#142a3b;font:inherit;font-size:12px}
     .print-collage-controls input[type="range"]{width:100%;accent-color:#177e78;min-height:30px}
     .print-collage-controls output{float:right;color:#14736b;font-variant-numeric:tabular-nums}
@@ -137,8 +142,9 @@
   document.head.appendChild(style);
 
   const $ = (id) => document.getElementById(id);
-  const countSelect = $("print-count");
-  const customCount = $("print-custom-count");
+  const orientationPortrait = $("print-portrait"), orientationLandscape = $("print-landscape");
+  const sizeMode = $("print-size-mode"), sizeA = $("print-size-a"), sizeB = $("print-size-b");
+  const countA = $("print-count-a"), countB = $("print-count-b");
   const marginSelect = $("print-margin");
   const gapSelect = $("print-gap");
   const paperSelect = $("print-paper");
@@ -161,136 +167,75 @@
   const manualPositions = new Map();
   let activeDrag = null;
 
-  function selectedCount() {
-    return countSelect.value === "custom"
-      ? Math.max(1, Math.min(30, Math.round(Number(customCount.value) || 1)))
-      : Number(countSelect.value);
+  function selectedSize(which) {
+    const select = which === "A" ? sizeA : sizeB;
+    if (select.value === "custom") return {
+      width: Math.max(5, Number($(which === "A" ? "print-width-a" : "print-width-b").value) || 30),
+      height: Math.max(5, Number($(which === "A" ? "print-height-a" : "print-height-b").value) || 40)
+    };
+    const dims = select.value.split("x").map(Number);
+    return { width: dims[0] * 10, height: dims[1] * 10 };
   }
-
-  function selectedPhotoSize() {
-    const preset = $("size-preset");
-    if (preset && preset.value === "custom") {
-      return {
-        width: Math.max(1, Number($("custom-width")?.value) || 35),
-        height: Math.max(1, Number($("custom-height")?.value) || 45)
-      };
-    }
-    const value = preset?.value || "35x45";
-    if (value === "2x2") return { width: 50.8, height: 50.8 };
-    const dimensions = value.split("x").map(Number);
-    return dimensions.length === 2 && dimensions.every(Number.isFinite)
-      ? { width: dimensions[0], height: dimensions[1] }
-      : { width: 35, height: 45 };
+  function selectedCount(which) {
+    return Math.max(0, Math.min(30, Math.round(Number((which === "A" ? countA : countB).value) || 0)));
   }
-
-  function calculateLayout(count, photoW, photoH, margin, gap) {
-    const usableW = SHEET_W_MM - margin * 2;
-    const usableH = SHEET_H_MM - margin * 2;
-    let best = null;
-    const maxCols = Math.min(count, Math.floor((usableW + gap) / (photoW + gap)));
-    for (let cols = 1; cols <= maxCols; cols++) {
-      const rows = Math.ceil(count / cols);
-      const usedW = cols * photoW + (cols - 1) * gap;
-      const usedH = rows * photoH + (rows - 1) * gap;
-      if (usedW > usableW + 0.001 || usedH > usableH + 0.001) continue;
-      // Prefer a compact, balanced block while never changing the selected physical photo size.
-      const shapePenalty = Math.abs(Math.log((usedW / usedH) / (SHEET_W_MM / SHEET_H_MM)));
-      const score = shapePenalty + (rows * cols - count) * 0.015;
-      if (!best || score < best.score) best = { cols, rows, width: photoW, height: photoH, usedW, usedH, score };
+  function photoRects() {
+    const margin = Number(marginSelect.value), gap = Number(gapSelect.value);
+    const groups = [{ size: selectedSize("A"), count: selectedCount("A") }];
+    if (sizeMode.value === "mixed") groups.push({ size: selectedSize("B"), count: selectedCount("B") });
+    const items = [];
+    groups.forEach(g => { for (let i = 0; i < g.count; i++) items.push({ index: items.length, w: g.size.width * MM_TO_PX, h: g.size.height * MM_TO_PX }); });
+    const left = margin * MM_TO_PX, right = (SHEET_W_MM - margin) * MM_TO_PX, bottom = (SHEET_H_MM - margin) * MM_TO_PX;
+    let x = left, y = left, rowH = 0;
+    const result = [];
+    for (const item of items) {
+      if (item.w > right - left || item.h > bottom - left) return null;
+      if (x + item.w > right + .01) { x = left; y += rowH + gap * MM_TO_PX; rowH = 0; }
+      if (y + item.h > bottom + .01) return null;
+      const saved = manualPositions.get(item.index);
+      result.push({ index:item.index, x:saved ? saved.x : x, y:saved ? saved.y : y, w:item.w, h:item.h });
+      x += item.w + gap * MM_TO_PX; rowH = Math.max(rowH,item.h);
     }
-    return best;
+    return result;
   }
-
-  function maximumFit(photoW, photoH, margin, gap) {
-    const usableW = SHEET_W_MM - margin * 2;
-    const usableH = SHEET_H_MM - margin * 2;
-    let max = 0;
-    const maxCols = Math.floor((usableW + gap) / (photoW + gap));
-    const maxRows = Math.floor((usableH + gap) / (photoH + gap));
-    for (let cols = 1; cols <= maxCols; cols++) {
-      for (let rows = 1; rows <= maxRows; rows++) {
-        const usedW = cols * photoW + (cols - 1) * gap;
-        const usedH = rows * photoH + (rows - 1) * gap;
-        if (usedW <= usableW + 0.001 && usedH <= usableH + 0.001) max = Math.max(max, cols * rows);
-      }
-    }
-    return max;
+  function drawPhotoCover(ctx, rect) {
+    const ratio = rect.w / rect.h, sourceRatio = photoCanvas.width / photoCanvas.height;
+    let sx=0, sy=0, sw=photoCanvas.width, sh=photoCanvas.height;
+    if (sourceRatio > ratio) { sw=photoCanvas.height*ratio; sx=(photoCanvas.width-sw)/2; }
+    else { sh=photoCanvas.width/ratio; sy=(photoCanvas.height-sh)/2; }
+    ctx.drawImage(photoCanvas,sx,sy,sw,sh,rect.x,rect.y,rect.w,rect.h);
   }
 
   function drawCollage() {
     if (photoCanvas.hidden || !photoCanvas.width || !photoCanvas.height) {
       info.textContent = "Unggah foto dan selesaikan crop terlebih dahulu.";
-      printButton.disabled = true;
-      continueButton.disabled = true;
-      return false;
+      printButton.disabled = true; continueButton.disabled = true; return false;
     }
-    const count = selectedCount();
-    const margin = Number(marginSelect.value);
-    const gap = Number(gapSelect.value);
-    const photoSize = selectedPhotoSize();
-    const layout = calculateLayout(count, photoSize.width, photoSize.height, margin, gap);
-    const ctx = sheetCanvas.getContext("2d", { alpha: false });
-    ctx.fillStyle = "#fff";
-    ctx.fillRect(0, 0, sheetCanvas.width, sheetCanvas.height);
-    if (!layout) {
-      const fitCount = maximumFit(photoSize.width, photoSize.height, margin, gap);
-      info.textContent = "Jumlah " + count + " foto tidak muat pada kertas 10 × 15 cm dengan ukuran asli " + photoSize.width + " × " + photoSize.height + " mm. Kurangi jumlah foto (perkiraan kapasitas maksimal: " + fitCount + ").";
-      printButton.disabled = true;
-      continueButton.disabled = true;
-      outputContext.clearRect(0, 0, outputCanvas.width, outputCanvas.height);
-      outputContext.drawImage(sheetCanvas, 0, 0);
-      return false;
+    const ctx = sheetCanvas.getContext("2d", { alpha:false });
+    ctx.fillStyle="#fff"; ctx.fillRect(0,0,sheetCanvas.width,sheetCanvas.height);
+    const rects=photoRects();
+    const total=selectedCount("A")+(sizeMode.value==="mixed"?selectedCount("B"):0);
+    if (!rects || !total || rects.length!==total) {
+      info.textContent = !total ? "Atur jumlah foto minimal satu." : "Foto tidak muat pada kertas. Kurangi jumlah foto atau pilih ukuran lebih kecil.";
+      printButton.disabled=true; continueButton.disabled=true;
+      outputContext.clearRect(0,0,outputCanvas.width,outputCanvas.height); outputContext.drawImage(sheetCanvas,0,0); return false;
     }
-    // Color adjustments are applied only to the print sheet, never to the editor source canvas.
-    ctx.filter = "brightness(" + brightnessInput.value + "%) contrast(" + contrastInput.value + "%) saturate(" + saturationInput.value + "%)";
-    const startX = (SHEET_W_MM - layout.usedW) / 2;
-    const startY = (SHEET_H_MM - layout.usedH) / 2;
-    for (let i = 0; i < count; i++) {
-      const col = i % layout.cols;
-      const row = Math.floor(i / layout.cols);
-      const defaultX = (startX + col * (layout.width + gap)) * MM_TO_PX;
-      const defaultY = (startY + row * (layout.height + gap)) * MM_TO_PX;
-      const w = layout.width * MM_TO_PX;
-      const h = layout.height * MM_TO_PX;
-      const saved = manualPositions.get(i);
-      const x = saved ? saved.x : defaultX;
-      const y = saved ? saved.y : defaultY;
-      ctx.drawImage(photoCanvas, x, y, w, h);
-      if (strokeEnabledInput.checked) {
-        ctx.save();
-        ctx.strokeStyle = strokeColorInput.value;
-        ctx.lineWidth = Number(strokeWidthInput.value) * MM_TO_PX;
-        const inset = ctx.lineWidth / 2;
-        ctx.strokeRect(x + inset, y + inset, Math.max(0, w - ctx.lineWidth), Math.max(0, h - ctx.lineWidth));
-        ctx.restore();
-      }
-    }
-    ctx.filter = "none";
-    // Apply RGB balance to the print-only composite. The source photo canvas stays untouched.
-    const pixels = ctx.getImageData(0, 0, sheetCanvas.width, sheetCanvas.height);
-    const data = pixels.data;
-    const redOffset = Number(redBalanceInput.value) * 1.5;
-    const greenOffset = Number(greenBalanceInput.value) * 1.5;
-    const blueOffset = Number(blueBalanceInput.value) * 1.5;
-    for (let p = 0; p < data.length; p += 4) {
-      data[p] = Math.max(0, Math.min(255, data[p] + redOffset));
-      data[p + 1] = Math.max(0, Math.min(255, data[p + 1] + greenOffset));
-      data[p + 2] = Math.max(0, Math.min(255, data[p + 2] + blueOffset));
-    }
-    ctx.putImageData(pixels, 0, 0);
-    outputContext.clearRect(0, 0, outputCanvas.width, outputCanvas.height);
-    outputContext.drawImage(sheetCanvas, 0, 0);
-    info.textContent = count + " foto · " + layout.cols + " kolom × " + layout.rows + " baris · ukuran fisik tiap foto " + photoSize.width.toFixed(1) + " × " + photoSize.height.toFixed(1) + " mm · kertas 100 × 150 mm · margin " + margin + " mm · jarak " + gap + " mm" + (strokeEnabledInput.checked ? " · stroke " + strokeWidthInput.value + " mm" : "") + " · " + (paperSelect.value === "glossy" ? "Glossy" : "Matte/Doff");
-    $("print-brightness-value").textContent = brightnessInput.value + "%";
-    $("print-contrast-value").textContent = contrastInput.value + "%";
-    $("print-saturation-value").textContent = saturationInput.value + "%";
-    $("print-red-balance-value").textContent = redBalanceInput.value;
-    $("print-green-balance-value").textContent = greenBalanceInput.value;
-    $("print-blue-balance-value").textContent = blueBalanceInput.value;
-    $("print-stroke-width-value").textContent = Number(strokeWidthInput.value).toFixed(1) + " mm";
-    printButton.disabled = false;
-    continueButton.disabled = false;
-    return true;
+    ctx.filter="brightness("+brightnessInput.value+"%) contrast("+contrastInput.value+"%) saturate("+saturationInput.value+"%)";
+    rects.forEach(rect=>{
+      drawPhotoCover(ctx,rect);
+      if(strokeEnabledInput.checked){ctx.save();ctx.strokeStyle=strokeColorInput.value;ctx.lineWidth=Number(strokeWidthInput.value)*MM_TO_PX;const inset=ctx.lineWidth/2;ctx.strokeRect(rect.x+inset,rect.y+inset,rect.w-ctx.lineWidth,rect.h-ctx.lineWidth);ctx.restore();}
+    });
+    ctx.filter="none";
+    const pixels=ctx.getImageData(0,0,sheetCanvas.width,sheetCanvas.height), data=pixels.data;
+    const ro=Number(redBalanceInput.value)*1.5, go=Number(greenBalanceInput.value)*1.5, bo=Number(blueBalanceInput.value)*1.5;
+    for(let p=0;p<data.length;p+=4){data[p]=Math.max(0,Math.min(255,data[p]+ro));data[p+1]=Math.max(0,Math.min(255,data[p+1]+go));data[p+2]=Math.max(0,Math.min(255,data[p+2]+bo));}
+    ctx.putImageData(pixels,0,0);
+    outputContext.clearRect(0,0,outputCanvas.width,outputCanvas.height);outputContext.drawImage(sheetCanvas,0,0);
+    info.textContent=SHEET_W_MM+" × "+SHEET_H_MM+" mm · A: "+selectedCount("A")+" foto "+selectedSize("A").width+" × "+selectedSize("A").height+" mm"+(sizeMode.value==="mixed"?" · B: "+selectedCount("B")+" foto "+selectedSize("B").width+" × "+selectedSize("B").height+" mm":"");
+    $("print-brightness-value").textContent=brightnessInput.value+"%";$("print-contrast-value").textContent=contrastInput.value+"%";$("print-saturation-value").textContent=saturationInput.value+"%";
+    $("print-red-balance-value").textContent=redBalanceInput.value;$("print-green-balance-value").textContent=greenBalanceInput.value;$("print-blue-balance-value").textContent=blueBalanceInput.value;
+    $("print-stroke-width-value").textContent=Number(strokeWidthInput.value).toFixed(1)+" mm";
+    printButton.disabled=false;continueButton.disabled=false;return true;
   }
 
   function canvasPoint(event) {
@@ -301,26 +246,6 @@
     };
   }
 
-  function photoRects() {
-    const count = selectedCount();
-    const margin = Number(marginSelect.value);
-    const gap = Number(gapSelect.value);
-    const size = selectedPhotoSize();
-    const layout = calculateLayout(count, size.width, size.height, margin, gap);
-    if (!layout) return [];
-    const startX = (SHEET_W_MM - layout.usedW) / 2;
-    const startY = (SHEET_H_MM - layout.usedH) / 2;
-    return Array.from({ length: count }, (_, i) => {
-      const col = i % layout.cols;
-      const row = Math.floor(i / layout.cols);
-      const w = layout.width * MM_TO_PX;
-      const h = layout.height * MM_TO_PX;
-      const fallbackX = (startX + col * (layout.width + gap)) * MM_TO_PX;
-      const fallbackY = (startY + row * (layout.height + gap)) * MM_TO_PX;
-      const saved = manualPositions.get(i);
-      return { index: i, x: saved ? saved.x : fallbackX, y: saved ? saved.y : fallbackY, w, h };
-    });
-  }
 
   outputCanvas.addEventListener("pointerdown", (event) => {
     if (printButton.disabled) return;
@@ -366,15 +291,30 @@
     }
     const imageUrl = getJpegUrl();
     popup.document.open();
-    popup.document.write('<!doctype html><html><head><meta charset="utf-8"><title>PFVISA Print 10x15 cm</title><style>@page{size:100mm 150mm;margin:0}html,body{margin:0;padding:0;width:100mm;height:150mm;background:#fff}img{display:block;width:100mm;height:150mm}</style></head><body><img src="' + imageUrl + '" alt="Kolase foto 10 x 15 cm"><script>window.onload=function(){setTimeout(function(){window.focus();window.print()},250)};<\/script></body></html>');
+    popup.document.write('<!doctype html><html><head><meta charset="utf-8"><title>PFVISA Print</title><style>@page{size:' + SHEET_W_MM + 'mm ' + SHEET_H_MM + 'mm;margin:0}html,body{margin:0;padding:0;width:' + SHEET_W_MM + 'mm;height:' + SHEET_H_MM + 'mm;background:#fff}img{display:block;width:' + SHEET_W_MM + 'mm;height:' + SHEET_H_MM + 'mm}</style></head><body><img src="' + imageUrl + '" alt="Kolase foto cetak"><script>window.onload=function(){setTimeout(function(){window.focus();window.print()},250)};<\\/script></body></html>');
     popup.document.close();
   }
 
-  countSelect.addEventListener("change", () => {
-    customCount.hidden = countSelect.value !== "custom";
-    drawCollage();
-  });
-  [customCount, marginSelect, gapSelect, brightnessInput, contrastInput, saturationInput, redBalanceInput, greenBalanceInput, blueBalanceInput, strokeEnabledInput, strokeColorInput, strokeWidthInput].forEach((el) => el.addEventListener("input", drawCollage));
+  function setOrientation(landscape) {
+    SHEET_W_MM=landscape?150:100; SHEET_H_MM=landscape?100:150;
+    sheetCanvas.width=Math.round(SHEET_W_MM*MM_TO_PX);sheetCanvas.height=Math.round(SHEET_H_MM*MM_TO_PX);
+    outputCanvas.width=sheetCanvas.width;outputCanvas.height=sheetCanvas.height;outputCanvas.style.aspectRatio=SHEET_W_MM+" / "+SHEET_H_MM;
+    orientationPortrait.setAttribute("aria-pressed",String(!landscape));orientationLandscape.setAttribute("aria-pressed",String(landscape));
+    orientationPortrait.className="button "+(landscape?"button-secondary":"button-primary");orientationLandscape.className="button "+(landscape?"button-primary":"button-secondary");
+    manualPositions.clear();drawCollage();
+  }
+  orientationPortrait.addEventListener("click",()=>setOrientation(false));
+  orientationLandscape.addEventListener("click",()=>setOrientation(true));
+  function updateSizeControls(){
+    $("print-custom-a").hidden=sizeA.value!=="custom";
+    $("print-custom-b").hidden=sizeMode.value!=="mixed"||sizeB.value!=="custom";
+    sizeB.disabled=sizeMode.value!=="mixed";countB.disabled=sizeMode.value!=="mixed";
+    manualPositions.clear();drawCollage();
+  }
+  [sizeMode,sizeA,sizeB].forEach(el=>el.addEventListener("change",updateSizeControls));
+  [countA,countB,$("print-width-a"),$("print-height-a"),$("print-width-b"),$("print-height-b")].forEach(el=>el.addEventListener("input",()=>{manualPositions.clear();drawCollage();}));
+  [marginSelect,gapSelect,brightnessInput,contrastInput,saturationInput,redBalanceInput,greenBalanceInput,blueBalanceInput,strokeEnabledInput,strokeColorInput,strokeWidthInput].forEach(el=>el.addEventListener("input",drawCollage));
+  updateSizeControls();
   [strokeEnabledInput, strokeColorInput].forEach((el) => el.addEventListener("change", drawCollage));
   [marginSelect, gapSelect].forEach((el) => el.addEventListener("change", drawCollage));
   paperSelect.addEventListener("change", () => {
