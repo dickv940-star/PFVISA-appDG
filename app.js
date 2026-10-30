@@ -1123,24 +1123,46 @@
   });
 
   previewCanvas.addEventListener("pointerdown", (event) => {
-    if (!cropMode || !sourceImage) return;
+    if (!cropMode || !sourceImage || originalPreview) return;
     dragPoint = { x: event.clientX, y: event.clientY };
-    previewCanvas.setPointerCapture(event.pointerId);
+    previewCanvas.classList.add("is-dragging");
+    if (previewCanvas.setPointerCapture) previewCanvas.setPointerCapture(event.pointerId);
     event.preventDefault();
   });
   previewCanvas.addEventListener("pointermove", (event) => {
-    if (!cropMode || !dragPoint || !sourceImage) return;
+    if (!cropMode || !dragPoint || !sourceImage || originalPreview) return;
     const rect = previewCanvas.getBoundingClientRect();
+    if (!rect.width || !rect.height) return;
     const dx = event.clientX - dragPoint.x;
     const dy = event.clientY - dragPoint.y;
     dragPoint = { x: event.clientX, y: event.clientY };
-    cropPanX = Math.max(-1, Math.min(1, cropPanX - (dx / Math.max(1, rect.width)) * 2));
-    cropPanY = Math.max(-1, Math.min(1, cropPanY - (dy / Math.max(1, rect.height)) * 2));
+
+    // Convert screen movement to source-image movement. This keeps the photo
+    // tracking the pointer at a natural 1:1 speed, regardless of zoom or aspect ratio.
+    const dimensions = getDimensions();
+    const ratio = dimensions.widthPx / dimensions.heightPx;
+    const crop = cropRect(sourceImage.naturalWidth, sourceImage.naturalHeight, ratio);
+    const maxX = Math.max(0, (sourceImage.naturalWidth - crop.width) / 2);
+    const maxY = Math.max(0, (sourceImage.naturalHeight - crop.height) / 2);
+    if (maxX > 0) {
+      cropPanX = Math.max(-1, Math.min(1,
+        cropPanX - (dx * crop.width / rect.width) / maxX
+      ));
+    }
+    if (maxY > 0) {
+      cropPanY = Math.max(-1, Math.min(1,
+        cropPanY - (dy * crop.height / rect.height) / maxY
+      ));
+    }
     renderPhoto();
   });
-  const endCropDrag = () => { dragPoint = null; };
+  const endCropDrag = () => {
+    dragPoint = null;
+    previewCanvas.classList.remove("is-dragging");
+  };
   previewCanvas.addEventListener("pointerup", endCropDrag);
   previewCanvas.addEventListener("pointercancel", endCropDrag);
+  previewCanvas.addEventListener("lostpointercapture", endCropDrag);
   customWidth.addEventListener("input", renderPhoto);
   customHeight.addEventListener("input", renderPhoto);
   // Recompute the face-aware crop after a custom dimension is committed so
