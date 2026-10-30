@@ -213,25 +213,35 @@
     }
     return result;
   }
+  function getOriginalPhoto() {
+    const original = typeof window.PFVISA_getOriginalPhoto === "function"
+      ? window.PFVISA_getOriginalPhoto()
+      : null;
+    return original && original.complete && original.naturalWidth > 0 ? original : null;
+  }
   function getRotatedSource(group) {
+    const original = getOriginalPhoto();
+    const source = original || photoCanvas;
+    const sourceWidth = original ? original.naturalWidth : photoCanvas.width;
+    const sourceHeight = original ? original.naturalHeight : photoCanvas.height;
     const angle = ((rotations[group] % 360) + 360) % 360;
-    if (!angle) return photoCanvas;
+    if (!angle) return { image: source, width: sourceWidth, height: sourceHeight };
     const rotated = document.createElement("canvas");
     const quarterTurn = angle === 90 || angle === 270;
-    rotated.width = quarterTurn ? photoCanvas.height : photoCanvas.width;
-    rotated.height = quarterTurn ? photoCanvas.width : photoCanvas.height;
+    rotated.width = quarterTurn ? sourceHeight : sourceWidth;
+    rotated.height = quarterTurn ? sourceWidth : sourceHeight;
     const rctx = rotated.getContext("2d");
     rctx.translate(rotated.width / 2, rotated.height / 2);
     rctx.rotate(angle * Math.PI / 180);
-    rctx.drawImage(photoCanvas, -photoCanvas.width / 2, -photoCanvas.height / 2);
-    return rotated;
+    rctx.drawImage(source, -sourceWidth / 2, -sourceHeight / 2, sourceWidth, sourceHeight);
+    return { image: rotated, width: rotated.width, height: rotated.height };
   }
   function drawPhotoCover(ctx, rect, group) {
     const source = getRotatedSource(group);
     const zoom = 1;
 
-    // Fit the complete rotated image inside the fixed print frame.
-    // Rotation must never crop the source at the default 100% zoom.
+    // Use the full uploaded source (not the editor's cropped preview), then
+    // contain it within the exact physical print frame without clipping.
     const fitScale = Math.min(rect.w / source.width, rect.h / source.height);
     const drawW = source.width * fitScale * zoom;
     const drawH = source.height * fitScale * zoom;
@@ -248,7 +258,7 @@
     ctx.clip();
     ctx.fillStyle = "#fff";
     ctx.fillRect(rect.x, rect.y, rect.w, rect.h);
-    ctx.drawImage(source, rect.x + offsetX, rect.y + offsetY, drawW, drawH);
+    ctx.drawImage(source.image, rect.x + offsetX, rect.y + offsetY, drawW, drawH);
     ctx.restore();
   }
 
