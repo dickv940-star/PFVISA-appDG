@@ -247,16 +247,29 @@
   }
   function drawPhotoCover(ctx, rect, group) {
     const source = getRotatedSource(group);
-    const ratio = rect.w / rect.h, sourceRatio = source.width / source.height;
-    let sw, sh;
-    if (sourceRatio > ratio) { sh=source.height; sw=sh*ratio; }
-    else { sw=source.width; sh=sw/ratio; }
-    const controls=cropControls[group];
-    const zoom=Math.max(1,Number(controls.zoom.value)/100);
-    sw/=zoom; sh/=zoom;
-    const maxX=Math.max(0,source.width-sw), maxY=Math.max(0,source.height-sh);
-    const sx=maxX*(Number(controls.x.value)/100), sy=maxY*(Number(controls.y.value)/100);
-    ctx.drawImage(source,sx,sy,sw,sh,rect.x,rect.y,rect.w,rect.h);
+    const controls = cropControls[group];
+    const zoom = Math.max(1, Number(controls.zoom.value) / 100);
+
+    // Fit the complete rotated image inside the fixed print frame.
+    // Rotation must never crop the source at the default 100% zoom.
+    const fitScale = Math.min(rect.w / source.width, rect.h / source.height);
+    const drawW = source.width * fitScale * zoom;
+    const drawH = source.height * fitScale * zoom;
+    const overflowX = Math.max(0, drawW - rect.w);
+    const overflowY = Math.max(0, drawH - rect.h);
+    const spareX = Math.max(0, rect.w - drawW);
+    const spareY = Math.max(0, rect.h - drawH);
+    const offsetX = spareX / 2 - overflowX * (Number(controls.x.value) / 100);
+    const offsetY = spareY / 2 - overflowY * (Number(controls.y.value) / 100);
+
+    ctx.save();
+    ctx.beginPath();
+    ctx.rect(rect.x, rect.y, rect.w, rect.h);
+    ctx.clip();
+    ctx.fillStyle = "#fff";
+    ctx.fillRect(rect.x, rect.y, rect.w, rect.h);
+    ctx.drawImage(source, rect.x + offsetX, rect.y + offsetY, drawW, drawH);
+    ctx.restore();
   }
 
   function drawCollage() {
