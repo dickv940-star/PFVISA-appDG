@@ -130,7 +130,7 @@
   function getJpegUrl() { return sheetCanvas.toDataURL("image/jpeg", 0.96); }
   function printSheet() {
     if (!drawCollage()) return;
-    const popup = window.open("", "_blank", "noopener,noreferrer");
+    const popup = window.open("", "_blank");
     if (!popup) {
       info.textContent = "Popup diblokir browser. Izinkan popup untuk situs ini lalu tekan Cetak kembali.";
       return;
