@@ -1,0 +1,27 @@
+{
+  "id": "./",
+  "name": "PFVISA — Visa Photo Studio",
+  "short_name": "PFVISA",
+  "description": "Studio foto visa untuk crop, ukuran foto, dan cetak 10 × 15 cm.",
+  "lang": "id",
+  "start_url": "./",
+  "scope": "./",
+  "display": "standalone",
+  "orientation": "portrait",
+  "background_color": "#f5f8f8",
+  "theme_color": "#10243a",
+  "icons": [
+    {
+      "src": "./logo-192x192.png",
+      "sizes": "192x192",
+      "type": "image/png",
+      "purpose": "any"
+    },
+    {
+      "src": "./logo-512x512.png",
+      "sizes": "512x512",
+      "type": "image/png",
+      "purpose": "any"
+    }
+  ]
+}
