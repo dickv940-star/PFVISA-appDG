@@ -222,17 +222,13 @@
     }
     return result;
   }
-  function getOriginalPhoto() {
-    const original = typeof window.PFVISA_getOriginalPhoto === "function"
-      ? window.PFVISA_getOriginalPhoto()
-      : null;
-    return original && original.complete && original.naturalWidth > 0 ? original : null;
-  }
   function getRotatedSource(group) {
-    const original = getOriginalPhoto();
-    const source = original || photoCanvas;
-    const sourceWidth = original ? original.naturalWidth : photoCanvas.width;
-    const sourceHeight = original ? original.naturalHeight : photoCanvas.height;
+    // Print exactly the crop currently visible in the editor preview canvas.
+    // Do not switch back to the original uploaded image: that would discard
+    // the user's crop position, zoom, and face framing.
+    const source = photoCanvas;
+    const sourceWidth = photoCanvas.width;
+    const sourceHeight = photoCanvas.height;
     const angle = ((rotations[group] % 360) + 360) % 360;
     if (!angle) return { image: source, width: sourceWidth, height: sourceHeight };
     const rotated = document.createElement("canvas");
