@@ -1,5 +1,5 @@
 "use strict";
-const CACHE_NAME = "pfvisa-shell-v7";
+const CACHE_NAME = "pfvisa-shell-v8";
 const APP_SHELL = [
   "./index.html",
   "./style.css",
