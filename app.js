@@ -519,6 +519,9 @@
       const dims = getDimensions();
       // Prefer exact targets; for documented ranges, use the midpoint.
       // Profiles without measurements use a clearly approximate fallback.
+      // Resolve targets from the currently selected country/document
+      // profile every time Auto Crop runs. Exact values take precedence;
+      // documented ranges use their midpoint as an initial crop target.
       const targetHeadMm = spec && spec.headMm != null
         ? spec.headMm
         : spec && spec.headMinMm != null && spec.headMaxMm != null
@@ -693,8 +696,19 @@
     const size = getSize();
     const dpi = clampNumber(dpiSelect.value, 72, 1200, 300);
     const spec = currentPhotoSpec();
-    const widthPx = spec && Number.isFinite(spec.pixelWidth) ? spec.pixelWidth : Math.max(1, Math.round((size.width / 25.4) * dpi));
-    const heightPx = spec && Number.isFinite(spec.pixelHeight) ? spec.pixelHeight : Math.max(1, Math.round((size.height / 25.4) * dpi));
+    // Use profile-specific pixel dimensions only while the profile's own
+    // preset is selected. A user-selected alternate/custom print size must
+    // determine the output dimensions instead of silently inheriting pixels
+    // from the country's default preset.
+    const profilePresetSelected = Boolean(
+      spec && spec.preset && sizePreset.value === spec.preset && sizePreset.value !== "custom"
+    );
+    const widthPx = profilePresetSelected && Number.isFinite(spec.pixelWidth)
+      ? spec.pixelWidth
+      : Math.max(1, Math.round((size.width / 25.4) * dpi));
+    const heightPx = profilePresetSelected && Number.isFinite(spec.pixelHeight)
+      ? spec.pixelHeight
+      : Math.max(1, Math.round((size.height / 25.4) * dpi));
     return {
       widthMm: size.width,
       heightMm: size.height,
