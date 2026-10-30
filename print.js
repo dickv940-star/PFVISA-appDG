@@ -60,10 +60,7 @@
     <p id="print-layout-info" class="print-layout-info">Unggah dan crop foto untuk membuat kolase.</p>
     <p id="print-paper-guide" class="print-instructions">Epson: pilih ukuran kertas 10 × 15 cm (4 × 6 inci), jenis media Glossy Photo Paper yang paling sesuai dengan kertas glossy Anda, kualitas High/Best Photo, orientasi potret, dan skala 100% / Actual size. Matikan “Fit to page”. Nama opsi media dapat berbeda menurut model Epson dan merek kertas.</p>
     <div class="print-collage-actions">
-      <button type="button" class="button button-secondary" id="print-refresh" disabled>Perbarui kolase</button>
-      <button type="button" class="button button-secondary" id="print-download" disabled>Simpan lembar JPG</button>
-      <button type="button" class="button button-secondary" id="print-pdf" disabled>Unduh PDF ukuran terkunci</button>
-      <button type="button" class="button button-primary" id="print-now" disabled>Cetak lembar 10 × 15 cm</button>
+      <button type="button" class="button button-primary" id="print-now" disabled><span aria-hidden="true">🖨</span> Print Foto 10 × 15 cm</button>
     </div>`;
   const printPage = document.createElement("section");
   printPage.className = "print-page";
@@ -132,7 +129,7 @@
     #print-sheet-preview{display:block;width:min(100%,320px);height:auto;aspect-ratio:2/3;background:#fff;box-shadow:0 12px 28px rgba(16,38,59,.18);border:1px solid #dce4e4}
     .print-layout-info{margin:12px 0 0;color:#176b62;font-size:12px;font-weight:700;text-align:center}
     .print-instructions{margin:12px 0;padding:12px;border-radius:10px;background:#f3f8f7;color:#536875;font-size:11px;line-height:1.65}
-    .print-collage-actions{display:grid;grid-template-columns:1fr 1fr 1fr 1.3fr;gap:9px;margin-top:14px}
+    .print-collage-actions{display:grid;grid-template-columns:minmax(220px,360px);justify-content:center;gap:9px;margin-top:14px}
     @media(max-width:700px){.print-collage-panel{padding:18px}.print-collage-controls{grid-template-columns:1fr 1fr}.print-collage-actions{grid-template-columns:1fr}.print-collage-controls label{align-self:end}}
     @media print{ @page{size:100mm 150mm;margin:0} body *{visibility:hidden!important} #pfvisa-print-root,#pfvisa-print-root *{visibility:visible!important} #pfvisa-print-root{position:fixed;inset:0;width:100mm;height:150mm;margin:0;padding:0} #pfvisa-print-root img{display:block;width:100mm;height:150mm;object-fit:fill} }
   `;
@@ -157,10 +154,7 @@
   const outputCanvas = $("print-sheet-preview");
   const outputContext = outputCanvas.getContext("2d");
   const info = $("print-layout-info");
-  const refreshButton = $("print-refresh");
-  const downloadButton = $("print-download");
   const printButton = $("print-now");
-  const pdfButton = $("print-pdf");
   outputCanvas.width = sheetCanvas.width;
   outputCanvas.height = sheetCanvas.height;
 
@@ -223,7 +217,7 @@
   function drawCollage() {
     if (photoCanvas.hidden || !photoCanvas.width || !photoCanvas.height) {
       info.textContent = "Unggah foto dan selesaikan crop terlebih dahulu.";
-      refreshButton.disabled = downloadButton.disabled = printButton.disabled = pdfButton.disabled = true;
+      printButton.disabled = true;
       continueButton.disabled = true;
       return false;
     }
@@ -238,7 +232,7 @@
     if (!layout) {
       const fitCount = maximumFit(photoSize.width, photoSize.height, margin, gap);
       info.textContent = "Jumlah " + count + " foto tidak muat pada kertas 10 × 15 cm dengan ukuran asli " + photoSize.width + " × " + photoSize.height + " mm. Kurangi jumlah foto (perkiraan kapasitas maksimal: " + fitCount + ").";
-      refreshButton.disabled = downloadButton.disabled = printButton.disabled = pdfButton.disabled = true;
+      printButton.disabled = true;
       continueButton.disabled = true;
       outputContext.clearRect(0, 0, outputCanvas.width, outputCanvas.height);
       outputContext.drawImage(sheetCanvas, 0, 0);
@@ -288,63 +282,12 @@
     $("print-green-balance-value").textContent = greenBalanceInput.value;
     $("print-blue-balance-value").textContent = blueBalanceInput.value;
     $("print-stroke-width-value").textContent = Number(strokeWidthInput.value).toFixed(1) + " mm";
-    refreshButton.disabled = downloadButton.disabled = printButton.disabled = pdfButton.disabled = false;
+    printButton.disabled = false;
     continueButton.disabled = false;
     return true;
   }
 
   function getJpegUrl() { return sheetCanvas.toDataURL("image/jpeg", 0.96); }
-  function createFixedSizePdf() {
-    if (!drawCollage()) return null;
-    // PDF MediaBox is expressed in points (1/72 inch): 100 x 150 mm exactly.
-    // Embed the rendered 300-DPI JPEG directly; do not rely on browser print CSS.
-    const jpegBase64 = sheetCanvas.toDataURL("image/jpeg", 0.98).split(",")[1];
-    const jpeg = Uint8Array.from(atob(jpegBase64), ch => ch.charCodeAt(0));
-    const pageW = SHEET_W_MM * 72 / 25.4;
-    const pageH = SHEET_H_MM * 72 / 25.4;
-    const enc = new TextEncoder();
-    const chunks = [];
-    const offsets = [0];
-    let total = 0;
-    const push = (part) => { chunks.push(part); total += part.length; };
-    const obj = (n, body) => {
-      offsets[n] = total;
-      push(enc.encode(n + " 0 obj\n" + body + "\nendobj\n"));
-    };
-    push(enc.encode("%PDF-1.4\n%PFVISA\n"));
-    obj(1, "<< /Type /Catalog /Pages 2 0 R >>");
-    obj(2, "<< /Type /Pages /Kids [3 0 R] /Count 1 >>");
-    obj(3, "<< /Type /Page /Parent 2 0 R /MediaBox [0 0 " + pageW.toFixed(5) + " " + pageH.toFixed(5) + "] /Resources << /XObject << /Im0 4 0 R >> >> /Contents 5 0 R >>");
-    offsets[4] = total;
-    push(enc.encode("4 0 obj\n<< /Type /XObject /Subtype /Image /Width " + sheetCanvas.width + " /Height " + sheetCanvas.height + " /ColorSpace /DeviceRGB /BitsPerComponent 8 /Filter /DCTDecode /Length " + jpeg.length + " >>\nstream\n"));
-    push(jpeg);
-    push(enc.encode("\nendstream\nendobj\n"));
-    const stream = "q\n" + pageW.toFixed(5) + " 0 0 " + pageH.toFixed(5) + " 0 0 cm\n/Im0 Do\nQ\n";
-    const streamBytes = enc.encode(stream);
-    offsets[5] = total;
-    push(enc.encode("5 0 obj\n<< /Length " + streamBytes.length + " >>\nstream\n"));
-    push(streamBytes);
-    push(enc.encode("endstream\nendobj\n"));
-    const xrefOffset = total;
-    let xref = "xref\n0 6\n0000000000 65535 f \n";
-    for (let i = 1; i <= 5; i++) xref += String(offsets[i]).padStart(10, "0") + " 00000 n \n";
-    xref += "trailer\n<< /Size 6 /Root 1 0 R >>\nstartxref\n" + xrefOffset + "\n%%EOF";
-    push(enc.encode(xref));
-    return new Blob(chunks, { type: "application/pdf" });
-  }
-
-  function downloadFixedSizePdf() {
-    const pdf = createFixedSizePdf();
-    if (!pdf) return;
-    const url = URL.createObjectURL(pdf);
-    const link = document.createElement("a");
-    link.href = url;
-    link.download = "pfvisa-10x15cm-actual-size.pdf";
-    link.click();
-    setTimeout(() => URL.revokeObjectURL(url), 1500);
-    info.textContent = "PDF ukuran halaman 100 × 150 mm berhasil disiapkan. Saat mencetak dari pembaca PDF, pilih Actual Size / 100% dan matikan Fit, Shrink, atau Scale.";
-  }
-
   function printSheet() {
     if (!drawCollage()) return;
     const popup = window.open("", "_blank");
@@ -383,15 +326,6 @@
     strokeWidthInput.value = "0.3";
     drawCollage();
   });
-  refreshButton.addEventListener("click", drawCollage);
-  downloadButton.addEventListener("click", () => {
-    if (!drawCollage()) return;
-    const link = document.createElement("a");
-    link.href = getJpegUrl();
-    link.download = "pfvisa-collage-10x15cm-300dpi.jpg";
-    link.click();
-  });
-  pdfButton.addEventListener("click", downloadFixedSizePdf);
   printButton.addEventListener("click", printSheet);
   document.addEventListener("click", (event) => {
     if (event.target.closest("#auto-crop-btn,#crop-mode-btn,#reset-btn")) setTimeout(drawCollage, 150);
@@ -405,7 +339,7 @@
   const observer = new MutationObserver(() => {
     if (photoCanvas.hidden || !photoCanvas.width || !photoCanvas.height) {
       continueButton.disabled = true;
-      refreshButton.disabled = downloadButton.disabled = printButton.disabled = pdfButton.disabled = true;
+      printButton.disabled = true;
       if (!printPage.hidden) showEditorPage();
     } else {
       drawCollage();
