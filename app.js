@@ -529,8 +529,12 @@
         : spec && spec.topMinMm != null && spec.topMaxMm != null
           ? (spec.topMinMm + spec.topMaxMm) / 2
           : null;
-      const headFraction = targetHeadMm != null ? targetHeadMm / dims.heightMm : 0.72;
-      const topMargin = targetTopMm != null ? targetTopMm / dims.heightMm : 0.07;
+      // Profiles without biometric dimensions get a neutral composition only.
+      // Never present the fallback as a country/document compliance target.
+      const hasHeadTarget = targetHeadMm != null;
+      const hasTopTarget = targetTopMm != null;
+      const headFraction = hasHeadTarget ? targetHeadMm / dims.heightMm : 0.72;
+      const topMargin = hasTopTarget ? targetTopMm / dims.heightMm : 0.07;
       const ratio = dims.widthPx / dims.heightPx;
       // Calculate crop scale from the detected head height, rather than using
       // a fixed zoom. At 100%, this computed crop matches the selected target.
@@ -538,9 +542,15 @@
       const cw = ch * ratio;
       const centerX = (leftEye.x + rightEye.x) / 2;
       const cropX = centerX - cw / 2;
-      const cropY = spec && spec.eyeLineMm != null
-        ? ((leftEye.y + rightEye.y) / 2) - ch * (1 - spec.eyeLineMm / dims.heightMm)
-        : headTop - ch * topMargin;
+      const eyeCenterY = (leftEye.y + rightEye.y) / 2;
+      // A configured top margin is the primary vertical anchor. Use eye-line
+      // only when the profile has no top-margin rule; this avoids silently
+      // overriding one explicit requirement with another.
+      const cropY = hasTopTarget
+        ? headTop - ch * topMargin
+        : spec && spec.eyeLineMm != null
+          ? eyeCenterY - ch * (1 - spec.eyeLineMm / dims.heightMm)
+          : headTop - ch * topMargin;
 
       // Do not shrink the crop to fit the uploaded image: doing so silently
       // changes the requested head-to-photo proportion. Out-of-frame areas
@@ -558,14 +568,18 @@
       renderPhoto();
       const edgeIssue = cropX < 0 || cropY < 0 || cropX + cw > w || cropY + ch > h;
       const targetDescription = [
-        targetHeadMm == null ? "tinggi kepala belum diverifikasi" : "target tinggi kepala " + mmLabel(targetHeadMm) + " mm",
-        targetTopMm == null ? "margin atas belum diverifikasi" : "target margin atas " + mmLabel(targetTopMm) + " mm"
+        targetHeadMm == null ? "target tinggi kepala belum ditetapkan" : "target tinggi kepala " + mmLabel(targetHeadMm) + " mm",
+        targetTopMm == null ? "target margin atas belum ditetapkan" : "target margin atas " + mmLabel(targetTopMm) + " mm"
       ].join(", ");
+      const profileVerified = spec && spec.profileStatus === "verified-official";
+      const compositionNote = hasHeadTarget || hasTopTarget
+        ? "Crop mengikuti parameter profil yang tersedia"
+        : "Crop memakai komposisi awal karena profil belum menetapkan ukuran kepala/margin";
       setStatus(
         edgeIssue
-          ? "Auto Crop menghitung posisi dan zoom (" + targetDescription + "), tetapi foto sumber terlalu rapat atau wajah terlalu dekat tepi. Periksa area putih dan atur crop manual bila perlu."
-          : "Auto Crop menghitung posisi wajah, tinggi kepala, margin atas, dan zoom (" + targetDescription + "). Puncak kepala merupakan estimasi; periksa hasil sebelum menyimpan.",
-        edgeIssue ? "error" : "success"
+          ? compositionNote + " (" + targetDescription + "), tetapi foto sumber terlalu rapat atau wajah terlalu dekat tepi. Periksa area putih dan atur crop manual."
+          : compositionNote + " (" + targetDescription + "). Puncak kepala merupakan estimasi; status profil " + (profileVerified ? "bersumber resmi" : "tetap perlu diverifikasi") + ". Periksa hasil sebelum menyimpan.",
+        edgeIssue ? "error" : (hasHeadTarget || hasTopTarget ? "success" : "")
       );
     } catch (error) {
       // Do not cache a rejected model promise forever; the next Auto Crop click
@@ -1038,6 +1052,11 @@
   previewCanvas.addEventListener("pointercancel", endCropDrag);
   customWidth.addEventListener("input", renderPhoto);
   customHeight.addEventListener("input", renderPhoto);
+  // Recompute the face-aware crop after a custom dimension is committed so
+  // the crop ratio cannot remain tied to the previous output size.
+  [customWidth, customHeight].forEach((field) => field.addEventListener("change", () => {
+    if (sourceImage && sizePreset.value === "custom") detectAndCropFace(sourceImage);
+  }));
   dpiSelect.addEventListener("change", renderPhoto);
   if (outputFormatSelect) outputFormatSelect.addEventListener("change", () => {
     const spec = currentPhotoSpec();
