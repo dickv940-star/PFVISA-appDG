@@ -704,6 +704,8 @@
   }
 
   let sourceImage = null;
+  // Expose only the in-memory original image to the print module; never upload it.
+  window.PFVISA_getOriginalPhoto = () => sourceImage;
   let sourceUrl = null;
   let activeFile = null;
 
