@@ -62,11 +62,14 @@
   function showInstallHelp() {
     const ua = window.navigator.userAgent;
     const isIOS = /iphone|ipad|ipod/i.test(ua);
+    const isAndroid = /android/i.test(ua);
     const isEdge = /edg\//i.test(ua);
     const isChrome = /chrome\//i.test(ua) && !isEdge;
     let message;
     if (isIOS) {
       message = 'Untuk memasang PFVISA di iPhone/iPad: buka halaman ini di Safari, ketuk tombol Bagikan, lalu pilih "Add to Home Screen" / "Tambahkan ke Layar Utama".';
+    } else if (isAndroid && isChrome) {
+      message = 'Chrome belum menyediakan dialog instal otomatis. Buka menu ⋮ di kanan atas, pilih Install app / Instal aplikasi (atau Tambahkan ke layar utama), lalu konfirmasi. Jika opsi belum muncul, perbarui Chrome dan muat ulang PFVISA.';
     } else if (isEdge) {
       message = 'Untuk memasang PFVISA di Microsoft Edge: buka menu ⋯, lalu pilih Apps > Install this site as an app.';
     } else if (isChrome) {
