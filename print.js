@@ -178,8 +178,10 @@
     }
     const value = preset?.value || "35x45";
     if (value === "2x2") return { width: 50.8, height: 50.8 };
-    const match = value.match(/^(\d+(?:\\.\\d+)?)x(\\d+(?:\\.\\d+)?)$/);
-    return match ? { width: Number(match[1]), height: Number(match[2]) } : { width: 35, height: 45 };
+    const dimensions = value.split("x").map(Number);
+    return dimensions.length === 2 && dimensions.every(Number.isFinite)
+      ? { width: dimensions[0], height: dimensions[1] }
+      : { width: 35, height: 45 };
   }
 
   function calculateLayout(count, photoW, photoH, margin, gap) {
