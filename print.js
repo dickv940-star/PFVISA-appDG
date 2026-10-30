@@ -38,6 +38,12 @@
       <input id="print-contrast" type="range" min="80" max="120" value="100" step="1">
       <label for="print-saturation">Saturasi <output id="print-saturation-value">100%</output></label>
       <input id="print-saturation" type="range" min="70" max="130" value="100" step="1">
+      <label for="print-red-balance">Keseimbangan merah <output id="print-red-balance-value">0</output></label>
+      <input id="print-red-balance" type="range" min="-20" max="20" value="0" step="1">
+      <label for="print-green-balance">Keseimbangan hijau <output id="print-green-balance-value">0</output></label>
+      <input id="print-green-balance" type="range" min="-20" max="20" value="0" step="1">
+      <label for="print-blue-balance">Keseimbangan biru <output id="print-blue-balance-value">0</output></label>
+      <input id="print-blue-balance" type="range" min="-20" max="20" value="0" step="1">
       <button type="button" class="button button-secondary" id="print-color-reset">Reset warna</button>
     </div>
     <div class="print-sheet-stage"><canvas id="print-sheet-preview" aria-label="Pratinjau kolase cetak 10 x 15 cm"></canvas></div>
@@ -77,6 +83,9 @@
   const brightnessInput = $("print-brightness");
   const contrastInput = $("print-contrast");
   const saturationInput = $("print-saturation");
+  const redBalanceInput = $("print-red-balance");
+  const greenBalanceInput = $("print-green-balance");
+  const blueBalanceInput = $("print-blue-balance");
   const paperGuide = $("print-paper-guide");
   const outputCanvas = $("print-sheet-preview");
   const outputContext = outputCanvas.getContext("2d");
@@ -139,12 +148,27 @@
       ctx.drawImage(photoCanvas, x, y, w, h);
     }
     ctx.filter = "none";
+    // Apply RGB balance to the print-only composite. The source photo canvas stays untouched.
+    const pixels = ctx.getImageData(0, 0, sheetCanvas.width, sheetCanvas.height);
+    const data = pixels.data;
+    const redOffset = Number(redBalanceInput.value) * 1.5;
+    const greenOffset = Number(greenBalanceInput.value) * 1.5;
+    const blueOffset = Number(blueBalanceInput.value) * 1.5;
+    for (let p = 0; p < data.length; p += 4) {
+      data[p] = Math.max(0, Math.min(255, data[p] + redOffset));
+      data[p + 1] = Math.max(0, Math.min(255, data[p + 1] + greenOffset));
+      data[p + 2] = Math.max(0, Math.min(255, data[p + 2] + blueOffset));
+    }
+    ctx.putImageData(pixels, 0, 0);
     outputContext.clearRect(0, 0, outputCanvas.width, outputCanvas.height);
     outputContext.drawImage(sheetCanvas, 0, 0);
     info.textContent = count + " foto · susunan " + layout.cols + " kolom × " + layout.rows + " baris · tiap foto sekitar " + layout.width.toFixed(1) + " × " + layout.height.toFixed(1) + " mm · lembar 10 × 15 cm · " + (paperSelect.value === "glossy" ? "Glossy" : "Matte/Doff");
     $("print-brightness-value").textContent = brightnessInput.value + "%";
     $("print-contrast-value").textContent = contrastInput.value + "%";
     $("print-saturation-value").textContent = saturationInput.value + "%";
+    $("print-red-balance-value").textContent = redBalanceInput.value;
+    $("print-green-balance-value").textContent = greenBalanceInput.value;
+    $("print-blue-balance-value").textContent = blueBalanceInput.value;
     refreshButton.disabled = downloadButton.disabled = printButton.disabled = false;
     return true;
   }
@@ -167,7 +191,7 @@
     customCount.hidden = countSelect.value !== "custom";
     drawCollage();
   });
-  [customCount, marginSelect, gapSelect, brightnessInput, contrastInput, saturationInput].forEach((el) => el.addEventListener("input", drawCollage));
+  [customCount, marginSelect, gapSelect, brightnessInput, contrastInput, saturationInput, redBalanceInput, greenBalanceInput, blueBalanceInput].forEach((el) => el.addEventListener("input", drawCollage));
   [marginSelect, gapSelect].forEach((el) => el.addEventListener("change", drawCollage));
   paperSelect.addEventListener("change", () => {
     paperGuide.textContent = paperSelect.value === "glossy"
@@ -179,6 +203,9 @@
     brightnessInput.value = "100";
     contrastInput.value = "100";
     saturationInput.value = "100";
+    redBalanceInput.value = "0";
+    greenBalanceInput.value = "0";
+    blueBalanceInput.value = "0";
     drawCollage();
   });
   refreshButton.addEventListener("click", drawCollage);
