@@ -285,7 +285,13 @@
     if (event.target.matches("#crop-zoom,#custom-width,#custom-height")) setTimeout(drawCollage, 100);
   });
   const observer = new MutationObserver(() => {
-    if (!photoCanvas.hidden) drawCollage();
+    if (photoCanvas.hidden || !photoCanvas.width || !photoCanvas.height) {
+      continueButton.disabled = true;
+      refreshButton.disabled = downloadButton.disabled = printButton.disabled = true;
+      if (!printPage.hidden) showEditorPage();
+    } else {
+      drawCollage();
+    }
   });
   observer.observe(photoCanvas, { attributes: true, attributeFilter: ["width", "height", "hidden"] });
   const initial = outputContext;
