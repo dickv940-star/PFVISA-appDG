@@ -30,10 +30,19 @@
       <select id="print-margin"><option value="2">2 mm</option><option value="3" selected>3 mm</option><option value="5">5 mm</option></select>
       <label for="print-gap">Jarak antar foto</label>
       <select id="print-gap"><option value="1">1 mm</option><option value="2" selected>2 mm</option><option value="3">3 mm</option></select>
+      <label for="print-paper">Jenis kertas Epson</label>
+      <select id="print-paper"><option value="glossy" selected>Glossy / mengkilap</option><option value="matte">Matte / doff</option></select>
+      <label for="print-brightness">Kecerahan <output id="print-brightness-value">100%</output></label>
+      <input id="print-brightness" type="range" min="80" max="120" value="100" step="1">
+      <label for="print-contrast">Kontras <output id="print-contrast-value">100%</output></label>
+      <input id="print-contrast" type="range" min="80" max="120" value="100" step="1">
+      <label for="print-saturation">Saturasi <output id="print-saturation-value">100%</output></label>
+      <input id="print-saturation" type="range" min="70" max="130" value="100" step="1">
+      <button type="button" class="button button-secondary" id="print-color-reset">Reset warna</button>
     </div>
     <div class="print-sheet-stage"><canvas id="print-sheet-preview" aria-label="Pratinjau kolase cetak 10 x 15 cm"></canvas></div>
     <p id="print-layout-info" class="print-layout-info">Unggah dan crop foto untuk membuat kolase.</p>
-    <p class="print-instructions">Ukuran lembar 100 × 150 mm · 300 DPI. Saat mencetak pilih kertas 10 × 15 cm (4 × 6 inci), orientasi potret, margin nol/tanpa border jika printer mendukung, dan skala 100% / Actual size. Matikan opsi “Fit to page”. Area cetak printer dapat menyisakan tepi putih.</p>
+    <p id="print-paper-guide" class="print-instructions">Epson: pilih ukuran kertas 10 × 15 cm (4 × 6 inci), jenis media Glossy Photo Paper yang paling sesuai dengan kertas glossy Anda, kualitas High/Best Photo, orientasi potret, dan skala 100% / Actual size. Matikan “Fit to page”. Nama opsi media dapat berbeda menurut model Epson dan merek kertas.</p>
     <div class="print-collage-actions">
       <button type="button" class="button button-secondary" id="print-refresh" disabled>Perbarui kolase</button>
       <button type="button" class="button button-secondary" id="print-download" disabled>Simpan lembar JPG</button>
@@ -46,7 +55,9 @@
     .print-collage-panel{grid-column:1/-1;margin-top:2px;padding:26px;background:#fff;border:1px solid #dce7e8;border-radius:22px;box-shadow:0 12px 34px rgba(18,48,63,.055)}
     .print-collage-heading{display:flex;align-items:flex-start;gap:12px;margin-bottom:18px}.print-collage-heading h2{margin:0;font-size:17px;color:#142f40}.print-collage-heading p{margin:4px 0 0;color:#627587;font-size:12px}
     .print-collage-controls{display:grid;grid-template-columns:repeat(6,minmax(0,1fr));gap:9px;align-items:center;margin-bottom:16px}
-    .print-collage-controls label{font-size:11px;font-weight:700;color:#39475a}.print-collage-controls select,.print-collage-controls input{width:100%;min-height:42px;padding:0 10px;border:1px solid #d4e1e3;border-radius:10px;background:#fff;color:#142a3b;font:inherit;font-size:12px}
+    .print-collage-controls label{font-size:11px;font-weight:700;color:#39475a}.print-collage-controls select,.print-collage-controls input:not([type="range"]){width:100%;min-height:42px;padding:0 10px;border:1px solid #d4e1e3;border-radius:10px;background:#fff;color:#142a3b;font:inherit;font-size:12px}
+    .print-collage-controls input[type="range"]{width:100%;accent-color:#177e78;min-height:30px}
+    .print-collage-controls output{float:right;color:#14736b;font-variant-numeric:tabular-nums}
     .print-sheet-stage{display:grid;place-items:center;padding:18px;background:#edf2f2;border:1px solid #e0e9e9;border-radius:14px}
     #print-sheet-preview{display:block;width:min(100%,320px);height:auto;aspect-ratio:2/3;background:#fff;box-shadow:0 12px 28px rgba(16,38,59,.18);border:1px solid #dce4e4}
     .print-layout-info{margin:12px 0 0;color:#176b62;font-size:12px;font-weight:700;text-align:center}
@@ -62,6 +73,11 @@
   const customCount = $("print-custom-count");
   const marginSelect = $("print-margin");
   const gapSelect = $("print-gap");
+  const paperSelect = $("print-paper");
+  const brightnessInput = $("print-brightness");
+  const contrastInput = $("print-contrast");
+  const saturationInput = $("print-saturation");
+  const paperGuide = $("print-paper-guide");
   const outputCanvas = $("print-sheet-preview");
   const outputContext = outputCanvas.getContext("2d");
   const info = $("print-layout-info");
@@ -107,6 +123,8 @@
     const ctx = sheetCanvas.getContext("2d", { alpha: false });
     ctx.fillStyle = "#fff";
     ctx.fillRect(0, 0, sheetCanvas.width, sheetCanvas.height);
+    // Color adjustments are applied only to the print sheet, never to the editor source canvas.
+    ctx.filter = "brightness(" + brightnessInput.value + "%) contrast(" + contrastInput.value + "%) saturate(" + saturationInput.value + "%)";
     const usedW = layout.cols * layout.width + (layout.cols - 1) * gap;
     const usedH = layout.rows * layout.height + (layout.rows - 1) * gap;
     const startX = (SHEET_W_MM - usedW) / 2;
@@ -120,9 +138,13 @@
       const h = layout.height * MM_TO_PX;
       ctx.drawImage(photoCanvas, x, y, w, h);
     }
+    ctx.filter = "none";
     outputContext.clearRect(0, 0, outputCanvas.width, outputCanvas.height);
     outputContext.drawImage(sheetCanvas, 0, 0);
-    info.textContent = count + " foto · susunan " + layout.cols + " kolom × " + layout.rows + " baris · tiap foto sekitar " + layout.width.toFixed(1) + " × " + layout.height.toFixed(1) + " mm · lembar 10 × 15 cm";
+    info.textContent = count + " foto · susunan " + layout.cols + " kolom × " + layout.rows + " baris · tiap foto sekitar " + layout.width.toFixed(1) + " × " + layout.height.toFixed(1) + " mm · lembar 10 × 15 cm · " + (paperSelect.value === "glossy" ? "Glossy" : "Matte/Doff");
+    $("print-brightness-value").textContent = brightnessInput.value + "%";
+    $("print-contrast-value").textContent = contrastInput.value + "%";
+    $("print-saturation-value").textContent = saturationInput.value + "%";
     refreshButton.disabled = downloadButton.disabled = printButton.disabled = false;
     return true;
   }
@@ -145,8 +167,20 @@
     customCount.hidden = countSelect.value !== "custom";
     drawCollage();
   });
-  [customCount, marginSelect, gapSelect].forEach((el) => el.addEventListener("input", drawCollage));
+  [customCount, marginSelect, gapSelect, brightnessInput, contrastInput, saturationInput].forEach((el) => el.addEventListener("input", drawCollage));
   [marginSelect, gapSelect].forEach((el) => el.addEventListener("change", drawCollage));
+  paperSelect.addEventListener("change", () => {
+    paperGuide.textContent = paperSelect.value === "glossy"
+      ? "Epson Glossy: pilih media Glossy Photo Paper / Premium Glossy Photo Paper sesuai jenis kertas yang benar-benar dipakai. Coba kualitas High/Best Photo dan koreksi warna driver standar terlebih dahulu."
+      : "Epson Matte/Doff: pilih media Matte Paper / Photo Quality Ink Jet Paper yang paling sesuai dengan kertas doff Anda. Hasil doff biasanya tampak kurang mengilap; jangan menaikkan saturasi atau kecerahan berlebihan.";
+    drawCollage();
+  });
+  $("print-color-reset").addEventListener("click", () => {
+    brightnessInput.value = "100";
+    contrastInput.value = "100";
+    saturationInput.value = "100";
+    drawCollage();
+  });
   refreshButton.addEventListener("click", drawCollage);
   downloadButton.addEventListener("click", () => {
     if (!drawCollage()) return;
