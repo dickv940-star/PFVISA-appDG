@@ -396,27 +396,24 @@
   function drawPhotoCover(ctx, rect, group) {
     const source = getRotatedSource(group);
 
-    // Use the Editor crop as the only source, then auto-crop its center to
-    // the selected print ratio. This fills the print frame without stretching
-    // and keeps the center/face framing stable across print-size changes.
-    const targetRatio = rect.w / rect.h;
-    const sourceRatio = source.width / source.height;
-    let sx = 0, sy = 0, sw = source.width, sh = source.height;
-    if (sourceRatio > targetRatio) {
-      sw = source.height * targetRatio;
-      sx = (source.width - sw) / 2;
-    } else if (sourceRatio < targetRatio) {
-      sh = source.width / targetRatio;
-      sy = (source.height - sh) / 2;
-    }
+    // Preserve the complete Editor crop. The print slot keeps its selected
+    // physical dimensions, while the image is contained without a second crop
+    // or distortion. Any aspect-ratio difference becomes white space.
+    const scale = Math.min(rect.w / source.width, rect.h / source.height);
+    const drawWidth = source.width * scale;
+    const drawHeight = source.height * scale;
+    const dx = rect.x + (rect.w - drawWidth) / 2;
+    const dy = rect.y + (rect.h - drawHeight) / 2;
 
     ctx.save();
     ctx.beginPath();
     ctx.rect(rect.x, rect.y, rect.w, rect.h);
     ctx.clip();
+    ctx.fillStyle = "#fff";
+    ctx.fillRect(rect.x, rect.y, rect.w, rect.h);
     ctx.imageSmoothingEnabled = true;
     ctx.imageSmoothingQuality = "high";
-    ctx.drawImage(source.image, sx, sy, sw, sh, rect.x, rect.y, rect.w, rect.h);
+    ctx.drawImage(source.image, 0, 0, source.width, source.height, dx, dy, drawWidth, drawHeight);
     ctx.restore();
   }
 
