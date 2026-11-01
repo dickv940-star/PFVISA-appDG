@@ -20,6 +20,21 @@
   panel.className = "print-collage-panel";
   panel.innerHTML = `
     <div class="print-collage-heading"><span class="step">04</span><div><h2>Print / Auto Collage</h2><p>Putar Foto A dan Foto B secara terpisah, lalu susun beberapa ukuran pada satu canvas cetak 10 × 15 cm.</p></div></div>
+    <section class="print-crop-section" aria-label="Penyesuaian crop khusus cetak">
+      <div class="print-crop-heading"><div><h3>Foto untuk dicetak</h3><p>Secara default memakai hasil crop dari Editor. Crop ulang hanya jika ingin mengubah komposisi khusus cetak.</p></div><span id="print-crop-state">Menggunakan crop Editor</span></div>
+      <button type="button" class="button button-secondary" id="print-recrop-toggle">Crop Ulang Foto</button>
+      <div id="print-recrop-tools" hidden>
+        <div class="print-recrop-preview"><canvas id="print-recrop-preview" aria-label="Pratinjau crop ulang untuk cetak"></canvas></div>
+        <label for="print-recrop-zoom">Zoom crop <output id="print-recrop-zoom-value">100%</output></label>
+        <input id="print-recrop-zoom" type="range" min="1" max="2.5" value="1" step="0.05">
+        <p>Geser foto pada pratinjau untuk mengatur posisi. Hasil ini hanya digunakan di halaman cetak dan tidak mengubah crop di Editor.</p>
+        <div class="print-recrop-actions">
+          <button type="button" class="button button-secondary" id="print-recrop-reset">Reset crop</button>
+          <button type="button" class="button button-primary" id="print-recrop-apply">Terapkan Crop Cetak</button>
+          <button type="button" class="button button-secondary" id="print-recrop-cancel">Batal</button>
+        </div>
+      </div>
+    </section>
     <div class="print-collage-controls">
       <div class="print-rotate-group">
         <strong>Rotasi Foto A</strong>
@@ -103,6 +118,21 @@
     .print-step-indicator .done{background:#e3f5ed;color:#08745f}
     .print-step-indicator .active{background:#e5f2ef;color:#176b62}
     #open-print-page{width:100%;margin-top:4px}
+    .print-crop-section{margin:0 0 20px;padding:16px;border:1px solid #d8e7e4;border-radius:14px;background:#f7fbfa}
+    .print-crop-heading{display:flex;align-items:flex-start;justify-content:space-between;gap:12px;margin-bottom:12px}
+    .print-crop-heading h3{margin:0;color:#183b46;font-size:14px}
+    .print-crop-heading p{margin:4px 0 0;color:#627587;font-size:11px;line-height:1.55}
+    #print-crop-state{flex:0 0 auto;padding:6px 9px;border-radius:999px;background:#e1f3ec;color:#08745f;font-size:10px;font-weight:800}
+    #print-recrop-toggle{width:100%}
+    #print-recrop-tools{margin-top:14px}
+    .print-recrop-preview{display:grid;place-items:center;max-height:360px;overflow:hidden;padding:14px;border-radius:12px;background:#eaf0f0}
+    #print-recrop-preview{display:block;max-width:min(100%,260px);max-height:330px;width:auto;height:auto;aspect-ratio:3/4;touch-action:none;cursor:grab;background:#fff;box-shadow:0 8px 22px rgba(16,38,59,.16)}
+    #print-recrop-preview:active{cursor:grabbing}
+    #print-recrop-tools>label{display:flex;justify-content:space-between;margin:12px 0 6px;font-size:12px;font-weight:750}
+    #print-recrop-zoom{width:100%;accent-color:#176b62}
+    #print-recrop-tools>p{margin:8px 0;color:#627587;font-size:11px;line-height:1.6}
+    .print-recrop-actions{display:flex;gap:8px;flex-wrap:wrap}
+    .print-recrop-actions .button{flex:1;min-width:130px}
     @media(max-width:520px){.print-page-nav{align-items:flex-start;flex-direction:column}}
   `;
   document.head.appendChild(navStyle);
@@ -113,6 +143,7 @@
       if (status) status.textContent = "Selesaikan crop foto terlebih dahulu sebelum membuka halaman cetak.";
       return;
     }
+    if (!captureEditorCrop()) return;
     if (!drawCollage()) return;
     if (introSection) introSection.hidden = true;
     editorWorkspace.hidden = true;
@@ -167,6 +198,17 @@
   const strokeWidthInput = $("print-stroke-width");
   const paperGuide = $("print-paper-guide");
   const outputCanvas = $("print-sheet-preview");
+  const printPhotoCanvas = document.createElement("canvas");
+  const recropPreview = $("print-recrop-preview");
+  const recropTools = $("print-recrop-tools");
+  const recropToggle = $("print-recrop-toggle");
+  const recropZoom = $("print-recrop-zoom");
+  const recropZoomValue = $("print-recrop-zoom-value");
+  const recropState = $("print-crop-state");
+  const recropBaseCanvas = document.createElement("canvas");
+  const recropBaseContext = recropBaseCanvas.getContext("2d");
+  const recropPreviewContext = recropPreview.getContext("2d");
+  let recropScale = 1, recropPanX = 0, recropPanY = 0, recropDragging = null, recropActive = false;
   const outputContext = outputCanvas.getContext("2d");
   const info = $("print-layout-info");
   const printButton = $("print-now");
@@ -174,6 +216,85 @@
   outputCanvas.height = sheetCanvas.height;
   const manualPositions = new Map();
   let activeDrag = null;
+
+  function captureEditorCrop() {
+    if (photoCanvas.hidden || !photoCanvas.width || !photoCanvas.height) return false;
+    printPhotoCanvas.width = photoCanvas.width;
+    printPhotoCanvas.height = photoCanvas.height;
+    printPhotoCanvas.getContext("2d", { alpha: false }).drawImage(photoCanvas, 0, 0);
+    recropBaseCanvas.width = photoCanvas.width;
+    recropBaseCanvas.height = photoCanvas.height;
+    recropBaseContext.drawImage(photoCanvas, 0, 0);
+    recropScale = 1; recropPanX = 0; recropPanY = 0;
+    recropZoom.value = "1"; recropZoomValue.textContent = "100%";
+    recropActive = false; recropTools.hidden = true;
+    recropToggle.textContent = "Crop Ulang Foto";
+    recropState.textContent = "Menggunakan crop Editor";
+    drawRecropPreview();
+    return true;
+  }
+
+  function drawRecropPreview() {
+    if (!recropBaseCanvas.width || !recropBaseCanvas.height) return;
+    const width = recropPreview.width = recropBaseCanvas.width;
+    const height = recropPreview.height = recropBaseCanvas.height;
+    const context = recropPreviewContext;
+    context.fillStyle = "#fff"; context.fillRect(0, 0, width, height);
+    const scaledWidth = width * recropScale, scaledHeight = height * recropScale;
+    const maxX = Math.max(0, (scaledWidth - width) / 2), maxY = Math.max(0, (scaledHeight - height) / 2);
+    const dx = (width - scaledWidth) / 2 + recropPanX * maxX;
+    const dy = (height - scaledHeight) / 2 + recropPanY * maxY;
+    context.imageSmoothingEnabled = true; context.imageSmoothingQuality = "high";
+    context.drawImage(recropBaseCanvas, dx, dy, scaledWidth, scaledHeight);
+    recropZoomValue.textContent = Math.round(recropScale * 100) + "%";
+  }
+
+  function applyPrintRecrop() {
+    if (!recropBaseCanvas.width || !recropBaseCanvas.height) return;
+    printPhotoCanvas.width = recropBaseCanvas.width;
+    printPhotoCanvas.height = recropBaseCanvas.height;
+    printPhotoCanvas.getContext("2d", { alpha: false }).drawImage(recropPreview, 0, 0);
+    recropActive = false; recropTools.hidden = true;
+    recropToggle.textContent = "Ubah Crop Cetak";
+    recropState.textContent = "Crop khusus cetak diterapkan";
+    drawCollage();
+  }
+
+  recropToggle.addEventListener("click", () => {
+    if (!recropBaseCanvas.width && !captureEditorCrop()) return;
+    recropActive = !recropActive; recropTools.hidden = !recropActive;
+    if (recropActive) {
+      recropScale = 1; recropPanX = 0; recropPanY = 0; recropZoom.value = "1";
+      drawRecropPreview();
+    }
+  });
+  recropZoom.addEventListener("input", () => {
+    recropScale = Math.max(1, Math.min(2.5, Number(recropZoom.value) || 1));
+    drawRecropPreview();
+  });
+  $("print-recrop-reset").addEventListener("click", () => {
+    recropScale = 1; recropPanX = 0; recropPanY = 0; recropZoom.value = "1";
+    drawRecropPreview();
+  });
+  $("print-recrop-apply").addEventListener("click", applyPrintRecrop);
+  $("print-recrop-cancel").addEventListener("click", () => { recropActive = false; recropTools.hidden = true; });
+  recropPreview.addEventListener("pointerdown", (event) => {
+    if (!recropActive) return;
+    recropDragging = { x: event.clientX, y: event.clientY };
+    recropPreview.setPointerCapture(event.pointerId); event.preventDefault();
+  });
+  recropPreview.addEventListener("pointermove", (event) => {
+    if (!recropActive || !recropDragging || recropScale <= 1) return;
+    const rect = recropPreview.getBoundingClientRect();
+    const maxX = Math.max(1, recropPreview.width * (recropScale - 1) / 2);
+    const maxY = Math.max(1, recropPreview.height * (recropScale - 1) / 2);
+    recropPanX = Math.max(-1, Math.min(1, recropPanX + (event.clientX - recropDragging.x) * recropPreview.width / Math.max(1, rect.width) / maxX));
+    recropPanY = Math.max(-1, Math.min(1, recropPanY + (event.clientY - recropDragging.y) * recropPreview.height / Math.max(1, rect.height) / maxY));
+    recropDragging = { x: event.clientX, y: event.clientY }; drawRecropPreview();
+  });
+  const endRecropDrag = () => { recropDragging = null; };
+  recropPreview.addEventListener("pointerup", endRecropDrag);
+  recropPreview.addEventListener("pointercancel", endRecropDrag);
 
   function selectedSize(which) {
     const select = which === "A" ? sizeA : sizeB;
@@ -226,9 +347,9 @@
     // Print exactly the crop currently visible in the editor preview canvas.
     // Do not switch back to the original uploaded image: that would discard
     // the user's crop position, zoom, and face framing.
-    const source = photoCanvas;
-    const sourceWidth = photoCanvas.width;
-    const sourceHeight = photoCanvas.height;
+    const source = printPhotoCanvas.width ? printPhotoCanvas : photoCanvas;
+    const sourceWidth = source.width;
+    const sourceHeight = source.height;
     const angle = ((rotations[group] % 360) + 360) % 360;
     if (!angle) return { image: source, width: sourceWidth, height: sourceHeight };
     const rotated = document.createElement("canvas");
