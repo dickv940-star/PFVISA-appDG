@@ -396,19 +396,15 @@
   function drawPhotoCover(ctx, rect, group) {
     const source = getRotatedSource(group);
 
-    // Treat the editor's finished crop as the master image. For each print
-    // size, make a centered secondary crop to the exact target aspect ratio,
-    // then fill the physical frame edge-to-edge without stretching or bars.
-    const targetRatio = rect.w / rect.h;
-    const sourceRatio = source.width / source.height;
-    let sx = 0, sy = 0, sw = source.width, sh = source.height;
-    if (sourceRatio > targetRatio) {
-      sw = source.height * targetRatio;
-      sx = (source.width - sw) / 2;
-    } else if (sourceRatio < targetRatio) {
-      sh = source.width / targetRatio;
-      sy = (source.height - sh) / 2;
-    }
+    // Preserve the complete crop made in the Editor. Print sizes can have a
+    // different aspect ratio, so fit the whole source inside the print frame
+    // and leave any unused area white. Never crop the Editor result a second
+    // time or stretch it non-uniformly.
+    const scale = Math.min(rect.w / source.width, rect.h / source.height);
+    const drawWidth = source.width * scale;
+    const drawHeight = source.height * scale;
+    const dx = rect.x + (rect.w - drawWidth) / 2;
+    const dy = rect.y + (rect.h - drawHeight) / 2;
 
     ctx.save();
     ctx.beginPath();
@@ -416,7 +412,9 @@
     ctx.clip();
     ctx.fillStyle = "#fff";
     ctx.fillRect(rect.x, rect.y, rect.w, rect.h);
-    ctx.drawImage(source.image, sx, sy, sw, sh, rect.x, rect.y, rect.w, rect.h);
+    ctx.imageSmoothingEnabled = true;
+    ctx.imageSmoothingQuality = "high";
+    ctx.drawImage(source.image, dx, dy, drawWidth, drawHeight);
     ctx.restore();
   }
 
