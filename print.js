@@ -235,6 +235,7 @@
     recropZoom.value = "1"; recropZoomValue.textContent = "100%";
     recropActive = false; recropTools.hidden = true;
     recropToggle.textContent = "Crop Ulang Foto";
+    updateSizeControls();
     recropState.textContent = "Menggunakan crop Editor";
     drawRecropPreview();
     return true;
@@ -272,12 +273,14 @@
     recropActive = false; recropTools.hidden = true;
     recropToggle.textContent = "Ubah Crop Cetak";
     recropState.textContent = "Crop khusus cetak diterapkan";
+    updateSizeControls();
     drawCollage();
   }
 
   recropToggle.addEventListener("click", () => {
     if (!printPhotoCanvas.width && !captureEditorCrop()) return;
     recropActive = !recropActive; recropTools.hidden = !recropActive;
+    updateSizeControls();
     if (recropActive) {
       // Start each edit from the currently visible print crop and keep a
       // committed copy so Cancel restores the previous result.
@@ -307,6 +310,7 @@
       printPhotoCanvas.getContext("2d", { alpha: false }).drawImage(committedPrintCanvas, 0, 0);
     }
     recropActive = false; recropTools.hidden = true;
+    updateSizeControls();
     drawCollage();
   });
   recropPreview.addEventListener("pointerdown", (event) => {
@@ -330,7 +334,7 @@
   function selectedSize(which) {
     const select = which === "A" ? sizeA : sizeB;
     let dimensions;
-    if (select.value === "editor") {
+    if (select.value === "editor" || (!printCropOverride && !recropActive)) {
       const editorSize = typeof window.PFVISA_getPhotoDimensions === "function"
         ? window.PFVISA_getPhotoDimensions()
         : null;
@@ -536,7 +540,10 @@
   function updateSizeControls(){
     $("print-custom-a").hidden=sizeA.value!=="custom";
     $("print-custom-b").hidden=sizeMode.value!=="mixed"||sizeB.value!=="custom";
-    sizeB.disabled=sizeMode.value!=="mixed";countB.disabled=sizeMode.value!=="mixed";$("print-rotate-group-b").hidden=sizeMode.value!=="mixed";
+    const allowPrintSizeOverride = printCropOverride || recropActive;
+    sizeA.disabled = !allowPrintSizeOverride;
+    sizeB.disabled = sizeMode.value!=="mixed" || !allowPrintSizeOverride;
+    countB.disabled=sizeMode.value!=="mixed";$("print-rotate-group-b").hidden=sizeMode.value!=="mixed";
     manualPositions.clear();drawCollage();
   }
   [sizeMode,sizeA,sizeB].forEach(el=>el.addEventListener("change",updateSizeControls));
