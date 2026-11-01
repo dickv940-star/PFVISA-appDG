@@ -44,7 +44,7 @@
       <label for="print-size-mode">Mode ukuran foto</label>
       <select id="print-size-mode"><option value="mixed" selected>Dua ukuran</option><option value="single">Satu ukuran saja</option></select>
       <label for="print-size-a">Ukuran foto A</label>
-      <select id="print-size-a"><option value="2x3">2 × 3 cm</option><option value="3x4" selected>3 × 4 cm</option><option value="4x6">4 × 6 cm</option><option value="custom">Ukuran bebas</option></select>
+      <select id="print-size-a"><option value="editor" selected>Ikuti ukuran Editor</option><option value="2x3">2 × 3 cm</option><option value="3x4">3 × 4 cm</option><option value="4x6">4 × 6 cm</option><option value="custom">Ukuran bebas</option></select>
       <label for="print-count-a">Jumlah foto A</label><input id="print-count-a" type="number" min="0" max="30" value="4">
       <div class="print-rotate-group" id="print-rotate-group-b">
         <strong>Rotasi Foto B</strong>
@@ -53,7 +53,7 @@
       </div>
       <div class="print-custom-size" id="print-custom-a" hidden><label>Lebar A (mm)<input id="print-width-a" type="number" min="5" max="100" value="30"></label><label>Tinggi A (mm)<input id="print-height-a" type="number" min="5" max="100" value="40"></label></div>
       <label for="print-size-b">Ukuran foto B</label>
-      <select id="print-size-b"><option value="2x3">2 × 3 cm</option><option value="3x4">3 × 4 cm</option><option value="4x6" selected>4 × 6 cm</option><option value="custom">Ukuran bebas</option></select>
+      <select id="print-size-b"><option value="editor" selected>Ikuti ukuran Editor</option><option value="2x3">2 × 3 cm</option><option value="3x4">3 × 4 cm</option><option value="4x6">4 × 6 cm</option><option value="custom">Ukuran bebas</option></select>
       <label for="print-count-b">Jumlah foto B</label><input id="print-count-b" type="number" min="0" max="30" value="2">
       <div class="print-custom-size" id="print-custom-b" hidden><label>Lebar B (mm)<input id="print-width-b" type="number" min="5" max="100" value="40"></label><label>Tinggi B (mm)<input id="print-height-b" type="number" min="5" max="100" value="60"></label></div>
       <label for="print-margin">Margin kertas</label>
@@ -330,7 +330,14 @@
   function selectedSize(which) {
     const select = which === "A" ? sizeA : sizeB;
     let dimensions;
-    if (select.value === "custom") {
+    if (select.value === "editor") {
+      const editorSize = typeof window.PFVISA_getPhotoDimensions === "function"
+        ? window.PFVISA_getPhotoDimensions()
+        : null;
+      dimensions = editorSize && editorSize.widthMm > 0 && editorSize.heightMm > 0
+        ? { width: editorSize.widthMm, height: editorSize.heightMm }
+        : { width: 35, height: 45 };
+    } else if (select.value === "custom") {
       dimensions = {
         width: Math.max(5, Number($(which === "A" ? "print-width-a" : "print-width-b").value) || 30),
         height: Math.max(5, Number($(which === "A" ? "print-height-a" : "print-height-b").value) || 40)
