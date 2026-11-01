@@ -199,6 +199,7 @@
   const paperGuide = $("print-paper-guide");
   const outputCanvas = $("print-sheet-preview");
   const printPhotoCanvas = document.createElement("canvas");
+  const committedPrintCanvas = document.createElement("canvas");
   const recropPreview = $("print-recrop-preview");
   const recropTools = $("print-recrop-tools");
   const recropToggle = $("print-recrop-toggle");
@@ -209,6 +210,7 @@
   const recropBaseContext = recropBaseCanvas.getContext("2d");
   const recropPreviewContext = recropPreview.getContext("2d");
   let recropScale = 1, recropPanX = 0, recropPanY = 0, recropDragging = null, recropActive = false;
+  let printCropOverride = false;
   const outputContext = outputCanvas.getContext("2d");
   const info = $("print-layout-info");
   const printButton = $("print-now");
@@ -225,6 +227,10 @@
     recropBaseCanvas.width = photoCanvas.width;
     recropBaseCanvas.height = photoCanvas.height;
     recropBaseContext.drawImage(photoCanvas, 0, 0);
+    committedPrintCanvas.width = printPhotoCanvas.width;
+    committedPrintCanvas.height = printPhotoCanvas.height;
+    committedPrintCanvas.getContext("2d", { alpha: false }).drawImage(printPhotoCanvas, 0, 0);
+    printCropOverride = false;
     recropScale = 1; recropPanX = 0; recropPanY = 0;
     recropZoom.value = "1"; recropZoomValue.textContent = "100%";
     recropActive = false; recropTools.hidden = true;
@@ -247,6 +253,11 @@
     context.imageSmoothingEnabled = true; context.imageSmoothingQuality = "high";
     context.drawImage(recropBaseCanvas, dx, dy, scaledWidth, scaledHeight);
     recropZoomValue.textContent = Math.round(recropScale * 100) + "%";
+    // Live-update the print source while the user adjusts zoom or position.
+    printPhotoCanvas.width = width;
+    printPhotoCanvas.height = height;
+    printPhotoCanvas.getContext("2d", { alpha: false }).drawImage(recropPreview, 0, 0);
+    if (!printPage.hidden) drawCollage();
   }
 
   function applyPrintRecrop() {
@@ -254,6 +265,10 @@
     printPhotoCanvas.width = recropBaseCanvas.width;
     printPhotoCanvas.height = recropBaseCanvas.height;
     printPhotoCanvas.getContext("2d", { alpha: false }).drawImage(recropPreview, 0, 0);
+    committedPrintCanvas.width = printPhotoCanvas.width;
+    committedPrintCanvas.height = printPhotoCanvas.height;
+    committedPrintCanvas.getContext("2d", { alpha: false }).drawImage(printPhotoCanvas, 0, 0);
+    printCropOverride = true;
     recropActive = false; recropTools.hidden = true;
     recropToggle.textContent = "Ubah Crop Cetak";
     recropState.textContent = "Crop khusus cetak diterapkan";
@@ -261,9 +276,17 @@
   }
 
   recropToggle.addEventListener("click", () => {
-    if (!recropBaseCanvas.width && !captureEditorCrop()) return;
+    if (!printPhotoCanvas.width && !captureEditorCrop()) return;
     recropActive = !recropActive; recropTools.hidden = !recropActive;
     if (recropActive) {
+      // Start each edit from the currently visible print crop and keep a
+      // committed copy so Cancel restores the previous result.
+      committedPrintCanvas.width = printPhotoCanvas.width;
+      committedPrintCanvas.height = printPhotoCanvas.height;
+      committedPrintCanvas.getContext("2d", { alpha: false }).drawImage(printPhotoCanvas, 0, 0);
+      recropBaseCanvas.width = printPhotoCanvas.width;
+      recropBaseCanvas.height = printPhotoCanvas.height;
+      recropBaseContext.drawImage(printPhotoCanvas, 0, 0);
       recropScale = 1; recropPanX = 0; recropPanY = 0; recropZoom.value = "1";
       drawRecropPreview();
     }
@@ -277,7 +300,15 @@
     drawRecropPreview();
   });
   $("print-recrop-apply").addEventListener("click", applyPrintRecrop);
-  $("print-recrop-cancel").addEventListener("click", () => { recropActive = false; recropTools.hidden = true; });
+  $("print-recrop-cancel").addEventListener("click", () => {
+    if (committedPrintCanvas.width) {
+      printPhotoCanvas.width = committedPrintCanvas.width;
+      printPhotoCanvas.height = committedPrintCanvas.height;
+      printPhotoCanvas.getContext("2d", { alpha: false }).drawImage(committedPrintCanvas, 0, 0);
+    }
+    recropActive = false; recropTools.hidden = true;
+    drawCollage();
+  });
   recropPreview.addEventListener("pointerdown", (event) => {
     if (!recropActive) return;
     recropDragging = { x: event.clientX, y: event.clientY };
@@ -525,8 +556,18 @@
     drawCollage();
   });
   printButton.addEventListener("click", printSheet);
+  photoCanvas.addEventListener("pfvisa:editor-crop-updated", () => {
+    // The editor preview canvas is the master source. Any completed crop
+    // update invalidates a previous print-only override.
+    if (!captureEditorCrop()) return;
+    if (!printPage.hidden) drawCollage();
+  });
   document.addEventListener("click", (event) => {
-    if (event.target.closest("#auto-crop-btn,#crop-mode-btn,#reset-btn")) setTimeout(drawCollage, 150);
+    if (event.target.closest("#auto-crop-btn,#crop-mode-btn,#reset-btn")) {
+      setTimeout(() => {
+        if (!printCropOverride && captureEditorCrop() && !printPage.hidden) drawCollage();
+      }, 150);
+    }
   });
   document.addEventListener("change", (event) => {
     if (event.target.matches("#size-preset,#custom-width,#custom-height,#country-select,#document-select,#dpi")) setTimeout(drawCollage, 150);
