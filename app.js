@@ -834,6 +834,7 @@
       resetBtn.disabled = false;
       cropModeBtn.disabled = false;
       autoCropBtn.disabled = false;
+      previewCanvas.dispatchEvent(new Event("pfvisa:editor-crop-updated"));
       return;
     }
 
@@ -871,6 +872,7 @@
     resetBtn.disabled = false;
     cropModeBtn.disabled = false;
     autoCropBtn.disabled = false;
+    previewCanvas.dispatchEvent(new Event("pfvisa:editor-crop-updated"));
   }
 
   function updateMeasurements(crop) {
