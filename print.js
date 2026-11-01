@@ -144,7 +144,9 @@
       return;
     }
     if (!captureEditorCrop()) return;
-    if (!drawCollage()) return;
+    // Navigation must not depend on whether the current collage fits.
+    // The user needs to reach Print to adjust sizes/counts when it does not.
+    drawCollage();
     if (introSection) introSection.hidden = true;
     editorWorkspace.hidden = true;
     printPage.hidden = false;
@@ -457,7 +459,8 @@
     const total=selectedCount("A")+(sizeMode.value==="mixed"?selectedCount("B"):0);
     if (!rects || !total || rects.length!==total) {
       info.textContent = !total ? "Atur jumlah foto minimal satu." : "Foto tidak muat pada kertas. Kurangi jumlah foto atau pilih ukuran lebih kecil.";
-      printButton.disabled=true; continueButton.disabled=true;
+      printButton.disabled=true;
+      continueButton.disabled = photoCanvas.hidden || !photoCanvas.width || !photoCanvas.height;
       outputContext.clearRect(0,0,outputCanvas.width,outputCanvas.height); outputContext.drawImage(sheetCanvas,0,0); return false;
     }
     ctx.filter="brightness("+brightnessInput.value+"%) contrast("+contrastInput.value+"%) saturate("+saturationInput.value+"%)";
