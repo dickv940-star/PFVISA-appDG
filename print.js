@@ -473,10 +473,36 @@
     const rects=photoRects();
     const total=selectedCount("A")+(sizeMode.value==="mixed"?selectedCount("B"):0);
     if (!rects || !total || rects.length!==total) {
-      info.textContent = !total ? "Atur jumlah foto minimal satu." : "Foto tidak muat pada kertas. Kurangi jumlah foto atau pilih ukuran lebih kecil.";
-      printButton.disabled=true;
+      info.textContent = !total ? "Atur jumlah foto minimal satu." : "Foto tidak muat pada kertas. Pratinjau satu foto ditampilkan; kurangi jumlah foto atau pilih ukuran lebih kecil sebelum mencetak.";
+      printButton.disabled = true;
       continueButton.disabled = photoCanvas.hidden || !photoCanvas.width || !photoCanvas.height;
-      outputContext.clearRect(0,0,outputCanvas.width,outputCanvas.height); outputContext.drawImage(sheetCanvas,0,0); return false;
+
+      // Keep the Editor crop visible even when the requested collage cannot
+      // fit on the physical sheet. This is a preview-only fallback; printing
+      // stays disabled until the exact-size layout is valid.
+      ctx.save();
+      ctx.fillStyle = "#fff";
+      ctx.fillRect(0, 0, sheetCanvas.width, sheetCanvas.height);
+      const sample = selectedSize("A");
+      const availableW = (SHEET_W_MM - 2 * Number(marginSelect.value)) * MM_TO_PX;
+      const availableH = (SHEET_H_MM - 2 * Number(marginSelect.value)) * MM_TO_PX;
+      const scale = Math.min(
+        1,
+        availableW / (sample.width * MM_TO_PX),
+        availableH / (sample.height * MM_TO_PX)
+      );
+      const sampleW = sample.width * MM_TO_PX * scale;
+      const sampleH = sample.height * MM_TO_PX * scale;
+      drawPhotoCover(ctx, {
+        x: (sheetCanvas.width - sampleW) / 2,
+        y: (sheetCanvas.height - sampleH) / 2,
+        w: sampleW,
+        h: sampleH
+      }, "A");
+      ctx.restore();
+      outputContext.clearRect(0, 0, outputCanvas.width, outputCanvas.height);
+      outputContext.drawImage(sheetCanvas, 0, 0);
+      return false;
     }
     ctx.filter="brightness("+brightnessInput.value+"%) contrast("+contrastInput.value+"%) saturate("+saturationInput.value+"%)";
     rects.forEach(rect=>{
