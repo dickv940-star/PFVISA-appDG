@@ -211,6 +211,8 @@
   const recropPreviewContext = recropPreview.getContext("2d");
   let recropScale = 1, recropPanX = 0, recropPanY = 0, recropDragging = null, recropActive = false;
   let printCropOverride = false;
+  let printSizeOverride = false;
+  let recropSizeSnapshot = null;
   const outputContext = outputCanvas.getContext("2d");
   const info = $("print-layout-info");
   const printButton = $("print-now");
@@ -231,6 +233,9 @@
     committedPrintCanvas.height = printPhotoCanvas.height;
     committedPrintCanvas.getContext("2d", { alpha: false }).drawImage(printPhotoCanvas, 0, 0);
     printCropOverride = false;
+    printSizeOverride = false;
+    sizeA.value = "editor"; sizeB.value = "editor";
+    recropSizeSnapshot = null;
     recropScale = 1; recropPanX = 0; recropPanY = 0;
     recropZoom.value = "1"; recropZoomValue.textContent = "100%";
     recropActive = false; recropTools.hidden = true;
@@ -270,6 +275,8 @@
     committedPrintCanvas.height = printPhotoCanvas.height;
     committedPrintCanvas.getContext("2d", { alpha: false }).drawImage(printPhotoCanvas, 0, 0);
     printCropOverride = true;
+    printSizeOverride = Boolean(sizeA.value !== "editor" || (sizeMode.value === "mixed" && sizeB.value !== "editor"));
+    recropSizeSnapshot = null;
     recropActive = false; recropTools.hidden = true;
     recropToggle.textContent = "Ubah Crop Cetak";
     recropState.textContent = "Crop khusus cetak diterapkan";
@@ -280,6 +287,7 @@
   recropToggle.addEventListener("click", () => {
     if (!printPhotoCanvas.width && !captureEditorCrop()) return;
     recropActive = !recropActive; recropTools.hidden = !recropActive;
+    if (recropActive) recropSizeSnapshot = { a: sizeA.value, b: sizeB.value, sizeOverride: printSizeOverride };
     updateSizeControls();
     if (recropActive) {
       // Start each edit from the currently visible print crop and keep a
@@ -309,6 +317,12 @@
       printPhotoCanvas.height = committedPrintCanvas.height;
       printPhotoCanvas.getContext("2d", { alpha: false }).drawImage(committedPrintCanvas, 0, 0);
     }
+    if (recropSizeSnapshot) {
+      sizeA.value = recropSizeSnapshot.a;
+      sizeB.value = recropSizeSnapshot.b;
+      printSizeOverride = recropSizeSnapshot.sizeOverride;
+    }
+    recropSizeSnapshot = null;
     recropActive = false; recropTools.hidden = true;
     updateSizeControls();
     drawCollage();
@@ -334,7 +348,7 @@
   function selectedSize(which) {
     const select = which === "A" ? sizeA : sizeB;
     let dimensions;
-    if (select.value === "editor" || (!printCropOverride && !recropActive)) {
+    if (select.value === "editor" || (!printSizeOverride && !recropActive)) {
       const editorSize = typeof window.PFVISA_getPhotoDimensions === "function"
         ? window.PFVISA_getPhotoDimensions()
         : null;
