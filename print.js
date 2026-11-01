@@ -396,27 +396,31 @@
   function drawPhotoCover(ctx, rect, group) {
     const source = getRotatedSource(group);
 
-    // Preserve the complete Editor crop. The print slot keeps its selected
-    // physical dimensions, while the image is contained without a second crop
-    // or distortion. Any aspect-ratio difference becomes white space.
-    const scale = Math.min(rect.w / source.width, rect.h / source.height);
-    const drawWidth = source.width * scale;
-    const drawHeight = source.height * scale;
-    const dx = rect.x + (rect.w - drawWidth) / 2;
-    const dy = rect.y + (rect.h - drawHeight) / 2;
+    // Start with the exact Editor output (never the original upload), then
+    // crop only the excess edges needed to fill the selected print ratio.
+    // This preserves the user's Editor framing while making 2x3, 3x4, and
+    // 4x6 photo frames fully filled at their exact physical dimensions.
+    const targetRatio = rect.w / rect.h;
+    const sourceRatio = source.width / source.height;
+    let sx = 0, sy = 0, sw = source.width, sh = source.height;
+
+    if (sourceRatio > targetRatio) {
+      sw = source.height * targetRatio;
+      sx = (source.width - sw) / 2;
+    } else if (sourceRatio < targetRatio) {
+      sh = source.width / targetRatio;
+      sy = (source.height - sh) / 2;
+    }
 
     ctx.save();
     ctx.beginPath();
     ctx.rect(rect.x, rect.y, rect.w, rect.h);
     ctx.clip();
-    ctx.fillStyle = "#fff";
-    ctx.fillRect(rect.x, rect.y, rect.w, rect.h);
     ctx.imageSmoothingEnabled = true;
     ctx.imageSmoothingQuality = "high";
-    ctx.drawImage(source.image, 0, 0, source.width, source.height, dx, dy, drawWidth, drawHeight);
+    ctx.drawImage(source.image, sx, sy, sw, sh, rect.x, rect.y, rect.w, rect.h);
     ctx.restore();
   }
-
   function drawCollage() {
     if (photoCanvas.hidden || !photoCanvas.width || !photoCanvas.height) {
       info.textContent = "Unggah foto dan selesaikan crop terlebih dahulu.";
