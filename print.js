@@ -158,7 +158,22 @@
     if (introSection) introSection.hidden = false;
     window.scrollTo({ top: 0, behavior: "smooth" });
   }
-  continueButton.addEventListener("click", showPrintPage);
+  function syncContinueAvailability() {
+    const hasEditorPhoto = !photoCanvas.hidden && photoCanvas.width > 1 && photoCanvas.height > 1;
+    // This button is a navigation control, not a collage-fit validation control.
+    continueButton.disabled = !hasEditorPhoto;
+    continueButton.setAttribute("aria-disabled", String(!hasEditorPhoto));
+  }
+  continueButton.addEventListener("click", (event) => {
+    event.preventDefault();
+    syncContinueAvailability();
+    if (continueButton.disabled) {
+      const status = document.getElementById("status");
+      if (status) status.textContent = "Unggah foto dan selesaikan crop terlebih dahulu.";
+      return;
+    }
+    showPrintPage();
+  });
   pageNav.querySelector("#print-back-editor").addEventListener("click", showEditorPage);
 
   const style = document.createElement("style");
@@ -591,7 +606,9 @@
   photoCanvas.addEventListener("pfvisa:editor-crop-updated", () => {
     // The editor preview canvas is the master source. Any completed crop
     // update invalidates a previous print-only override.
+    syncContinueAvailability();
     if (!captureEditorCrop()) return;
+    syncContinueAvailability();
     if (!printPage.hidden) drawCollage();
   });
   document.addEventListener("click", (event) => {
@@ -613,6 +630,7 @@
       printButton.disabled = true;
       if (!printPage.hidden) showEditorPage();
     } else {
+      syncContinueAvailability();
       drawCollage();
     }
   });
@@ -620,5 +638,6 @@
   const initial = outputContext;
   initial.fillStyle = "#fff";
   initial.fillRect(0, 0, outputCanvas.width, outputCanvas.height);
+  syncContinueAvailability();
   drawCollage();
 })();
