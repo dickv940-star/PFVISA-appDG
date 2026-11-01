@@ -706,6 +706,17 @@
   let sourceImage = null;
   // Expose only the in-memory original image to the print module; never upload it.
   window.PFVISA_getOriginalPhoto = () => sourceImage;
+  // Share the exact Editor output dimensions with Print (millimetres and pixels).
+  window.PFVISA_getPhotoDimensions = () => {
+    const dimensions = getDimensions();
+    return {
+      widthMm: dimensions.widthMm,
+      heightMm: dimensions.heightMm,
+      widthPx: dimensions.widthPx,
+      heightPx: dimensions.heightPx,
+      dpi: dimensions.dpi
+    };
+  };
   let sourceUrl = null;
   let activeFile = null;
 
