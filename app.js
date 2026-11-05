@@ -717,6 +717,53 @@
       dpi: dimensions.dpi
     };
   };
+
+  // Re-render the current Editor composition directly from the decoded original.
+  window.PFVISA_getEditorCropState = () => {
+    if (!sourceImage) return null;
+    const dimensions = getDimensions();
+    return {
+      crop: originalPreview
+        ? { x: 0, y: 0, width: sourceImage.naturalWidth, height: sourceImage.naturalHeight }
+        : cropRect(sourceImage.naturalWidth, sourceImage.naturalHeight, dimensions.widthPx / dimensions.heightPx),
+      sourceWidth: sourceImage.naturalWidth,
+      sourceHeight: sourceImage.naturalHeight,
+      zoom: cropZoom, panX: cropPanX, panY: cropPanY,
+      rotation: 0, originalPreview
+    };
+  };
+  window.PFVISA_renderEditorCrop = (targetWidth, targetHeight) => {
+    if (!sourceImage) return null;
+    const width = Math.max(1, Math.min(10000, Math.round(Number(targetWidth) || 1)));
+    const height = Math.max(1, Math.min(10000, Math.round(Number(targetHeight) || 1)));
+    const canvas = document.createElement("canvas");
+    canvas.width = width; canvas.height = height;
+    const context = canvas.getContext("2d", { alpha: false });
+    context.imageSmoothingEnabled = true; context.imageSmoothingQuality = "high";
+    context.fillStyle = "#fff"; context.fillRect(0, 0, width, height);
+    if (originalPreview) {
+      const scale = Math.min(width / sourceImage.naturalWidth, height / sourceImage.naturalHeight);
+      const drawWidth = sourceImage.naturalWidth * scale, drawHeight = sourceImage.naturalHeight * scale;
+      context.drawImage(sourceImage, (width - drawWidth) / 2, (height - drawHeight) / 2, drawWidth, drawHeight);
+      return canvas;
+    }
+    const crop = cropRect(sourceImage.naturalWidth, sourceImage.naturalHeight, width / height);
+    const outsideSource = crop.x < 0 || crop.y < 0 ||
+      crop.x + crop.width > sourceImage.naturalWidth ||
+      crop.y + crop.height > sourceImage.naturalHeight;
+    if (outsideSource && detectedCrop) {
+      const cropCanvas = document.createElement("canvas");
+      cropCanvas.width = Math.max(1, Math.ceil(crop.width));
+      cropCanvas.height = Math.max(1, Math.ceil(crop.height));
+      const cropContext = cropCanvas.getContext("2d", { alpha: false });
+      cropContext.fillStyle = "#fff"; cropContext.fillRect(0, 0, cropCanvas.width, cropCanvas.height);
+      cropContext.drawImage(sourceImage, -crop.x, -crop.y);
+      context.drawImage(cropCanvas, 0, 0, width, height);
+    } else {
+      context.drawImage(sourceImage, crop.x, crop.y, crop.width, crop.height, 0, 0, width, height);
+    }
+    return canvas;
+  };
   let sourceUrl = null;
   let activeFile = null;
 
