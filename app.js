@@ -659,7 +659,7 @@
         edgeIssue
           ? compositionNote + " (" + targetDescription + "), tetapi foto sumber terlalu rapat atau wajah terlalu dekat tepi. Periksa area putih dan atur crop manual."
           : compositionNote + " (" + targetDescription + "). Puncak kepala merupakan estimasi; status profil " + (profileVerified ? "bersumber resmi" : "tetap perlu diverifikasi") + ". Periksa hasil sebelum menyimpan.",
-        edgeIssue ? "error" : (hasHeadTarget || hasTopTarget ? "success" : "")
+        edgeIssue ? "error" : (profileVerified && (hasHeadTarget || hasTopTarget) ? "success" : "")
       );
     } catch (error) {
       if (detectionRun !== cropDetectionRun || sourceImage !== image) return;
@@ -708,7 +708,7 @@
     if (spec) {
       const facts = [
         "Profil kerja PFVISA: " + presets[presetKey].label + ", " + spec.dpi + " DPI. " + profileStatusLabel(spec, doc) + ".",
-        spec.headMinFraction != null && spec.headMaxFraction != null ? "Rentang tinggi kepala acuan: " + Math.round(spec.headMinFraction * 100) + "–" + Math.round(spec.headMaxFraction * 100) + "% tinggi foto." : spec.headMinMm != null && spec.headMaxMm != null ? "Rentang tinggi kepala acuan (perkiraan ubun-ubun hingga dagu): " + mmLabel(spec.headMinMm) + "–" + mmLabel(spec.headMaxMm) + " mm." : spec.headMm != null ? "Target tinggi kepala (perkiraan ubun-ubun hingga dagu): " + mmLabel(spec.headMm) + " mm." : "Ukuran kepala belum dikunci otomatis karena spesifikasi yang tepat bergantung pada dokumen/portal.",
+        spec.headMinFraction != null && spec.headMaxFraction != null ? (spec.profileStatus === "verified-official" ? "Rentang tinggi kepala resmi: " : "Referensi tinggi kepala belum diverifikasi: ") + Math.round(spec.headMinFraction * 100) + "–" + Math.round(spec.headMaxFraction * 100) + "% tinggi foto." : spec.headMinMm != null && spec.headMaxMm != null ? (spec.profileStatus === "verified-official" ? "Rentang tinggi kepala resmi (perkiraan ubun-ubun hingga dagu): " : "Referensi tinggi kepala belum diverifikasi: ") + mmLabel(spec.headMinMm) + "–" + mmLabel(spec.headMaxMm) + " mm." : spec.headMm != null ? (spec.profileStatus === "verified-official" ? "Target tinggi kepala resmi (perkiraan ubun-ubun hingga dagu): " : "Referensi tinggi kepala belum diverifikasi: ") + mmLabel(spec.headMm) + " mm." : "Ukuran kepala belum dikunci otomatis karena spesifikasi yang tepat bergantung pada dokumen/portal.",
         spec.topMinMm != null && spec.topMaxMm != null ? "Rentang jarak tepi atas ke puncak kepala: " + mmLabel(spec.topMinMm) + "–" + mmLabel(spec.topMaxMm) + " mm." : spec.topMm != null ? "Target jarak tepi atas ke ubun-ubun: " + mmLabel(spec.topMm) + " mm." : "Jarak tepi atas kepala belum ditetapkan otomatis; periksa petunjuk resmi.",
         spec.eyeLineMinFraction != null && spec.eyeLineMaxFraction != null ? "Rentang posisi garis mata dari tepi bawah: " + Math.round(spec.eyeLineMinFraction * 100) + "–" + Math.round(spec.eyeLineMaxFraction * 100) + "% tinggi foto." : spec.eyeLineMinMm != null && spec.eyeLineMaxMm != null ? "Rentang garis mata dari tepi bawah: " + mmLabel(spec.eyeLineMinMm) + "–" + mmLabel(spec.eyeLineMaxMm) + " mm." : spec.eyeLineMm != null ? "Target garis mata dari tepi bawah: " + mmLabel(spec.eyeLineMm) + " mm; Auto Crop menggunakan posisi mata sebagai acuan vertikal." : "Garis mata belum ditetapkan otomatis untuk profil ini.",
         spec.positionGuidance ? "Panduan posisi wajah/mata: " + spec.positionGuidance : "Panduan posisi mata numerik atau posisi wajah khusus belum ditetapkan pada profil ini.",
