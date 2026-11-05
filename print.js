@@ -8,7 +8,7 @@
   const cropActions = document.querySelector(".crop-actions");
   if (!photoCanvas || !previewPanel || !editorWorkspace || !pageRoot || !cropActions) return;
 
-  const DPI = 300;
+  const DPI = 600;
   const SHEET_W_MM = 100;
   const SHEET_H_MM = 150;
   const MM_TO_PX = DPI / 25.4;
@@ -68,6 +68,8 @@
       <input id="print-stroke-color" type="color" value="#222222" aria-label="Warna stroke foto">
       <label for="print-stroke-width">Ketebalan stroke <output id="print-stroke-width-value">0.3 mm</output></label>
       <input id="print-stroke-width" type="range" min="0.1" max="2" value="0.3" step="0.1">
+      <label for="print-sharpen">Ketajaman <output id="print-sharpen-value">20%</output></label>
+      <input id="print-sharpen" type="range" min="0" max="80" value="20" step="5">
       <label for="print-brightness">Kecerahan <output id="print-brightness-value">100%</output></label>
       <input id="print-brightness" type="range" min="80" max="120" value="100" step="1">
       <label for="print-contrast">Kontras <output id="print-contrast-value">100%</output></label>
@@ -236,16 +238,29 @@
   outputCanvas.width = sheetCanvas.width;
   outputCanvas.height = sheetCanvas.height;
   const manualPositions = new Map();
+  let editorCropSnapshot = null;
+  const sharpenCache = new Map();
+  const sharpenInput = $("print-sharpen");
   let activeDrag = null;
 
   function captureEditorCrop() {
     if (photoCanvas.hidden || !photoCanvas.width || !photoCanvas.height) return false;
-    printPhotoCanvas.width = photoCanvas.width;
-    printPhotoCanvas.height = photoCanvas.height;
-    printPhotoCanvas.getContext("2d", { alpha: false }).drawImage(photoCanvas, 0, 0);
-    recropBaseCanvas.width = photoCanvas.width;
-    recropBaseCanvas.height = photoCanvas.height;
-    recropBaseContext.drawImage(photoCanvas, 0, 0);
+    editorCropSnapshot = typeof window.PFVISA_getEditorCropState === "function"
+      ? window.PFVISA_getEditorCropState() : null;
+    const editorDimensions = typeof window.PFVISA_getPhotoDimensions === "function"
+      ? window.PFVISA_getPhotoDimensions() : null;
+    const masterWidth = editorDimensions ? Math.round(editorDimensions.widthMm / 25.4 * DPI) : photoCanvas.width;
+    const masterHeight = editorDimensions ? Math.round(editorDimensions.heightMm / 25.4 * DPI) : photoCanvas.height;
+    const highResolutionCrop = typeof window.PFVISA_renderEditorCrop === "function"
+      ? window.PFVISA_renderEditorCrop(masterWidth, masterHeight) : null;
+    printPhotoCanvas.width = highResolutionCrop ? highResolutionCrop.width : photoCanvas.width;
+    printPhotoCanvas.height = highResolutionCrop ? highResolutionCrop.height : photoCanvas.height;
+    const printContext = printPhotoCanvas.getContext("2d", { alpha: false });
+    printContext.imageSmoothingEnabled = true; printContext.imageSmoothingQuality = "high";
+    printContext.drawImage(highResolutionCrop || photoCanvas, 0, 0, printPhotoCanvas.width, printPhotoCanvas.height);
+    recropBaseCanvas.width = printPhotoCanvas.width;
+    recropBaseCanvas.height = printPhotoCanvas.height;
+    recropBaseContext.drawImage(printPhotoCanvas, 0, 0);
     committedPrintCanvas.width = printPhotoCanvas.width;
     committedPrintCanvas.height = printPhotoCanvas.height;
     committedPrintCanvas.getContext("2d", { alpha: false }).drawImage(printPhotoCanvas, 0, 0);
@@ -421,19 +436,44 @@
     // Do not switch back to the original uploaded image: that would discard
     // the user's crop position, zoom, and face framing.
     const source = printPhotoCanvas.width ? printPhotoCanvas : photoCanvas;
-    const sourceWidth = source.width;
-    const sourceHeight = source.height;
+    const sourceWidth = source.width, sourceHeight = source.height;
     const angle = ((rotations[group] % 360) + 360) % 360;
-    if (!angle) return { image: source, width: sourceWidth, height: sourceHeight };
-    const rotated = document.createElement("canvas");
+    const amount = Math.max(0, Math.min(0.8, Number(sharpenInput.value) / 100));
+    const cacheKey = group + ":" + angle + ":" + amount;
+    if (sharpenCache.has(cacheKey)) return sharpenCache.get(cacheKey);
+    let rotated = source;
     const quarterTurn = angle === 90 || angle === 270;
-    rotated.width = quarterTurn ? sourceHeight : sourceWidth;
-    rotated.height = quarterTurn ? sourceWidth : sourceHeight;
-    const rctx = rotated.getContext("2d");
-    rctx.translate(rotated.width / 2, rotated.height / 2);
-    rctx.rotate(angle * Math.PI / 180);
-    rctx.drawImage(source, -sourceWidth / 2, -sourceHeight / 2, sourceWidth, sourceHeight);
-    return { image: rotated, width: rotated.width, height: rotated.height };
+    if (angle) {
+      rotated = document.createElement("canvas");
+      rotated.width = quarterTurn ? sourceHeight : sourceWidth;
+      rotated.height = quarterTurn ? sourceWidth : sourceHeight;
+      const rctx = rotated.getContext("2d");
+      rctx.imageSmoothingEnabled = true; rctx.imageSmoothingQuality = "high";
+      rctx.translate(rotated.width / 2, rotated.height / 2);
+      rctx.rotate(angle * Math.PI / 180);
+      rctx.drawImage(source, -sourceWidth / 2, -sourceHeight / 2, sourceWidth, sourceHeight);
+    }
+    let finalImage = rotated;
+    if (amount > 0) {
+      const sharpened = document.createElement("canvas");
+      sharpened.width = rotated.width; sharpened.height = rotated.height;
+      const sctx = sharpened.getContext("2d", { willReadFrequently: true });
+      sctx.drawImage(rotated, 0, 0);
+      const frame = sctx.getImageData(0, 0, sharpened.width, sharpened.height);
+      const src = frame.data, out = new Uint8ClampedArray(src);
+      const w = sharpened.width, h = sharpened.height;
+      for (let y = 1; y < h - 1; y++) for (let x = 1; x < w - 1; x++) {
+        const i = (y * w + x) * 4;
+        for (let c = 0; c < 3; c++) {
+          const blur = (src[i - 4 + c] + src[i + 4 + c] + src[i - w * 4 + c] + src[i + w * 4 + c] + src[i + c]) / 5;
+          out[i + c] = Math.max(0, Math.min(255, src[i + c] + (src[i + c] - blur) * amount));
+        }
+      }
+      frame.data.set(out); sctx.putImageData(frame, 0, 0); finalImage = sharpened;
+    }
+    const result = { image: finalImage, width: finalImage.width, height: finalImage.height };
+    sharpenCache.set(cacheKey, result);
+    return result;
   }
   function drawPhotoCover(ctx, rect, group) {
     const source = getRotatedSource(group);
@@ -468,6 +508,7 @@
       info.textContent = "Unggah foto dan selesaikan crop terlebih dahulu.";
       printButton.disabled = true; continueButton.disabled = true; return false;
     }
+    sharpenCache.clear();
     const ctx = sheetCanvas.getContext("2d", { alpha:false });
     ctx.fillStyle="#fff"; ctx.fillRect(0,0,sheetCanvas.width,sheetCanvas.height);
     const rects=photoRects();
@@ -516,6 +557,7 @@
     ctx.putImageData(pixels,0,0);
     outputContext.clearRect(0,0,outputCanvas.width,outputCanvas.height);outputContext.drawImage(sheetCanvas,0,0);
     info.textContent=SHEET_W_MM+" × "+SHEET_H_MM+" mm · A: "+selectedCount("A")+" foto "+selectedSize("A").width+" × "+selectedSize("A").height+" mm"+(sizeMode.value==="mixed"?" · B: "+selectedCount("B")+" foto "+selectedSize("B").width+" × "+selectedSize("B").height+" mm":"");
+    $("print-sharpen-value").textContent=sharpenInput.value+"%";
     $("print-brightness-value").textContent=brightnessInput.value+"%";$("print-contrast-value").textContent=contrastInput.value+"%";$("print-saturation-value").textContent=saturationInput.value+"%";
     $("print-red-balance-value").textContent=redBalanceInput.value;$("print-green-balance-value").textContent=greenBalanceInput.value;$("print-blue-balance-value").textContent=blueBalanceInput.value;
     $("print-stroke-width-value").textContent=Number(strokeWidthInput.value).toFixed(1)+" mm";
@@ -565,7 +607,6 @@
   outputCanvas.addEventListener("pointercancel", finishCanvasDrag);
   outputCanvas.addEventListener("lostpointercapture", finishCanvasDrag);
 
-  function getJpegUrl() { return sheetCanvas.toDataURL("image/jpeg", 0.96); }
   function printSheet() {
     if (!drawCollage()) return;
     const popup = window.open("", "_blank");
@@ -573,10 +614,25 @@
       info.textContent = "Popup diblokir browser. Izinkan popup untuk situs ini lalu tekan Cetak kembali.";
       return;
     }
-    const imageUrl = getJpegUrl();
     popup.document.open();
-    popup.document.write('<!doctype html><html><head><meta charset="utf-8"><title>PFVISA Print</title><style>@page{size:' + SHEET_W_MM + 'mm ' + SHEET_H_MM + 'mm;margin:0}html,body{margin:0;padding:0;width:' + SHEET_W_MM + 'mm;height:' + SHEET_H_MM + 'mm;background:#fff}img{display:block;width:' + SHEET_W_MM + 'mm;height:' + SHEET_H_MM + 'mm}</style></head><body><img src="' + imageUrl + '" alt="Kolase foto cetak"><script>window.onload=function(){setTimeout(function(){window.focus();window.print()},250)};</script></body></html>');
+    popup.document.write('<!doctype html><html><head><meta charset="utf-8"><title>PFVISA Print</title><style>@page{size:' + SHEET_W_MM + 'mm ' + SHEET_H_MM + 'mm;margin:0}html,body{margin:0;padding:0;width:' + SHEET_W_MM + 'mm;height:' + SHEET_H_MM + 'mm;background:#fff}img{display:block;width:' + SHEET_W_MM + 'mm;height:' + SHEET_H_MM + 'mm}</style></head><body><p>Menyiapkan master PNG 600 DPI…</p></body></html>');
     popup.document.close();
+    sheetCanvas.toBlob((blob) => {
+      if (!blob) { popup.document.body.textContent = "Gagal membuat master PNG. Silakan coba lagi."; return; }
+      const imageUrl = URL.createObjectURL(blob);
+      popup.document.body.innerHTML = "";
+      const image = popup.document.createElement("img");
+      image.alt = "Kolase foto cetak 600 DPI";
+      image.onload = () => {
+        popup.focus(); setTimeout(() => popup.print(), 250);
+        setTimeout(() => URL.revokeObjectURL(imageUrl), 60000);
+      };
+      image.onerror = () => {
+        popup.document.body.textContent = "Gagal memuat master PNG untuk cetak.";
+        URL.revokeObjectURL(imageUrl);
+      };
+      image.src = imageUrl; popup.document.body.appendChild(image);
+    }, "image/png");
   }
 
   function updateRotation(group, delta) {
@@ -606,7 +662,7 @@
   }
   [sizeMode,sizeA,sizeB].forEach(el=>el.addEventListener("change",updateSizeControls));
   [countA,countB,$("print-width-a"),$("print-height-a"),$("print-width-b"),$("print-height-b")].forEach(el=>el.addEventListener("input",()=>{manualPositions.clear();drawCollage();}));
-  [marginSelect,gapSelect,brightnessInput,contrastInput,saturationInput,redBalanceInput,greenBalanceInput,blueBalanceInput,strokeEnabledInput,strokeColorInput,strokeWidthInput].forEach(el=>el.addEventListener("input",drawCollage));
+  [marginSelect,gapSelect,sharpenInput,brightnessInput,contrastInput,saturationInput,redBalanceInput,greenBalanceInput,blueBalanceInput,strokeEnabledInput,strokeColorInput,strokeWidthInput].forEach(el=>el.addEventListener("input",drawCollage));
   updateSizeControls();
   [strokeEnabledInput, strokeColorInput].forEach((el) => el.addEventListener("change", drawCollage));
   [marginSelect, gapSelect].forEach((el) => el.addEventListener("change", drawCollage));
