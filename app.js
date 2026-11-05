@@ -1050,7 +1050,8 @@
     }
     const official = spec && spec.profileStatus === "verified-official";
     const allMeasuredTargetsKnown = checks.length > 0;
-    if (!official || !allMeasuredTargetsKnown) {
+    const hasUnmeasuredOfficialWidthTarget = Boolean(spec && (spec.headWidthMinMm != null || spec.headWidthMaxMm != null || spec.headWidthMm != null));
+    if (!official || !allMeasuredTargetsKnown || hasUnmeasuredOfficialWidthTarget) {
       measurementStatus.textContent = "Perlu verifikasi";
       measurementStatus.className = "measurement-badge warn";
       measurementNote.textContent = "Hasil adalah estimasi dari landmark wajah. Status profil atau sebagian target belum terverifikasi; angka yang tidak ditetapkan sumber resmi tidak dinilai lulus/gagal. Periksa ubun-ubun, rambut, dagu, lebar kepala, garis mata, dan instruksi portal secara visual.";
