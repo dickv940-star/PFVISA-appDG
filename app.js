@@ -406,6 +406,15 @@
     return photoSpecs[countrySelect.value + ":" + documentSelect.value] || null;
   }
 
+  // Biometric crop targets apply only while the Editor uses the exact
+  // document profile preset. A manually selected/custom size must not inherit
+  // head or eye measurements calibrated for a different physical format.
+  function currentCropSpec() {
+    const spec = currentPhotoSpec();
+    if (!spec || !spec.preset || sizePreset.value !== spec.preset) return null;
+    return spec;
+  }
+
   function profileStatusLabel(spec, doc) {
     const state = (spec && spec.profileStatus) || (doc && doc.profileStatus) || "unverified";
     if (state === "verified-official") return "Profil terverifikasi dari sumber resmi";
@@ -459,8 +468,10 @@
   let faceLandmarkerPromise = null;
   let detectedCrop = null;
   let detectedHead = null;
+  let cropDetectionRun = 0;
 
   async function detectAndCropFace(image) {
+    const detectionRun = ++cropDetectionRun;
     // Show a real crop using the currently selected output ratio immediately,
     // while the optional face model loads. This prevents a long blank/no-op
     // feeling when the external face-detection model is slow or unavailable.
@@ -526,7 +537,7 @@
         faceLandmarkerPromise = null;
         throw loadError;
       }
-      if (sourceImage !== image) return;
+      if (sourceImage !== image || detectionRun !== cropDetectionRun) return;
       const result = detector.detect(image);
       const marks = result.faceLandmarks && result.faceLandmarks[0];
       if (!marks || marks.length < 264) throw new Error("Wajah tidak terdeteksi");
@@ -540,7 +551,9 @@
       // above it, then preserve the requested head-height/top-margin geometry.
       const headTop = forehead.y - faceHeight * 0.25;
       const headHeight = chin.y - headTop;
-      const spec = currentPhotoSpec();
+      const selectedSpec = currentPhotoSpec();
+      const spec = currentCropSpec();
+      const profileSizeMismatch = Boolean(selectedSpec && !spec);
       const dims = getDimensions();
       // Prefer exact targets; for documented ranges, use the midpoint.
       // Profiles without measurements use a clearly approximate fallback.
@@ -608,8 +621,9 @@
       const edgeIssue = cropX < 0 || cropY < 0 || cropX + cw > w || cropY + ch > h;
       const targetDescription = [
         targetHeadFraction != null ? "target tinggi kepala " + Math.round(targetHeadFraction * 100) + "% tinggi foto" : targetHeadMm == null ? "target tinggi kepala belum ditetapkan" : "target tinggi kepala " + mmLabel(targetHeadMm) + " mm",
-        targetTopMm == null ? "target margin atas belum ditetapkan" : "target margin atas " + mmLabel(targetTopMm) + " mm"
-      ].join(", ");
+        targetTopMm == null ? "target margin atas belum ditetapkan" : "target margin atas " + mmLabel(targetTopMm) + " mm",
+        profileSizeMismatch ? "ukuran aktif berbeda dari preset profil; target biometrik profil tidak diterapkan" : ""
+      ].filter(Boolean).join(", ");
       const profileVerified = spec && spec.profileStatus === "verified-official";
       const compositionNote = hasHeadTarget || hasTopTarget
         ? "Crop mengikuti parameter profil yang tersedia"
@@ -621,6 +635,7 @@
         edgeIssue ? "error" : (hasHeadTarget || hasTopTarget ? "success" : "")
       );
     } catch (error) {
+      if (detectionRun !== cropDetectionRun || sourceImage !== image) return;
       // Do not cache a rejected model promise forever; the next Auto Crop click
       // should be able to retry after a transient network/CDN failure.
       faceLandmarkerPromise = null;
@@ -934,7 +949,7 @@
   }
 
   function updateMeasurements(crop) {
-    const spec = currentPhotoSpec();
+    const spec = currentCropSpec();
     const dims = getDimensions();
     // Report effective magnification against a plain ratio-fit crop. The
     // profile-driven auto crop often has a custom crop rectangle, so the manual
