@@ -220,6 +220,7 @@
       "Ikuti instruksi konsulat atau pusat visa tempat pengajuan."
     ]
   };
+  countryGuides.sg = generalCountryGuide("Singapura", "https://www.ica.gov.sg/photo-guidelines");
   countryGuides.sg.documents.passport = {
     label: "Paspor Singapura — foto digital ICA",
     preset: "digitalSG",
@@ -301,7 +302,7 @@
     "kr:visa": { preset: "35x45", dpi: 300, profileStatus: "verified-official", positionGuidance: "Foto warna 35 × 45 mm, tampak depan, latar putih atau off-white, tanpa topi, diambil dalam 6 bulan. Formulir visa resmi tidak menetapkan angka tinggi kepala, garis mata, atau margin atas.", source: "Republic of Korea Ministry of Justice Visa Application Form (Form 17): foto paspor 35 × 45 mm, full face/front view, white/off-white background, within 6 months. https://overseas.mofa.go.kr/upload/cntnts/bd-en/visa_application_form.pdf. Profil ukuran dan posisi dasar; biometrik numerik tidak dinyatakan pada formulir." },
 
     "sa:passport": { preset: "2x2", dpi: 300, profileStatus: "unverified", positionGuidance: "Belum ada sumber resmi khusus foto paspor nasional Arab Saudi yang diverifikasi pada audit ini.", source: "Belum diverifikasi dari otoritas penerbit paspor Arab Saudi. Jangan menyamakan foto paspor nasional dengan foto e-Visa turis." },
-    "sa:visa": { preset: "digital200", dpi: 203, pixelWidth: 200, pixelHeight: 200, minPixelWidth: 200, maxPixelWidth: 200, minPixelHeight: 200, maxPixelHeight: 200, format: "image/jpeg", headMinFraction: 0.70, headMaxFraction: 0.80, profileStatus: "verified-official", positionGuidance: "Wajah dan bagian atas bahu mengisi sekitar 70–80% gambar; wajah terpusat, tegak dan menghadap kamera. Sumber tidak memberi posisi garis mata numerik atau margin atas numerik.", source: "Official Saudi eVisa — Photo Specifications: gambar persegi 200 × 200 px, 5–100 KB; wajah sekitar 70–80% bidang foto; ukuran crown-ke-dagu 1,4–1,6 inci; wajah terpusat dan menghadap lurus. https://visa.visitsaudi.com/Home/PhotoSpecifications. Profil ini hanya Saudi tourist eVisa, bukan paspor atau visa kerja/ziarah lainnya." },
+    "sa:visa": { preset: "digital200", dpi: 203, pixelWidth: 200, pixelHeight: 200, minPixelWidth: 200, maxPixelWidth: 200, minPixelHeight: 200, maxPixelHeight: 200, format: "image/jpeg", profileStatus: "verified-official", positionGuidance: "Sumber menyebut area wajah sekitar 70–80% foto dan ukuran wajah crown-ke-dagu sekitar 1.4–1.6 inci; angka ini bukan target persentase tinggi kepala untuk panel crop. Wajah terpusat, tegak dan menghadap kamera. Tidak ada posisi garis mata numerik atau margin atas numerik.", source: "Official Saudi eVisa — Photo Specifications: gambar persegi 200 × 200 px, 5–100 KB; wajah sekitar 70–80% bidang foto; ukuran crown-ke-dagu 1,4–1,6 inci; wajah terpusat dan menghadap lurus. https://visa.visitsaudi.com/Home/PhotoSpecifications. Profil ini hanya Saudi tourist eVisa, bukan paspor atau visa kerja/ziarah lainnya." },
 
     "ae:visa": { preset: "35x45", dpi: 600, headMm: null, topMm: null, source: "Visafoto mencantumkan beberapa varian UEA: 43 × 55 mm (Flydubai/Etihad), 600 × 600 px (ICP), 2 × 2 inci (VFS), serta 35 × 45 mm untuk izin tinggal/ICA. Profil 35 × 45 mm di sini hanya titik awal; pilih kanal/portal yang benar sebelum crop otomatis." },
     "ae:id": { preset: "35x45", dpi: 600, headMm: null, topMm: null, source: "Emirates ID/izin tinggal dapat memiliki spesifikasi digital tersendiri; verifikasi pada portal resmi." }
@@ -1099,15 +1100,23 @@
       else if (exact != null) checks.push(Math.abs(value - exact) <= 0.5);
     };
     if (spec) {
+      // If an authority supplies both a physical head dimension and a digital
+      // percentage, validate both instead of silently preferring one scale.
       if (spec.headMinFraction != null && spec.headMaxFraction != null) {
         checks.push(headPercent >= spec.headMinFraction * 100 && headPercent <= spec.headMaxFraction * 100);
-      } else within(headMm, spec.headMinMm, spec.headMaxMm, spec.headMm);
+      }
+      if (spec.headMinMm != null || spec.headMaxMm != null || spec.headMm != null) {
+        within(headMm, spec.headMinMm, spec.headMaxMm, spec.headMm);
+      }
       within(topMm, spec.topMinMm, spec.topMaxMm, spec.topMm);
       if (eyeLineMm != null) {
         if (spec.eyeLineMinFraction != null && spec.eyeLineMaxFraction != null) {
           const eyePercent = eyeLineMm / dims.heightMm * 100;
           checks.push(eyePercent >= spec.eyeLineMinFraction * 100 && eyePercent <= spec.eyeLineMaxFraction * 100);
-        } else within(eyeLineMm, spec.eyeLineMinMm, spec.eyeLineMaxMm, spec.eyeLineMm);
+        }
+        if (spec.eyeLineMinMm != null || spec.eyeLineMaxMm != null || spec.eyeLineMm != null) {
+          within(eyeLineMm, spec.eyeLineMinMm, spec.eyeLineMaxMm, spec.eyeLineMm);
+        }
       }
     }
     const official = spec && spec.profileStatus === "verified-official";
