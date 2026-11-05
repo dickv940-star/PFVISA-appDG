@@ -360,7 +360,7 @@
     zw: { passport:"35x45", visa:"35x45" }
   };
   const mmPresetValues = {
-    "30x30": [30,30], "32x26": [32,26], "35x35": [35,35], "35x50": [35,50],
+    "26x32": [26,32], "30x30": [30,30], "32x26": [32,26], "35x35": [35,35], "35x50": [35,50], "50x40": [50,40],
     "36x36": [36,36], "36x47": [36,47], "37x52": [37,52], "40x40": [40,40],
     "40x45": [40,45], "40x50": [40,50], "40x60": [40,60], "45x35": [45,35],
     "45x45": [45,45], "45x50": [45,50], "50x50": [50,50], "50x60": [50,60],
@@ -369,6 +369,21 @@
   Object.entries(mmPresetValues).forEach(([key, dimensions]) => {
     if (!presets[key]) presets[key] = { width: dimensions[0], height: dimensions[1], label: dimensions[0] + " × " + dimensions[1] + (key === "2x2" ? " mm (2 × 2 inci)" : " mm") };
   });
+
+  // Every country-catalog preset must exist as a real select option. Merely
+  // defining a preset in JavaScript is insufficient: assigning a missing
+  // option to a <select> clears its value and silently falls back to 35x45.
+  Object.entries(presets).forEach(([key, preset]) => {
+    if (key === "400x514") return; // digital pixel profile, not a physical print size
+    if (Array.from(sizePreset.options).some((option) => option.value === key)) return;
+    const option = document.createElement("option");
+    option.value = key;
+    option.textContent = preset.label + " — profil negara";
+    const customOption = Array.from(sizePreset.options).find((item) => item.value === "custom");
+    if (customOption) sizePreset.insertBefore(option, customOption);
+    else sizePreset.appendChild(option);
+  });
+
   // Entri digital yang memiliki dimensi piksel eksplisit pada katalog.
   Object.assign(photoSpecs, {
     "sg:passport": { preset: "35x45", dpi: 300, pixelWidth: 400, pixelHeight: 514, format: "image/jpeg", profileStatus: "reference", source: "Katalog Visafoto: Singapore passport online 400 × 514 px. Ini adalah ukuran pada katalog pihak ketiga; verifikasi kanal pengajuan yang digunakan: https://id.visafoto.com/requirements." },
@@ -404,6 +419,15 @@
 
   function currentPhotoSpec() {
     return photoSpecs[countrySelect.value + ":" + documentSelect.value] || null;
+  }
+
+  // Biometric crop targets apply only while the Editor uses the exact
+  // document profile preset. A manually selected/custom size must not inherit
+  // head or eye measurements calibrated for a different physical format.
+  function currentCropSpec() {
+    const spec = currentPhotoSpec();
+    if (!spec || !spec.preset || sizePreset.value !== spec.preset) return null;
+    return spec;
   }
 
   function profileStatusLabel(spec, doc) {
@@ -459,8 +483,10 @@
   let faceLandmarkerPromise = null;
   let detectedCrop = null;
   let detectedHead = null;
+  let cropDetectionRun = 0;
 
   async function detectAndCropFace(image) {
+    const detectionRun = ++cropDetectionRun;
     // Show a real crop using the currently selected output ratio immediately,
     // while the optional face model loads. This prevents a long blank/no-op
     // feeling when the external face-detection model is slow or unavailable.
@@ -526,7 +552,7 @@
         faceLandmarkerPromise = null;
         throw loadError;
       }
-      if (sourceImage !== image) return;
+      if (sourceImage !== image || detectionRun !== cropDetectionRun) return;
       const result = detector.detect(image);
       const marks = result.faceLandmarks && result.faceLandmarks[0];
       if (!marks || marks.length < 264) throw new Error("Wajah tidak terdeteksi");
@@ -540,7 +566,9 @@
       // above it, then preserve the requested head-height/top-margin geometry.
       const headTop = forehead.y - faceHeight * 0.25;
       const headHeight = chin.y - headTop;
-      const spec = currentPhotoSpec();
+      const selectedSpec = currentPhotoSpec();
+      const spec = currentCropSpec();
+      const profileSizeMismatch = Boolean(selectedSpec && !spec);
       const dims = getDimensions();
       // Prefer exact targets; for documented ranges, use the midpoint.
       // Profiles without measurements use a clearly approximate fallback.
@@ -608,8 +636,9 @@
       const edgeIssue = cropX < 0 || cropY < 0 || cropX + cw > w || cropY + ch > h;
       const targetDescription = [
         targetHeadFraction != null ? "target tinggi kepala " + Math.round(targetHeadFraction * 100) + "% tinggi foto" : targetHeadMm == null ? "target tinggi kepala belum ditetapkan" : "target tinggi kepala " + mmLabel(targetHeadMm) + " mm",
-        targetTopMm == null ? "target margin atas belum ditetapkan" : "target margin atas " + mmLabel(targetTopMm) + " mm"
-      ].join(", ");
+        targetTopMm == null ? "target margin atas belum ditetapkan" : "target margin atas " + mmLabel(targetTopMm) + " mm",
+        profileSizeMismatch ? "ukuran aktif berbeda dari preset profil; target biometrik profil tidak diterapkan" : ""
+      ].filter(Boolean).join(", ");
       const profileVerified = spec && spec.profileStatus === "verified-official";
       const compositionNote = hasHeadTarget || hasTopTarget
         ? "Crop mengikuti parameter profil yang tersedia"
@@ -621,6 +650,7 @@
         edgeIssue ? "error" : (hasHeadTarget || hasTopTarget ? "success" : "")
       );
     } catch (error) {
+      if (detectionRun !== cropDetectionRun || sourceImage !== image) return;
       // Do not cache a rejected model promise forever; the next Auto Crop click
       // should be able to retry after a transient network/CDN failure.
       faceLandmarkerPromise = null;
@@ -934,7 +964,7 @@
   }
 
   function updateMeasurements(crop) {
-    const spec = currentPhotoSpec();
+    const spec = currentCropSpec();
     const dims = getDimensions();
     // Report effective magnification against a plain ratio-fit crop. The
     // profile-driven auto crop often has a custom crop rectangle, so the manual
