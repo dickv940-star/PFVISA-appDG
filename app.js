@@ -61,7 +61,9 @@
     "digital200": { width: 25, height: 25, label: "Digital 1:1 — Saudi e-Visa (200 × 200 px)" },
     "45x45": { width: 45, height: 45, label: "45 × 45 mm" },
     "40x50": { width: 40, height: 50, label: "40 × 50 mm" },
-    "30x40": { width: 30, height: 40, label: "30 × 40 mm" }
+    "30x40": { width: 30, height: 40, label: "30 × 40 mm" },
+    "digitalSquare": { width: 40, height: 40, label: "Rasio digital 1:1 — India e-Visa" },
+    "digitalSG": { width: 40, height: 51.4, label: "Digital ICA Singapura — 400 × 514 px" }
   };
 
   function generalCountryGuide(name, official, passportPreset = "35x45") {
@@ -169,7 +171,8 @@
     tw: generalCountryGuide("Taiwan", "https://www.boca.gov.tw/"),
     hk: generalCountryGuide("Hong Kong", "https://www.immd.gov.hk/eng/"),
     ie: generalCountryGuide("Irlandia", "https://www.ireland.ie/en/dfa/passports/"),
-    fr: generalCountryGuide("Prancis", "https://www.service-public.fr/"),
+    fr: generalCountryGuide("Prancis", "https://www.france-visas.gouv.fr/en/faq"),
+    sg: generalCountryGuide("Singapura", "https://www.ica.gov.sg/photo-guidelines"),
     de: generalCountryGuide("Jerman", "https://www.auswaertiges-amt.de/"),
     it: generalCountryGuide("Italia", "https://www.esteri.it/"),
     es: generalCountryGuide("Spanyol", "https://www.exteriores.gob.es/"),
@@ -184,8 +187,62 @@
   // Hanya profil yang mempunyai spesifikasi tersendiri di photoSpecs yang mengunci
   // dimensi/format; negara lain tetap diberi status belum diverifikasi, bukan angka tebakan.
   const visafotoCountryDirectory = [
-    ["af","Afghanistan"],["al","Albania"],["dz","Aljazair"],["ao","Angola"],["ag","Antigua dan Barbuda"],["ar","Argentina"],["am","Armenia"],["az","Azerbaijan"],["bs","Bahama"],["bh","Bahrain"],["bb","Barbados"],["by","Belarus"],["be","Belgia"],["bz","Belize"],["bj","Benin"],["bt","Bhutan"],["bo","Bolivia"],["ba","Bosnia dan Herzegovina"],["bw","Botswana"],["bn","Brunei Darussalam"],["bg","Bulgaria"],["bf","Burkina Faso"],["bi","Burundi"],["kh","Kamboja"],["cm","Kamerun"],["cv","Tanjung Verde"],["cf","Republik Afrika Tengah"],["td","Chad"],["cl","Cile"],["co","Kolombia"],["km","Komoro"],["cg","Republik Kongo"],["cd","Republik Demokratik Kongo"],["cr","Kosta Rika"],["ci","Pantai Gading"],["hr","Kroasia"],["cu","Kuba"],["cy","Siprus"],["cz","Ceko"],["dk","Denmark"],["dj","Djibouti"],["dm","Dominika"],["do","Republik Dominika"],["ec","Ekuador"],["sv","El Salvador"],["gq","Guinea Khatulistiwa"],["er","Eritrea"],["ee","Estonia"],["sz","Eswatini"],["et","Ethiopia"],["fj","Fiji"],["fi","Finlandia"],["ga","Gabon"],["gm","Gambia"],["ge","Georgia"],["gh","Ghana"],["gr","Yunani"],["gd","Grenada"],["gt","Guatemala"],["gn","Guinea"],["gw","Guinea-Bissau"],["gy","Guyana"],["ht","Haiti"],["hn","Honduras"],["hu","Hungaria"],["is","Islandia"],["iq","Irak"],["ir","Iran"],["il","Israel"],["jm","Jamaika"],["jo","Yordania"],["kz","Kazakhstan"],["ke","Kenya"],["ki","Kiribati"],["kw","Kuwait"],["kg","Kirgizstan"],["la","Laos"],["lv","Latvia"],["lb","Lebanon"],["ls","Lesotho"],["lr","Liberia"],["ly","Libya"],["li","Liechtenstein"],["lt","Lituania"],["lu","Luksemburg"],["mg","Madagaskar"],["mw","Malawi"],["mv","Maladewa"],["ml","Mali"],["mt","Malta"],["mh","Kepulauan Marshall"],["mr","Mauritania"],["mu","Mauritius"],["fm","Mikronesia"],["md","Moldova"],["mc","Monako"],["mn","Mongolia"],["me","Montenegro"],["ma","Maroko"],["mz","Mozambik"],["mm","Myanmar"],["na","Namibia"],["nr","Nauru"],["ni","Nikaragua"],["ne","Niger"],["mk","Makedonia Utara"],["om","Oman"],["pw","Palau"],["pa","Panama"],["pg","Papua Nugini"],["py","Paraguay"],["pe","Peru"],["pl","Polandia"],["pt","Portugal"],["pr","Puerto Riko"],["ro","Rumania"],["rw","Rwanda"],["kn","Saint Kitts dan Nevis"],["lc","Saint Lucia"],["vc","Saint Vincent dan Grenadines"],["ws","Samoa"],["sm","San Marino"],["st","Sao Tome dan Principe"],["sn","Senegal"],["rs","Serbia"],["sc","Seychelles"],["sl","Sierra Leone"],["sk","Slovakia"],["si","Slovenia"],["sb","Kepulauan Solomon"],["so","Somalia"],["ss","Sudan Selatan"],["lk","Sri Lanka"],["sd","Sudan"],["sr","Suriname"],["sy","Suriah"],["tj","Tajikistan"],["tz","Tanzania"],["tl","Timor-Leste"],["tg","Togo"],["to","Tonga"],["tt","Trinidad dan Tobago"],["tn","Tunisia"],["tm","Turkmenistan"],["tv","Tuvalu"],["ug","Uganda"],["ua","Ukraina"],["uy","Uruguay"],["uz","Uzbekistan"],["vu","Vanuatu"],["va","Vatikan"],["ve","Venezuela"],["ye","Yaman"],["zm","Zambia"],["zw","Zimbabwe"],["ps","Wilayah Palestina"],["xk","Kosovo"],["fo","Kepulauan Faroe"],["gl","Greenland"],["mo","Makau"],["sa","Arab Saudi"],["kr","Korea Selatan"],["any","Any Country (Generic)"],["universities","Universitas / Perguruan Tinggi"]
+    ["af","Afghanistan"],["al","Albania"],["dz","Aljazair"],["ao","Angola"],["ag","Antigua dan Barbuda"],["ar","Argentina"],["am","Armenia"],["az","Azerbaijan"],["bs","Bahama"],["bh","Bahrain"],["bb","Barbados"],["by","Belarus"],["be","Belgia"],["bz","Belize"],["bj","Benin"],["bt","Bhutan"],["bo","Bolivia"],["ba","Bosnia dan Herzegovina"],["bw","Botswana"],["bn","Brunei Darussalam"],["bg","Bulgaria"],["bf","Burkina Faso"],["bi","Burundi"],["kh","Kamboja"],["cm","Kamerun"],["cv","Tanjung Verde"],["cf","Republik Afrika Tengah"],["td","Chad"],["cl","Cile"],["co","Kolombia"],["km","Komoro"],["cg","Republik Kongo"],["cd","Republik Demokratik Kongo"],["cr","Kosta Rika"],["ci","Pantai Gading"],["hr","Kroasia"],["cu","Kuba"],["cy","Siprus"],["cz","Ceko"],["dk","Denmark"],["dj","Djibouti"],["dm","Dominika"],["do","Republik Dominika"],["ec","Ekuador"],["sv","El Salvador"],["gq","Guinea Khatulistiwa"],["er","Eritrea"],["ee","Estonia"],["sz","Eswatini"],["et","Ethiopia"],["fj","Fiji"],["fi","Finlandia"],["ga","Gabon"],["gm","Gambia"],["ge","Georgia"],["gh","Ghana"],["gr","Yunani"],["gd","Grenada"],["gt","Guatemala"],["gn","Guinea"],["gw","Guinea-Bissau"],["gy","Guyana"],["ht","Haiti"],["hn","Honduras"],["hu","Hungaria"],["is","Islandia"],["iq","Irak"],["ir","Iran"],["il","Israel"],["jm","Jamaika"],["jo","Yordania"],["kz","Kazakhstan"],["ke","Kenya"],["ki","Kiribati"],["kw","Kuwait"],["kg","Kirgizstan"],["la","Laos"],["lv","Latvia"],["lb","Lebanon"],["ls","Lesotho"],["lr","Liberia"],["ly","Libya"],["li","Liechtenstein"],["lt","Lituania"],["lu","Luksemburg"],["mg","Madagaskar"],["mw","Malawi"],["mv","Maladewa"],["ml","Mali"],["mt","Malta"],["mh","Kepulauan Marshall"],["mr","Mauritania"],["mu","Mauritius"],["fm","Mikronesia"],["md","Moldova"],["mc","Monako"],["mn","Mongolia"],["me","Montenegro"],["ma","Maroko"],["mz","Mozambik"],["mm","Myanmar"],["na","Namibia"],["nr","Nauru"],["ni","Nikaragua"],["ne","Niger"],["mk","Makedonia Utara"],["om","Oman"],["pw","Palau"],["pa","Panama"],["pg","Papua Nugini"],["py","Paraguay"],["pe","Peru"],["pl","Polandia"],["pt","Portugal"],["pr","Puerto Riko"],["ro","Rumania"],["rw","Rwanda"],["kn","Saint Kitts dan Nevis"],["lc","Saint Lucia"],["vc","Saint Vincent dan Grenadines"],["ws","Samoa"],["sm","San Marino"],["st","Sao Tome dan Principe"],["sn","Senegal"],["rs","Serbia"],["sc","Seychelles"],["sl","Sierra Leone"],["sk","Slovakia"],["si","Slovenia"],["sb","Kepulauan Solomon"],["so","Somalia"],["ss","Sudan Selatan"],["lk","Sri Lanka"],["sd","Sudan"],["sr","Suriname"],["sy","Suriah"],["tj","Tajikistan"],["tz","Tanzania"],["tl","Timor-Leste"],["tg","Togo"],["to","Tonga"],["tt","Trinidad dan Tobago"],["tn","Tunisia"],["tm","Turkmenistan"],["tv","Tuvalu"],["ug","Uganda"],["ua","Ukraina"],["uy","Uruguay"],["uz","Uzbekistan"],["vu","Vanuatu"],["va","Vatikan"],["ve","Venezuela"],["ye","Yaman"],["zm","Zambia"],["zw","Zimbabwe"],["ps","Wilayah Palestina"],["xk","Kosovo"],["fo","Kepulauan Faroe"],["gl","Greenland"],["mo","Makau"],["sa","Arab Saudi"],["kr","Korea Selatan"],["sg","Singapura"],["any","Any Country (Generic)"],["universities","Universitas / Perguruan Tinggi"]
   ];
+  // Override generic country summaries where a narrowly scoped official profile exists.
+  countryGuides.in.official = "https://indianvisaonline.gov.in/evisa/";
+  countryGuides.in.documents.visa = {
+    label: "India e-Visa (unggahan digital)",
+    preset: "digitalSquare",
+    summary: "Profil ini khusus unggahan foto pada portal resmi India e-Visa: gambar persegi JPEG 10 KB–1 MB. Portal tidak memberi angka universal tinggi kepala atau garis mata.",
+    rules: [
+      "Foto harus persegi dan berformat JPEG; ukuran file 10 KB sampai 1 MB.",
+      "Wajah penuh menghadap depan, mata terbuka, tanpa kacamata; kepala di tengah dan seluruh kepala dari atas rambut sampai dagu terlihat.",
+      "Gunakan latar terang/polos tanpa bayangan pada wajah/latar dan tanpa bingkai.",
+      "Jangan memakai profil ini untuk visa reguler India atau jenis dokumen lain."
+    ]
+  };
+  countryGuides.ca.documents.visa.summary = "Profil foto Temporary Resident Visa (TRV) Kanada: foto cetak minimal 35 × 45 mm dan tinggi kepala 31–36 mm dari dagu ke crown. Ini bukan profil eTA atau semua jalur imigrasi.";
+  countryGuides.ca.documents.visa.rules = [
+    "Dua foto identik, diambil dalam 6 bulan terakhir; foto harus tajam dan berlatar putih atau warna terang.",
+    "Ukuran bingkai minimal 35 × 45 mm; tinggi kepala dari dagu ke crown 31–36 mm.",
+    "Wajah menghadap kamera dengan ekspresi netral; foto digital tidak boleh diubah.",
+    "Profil ini khusus Temporary Resident Visa; periksa petunjuk program imigrasi lain secara terpisah."
+  ];
+  countryGuides.fr.documents.visa = {
+    label: "Visa Prancis",
+    preset: "35x45",
+    summary: "France-Visas menyatakan foto identitas 35–40 mm lebar dan tinggi wajah 32–36 mm (70–80% foto), dagu ke dahi tidak termasuk rambut.",
+    rules: [
+      "Gunakan foto terbaru yang sesuai penampilan asli dan standar ICAO.",
+      "Lebar foto 35–40 mm; tinggi wajah 32–36 mm atau 70–80% tinggi gambar.",
+      "Tidak ada angka margin atas atau posisi garis mata universal pada FAQ ini.",
+      "Ikuti instruksi konsulat atau pusat visa tempat pengajuan."
+    ]
+  };
+  countryGuides.sg.documents.passport = {
+    label: "Paspor Singapura — foto digital ICA",
+    preset: "digitalSG",
+    summary: "ICA meminta foto digital 400 × 514 piksel untuk unggahan e-Services; format JPG/JPEG/HEIC/HEIF/PNG, maksimum 8 MB.",
+    rules: [
+      "Gunakan foto warna terbaru; untuk hardcopy, cetak matte atau semi-matte.",
+      "Jangan mengubah atau meningkatkan foto, fitur wajah, atau menggunakan filter.",
+      "Foto digital 400 × 514 px dan maksimum 8 MB; tidak ada target tinggi kepala numerik pada panduan ini.",
+      "Periksa kembali instruksi layanan ICA yang sedang digunakan."
+    ]
+  };
+  countryGuides.sg.documents.visa = {
+    label: "Visa Singapura — ICA e-Service",
+    preset: "digitalSG",
+    summary: "ICA menetapkan foto JPEG 400 × 514 piksel, maksimum 60 KB, diambil dalam 3 bulan terakhir dan berlatar putih.",
+    rules: [
+      "Foto JPEG 400 × 514 px dan maksimum 60 KB.",
+      "Foto warna terbaru dalam 3 bulan terakhir, latar putih, full face menghadap depan.",
+      "Penutup kepala keagamaan/adat diperbolehkan jika tidak menutupi fitur wajah.",
+      "Tidak ada target tinggi kepala atau garis mata numerik pada FAQ visa yang dirujuk."
+    ]
+  };
+
   const existingCountryCodes = new Set(Array.from(countrySelect.options, (option) => option.value));
   visafotoCountryDirectory.forEach(([code, name]) => {
     if (!countryGuides[code]) {
@@ -223,13 +280,17 @@
     "gb:visa": { preset: "35x45", dpi: 600, profileStatus: "unverified", positionGuidance: "UKVI tidak menetapkan satu rentang biometrik tinggi kepala, margin atas, atau garis mata universal pada panduan digital visa yang dirujuk. Jangan memakai angka 64–76% sebagai standar resmi tanpa instruksi khusus pada akun aplikasi atau pusat visa.", source: "GOV.UK / UK Visas and Immigration — Take a photo of your face for a visa application or permission (12 February 2026): foto digital minimal 600 × 750 px, JPG/JPEG, 50 KB–6 MB, orientasi vertikal; panduan ini tidak mencantumkan rentang tinggi kepala 64–76% atau ukuran margin atas/garis mata. https://www.gov.uk/guidance/how-to-take-a-photo-for-a-visa-application-or-permission. Ukuran 35 × 45 mm hanya ukuran awal editor, bukan standar universal UKVI." },
 
     "ca:passport": { preset: "50x70", dpi: 600, headMinMm: 31, headMaxMm: 36, profileStatus: "verified-official", positionGuidance: "Wajah dan bahu harus berada di tengah dan sejajar menghadap kamera; mata terbuka dan terlihat jelas. Panduan resmi tidak menetapkan angka garis mata atau margin atas.", source: "Government of Canada — Passport photo requirements: foto 50 × 70 mm; tinggi wajah dari dagu ke crown 31–36 mm; wajah/bahu terpusat dan tegak, mata terbuka serta terlihat. https://www.canada.ca/en/immigration-refugees-citizenship/services/canadian-passports/photos.html. Berlaku untuk paspor dewasa cetak/in-person/mail; pembaruan online memakai foto digital tersendiri." },
-    "ca:visa": { preset: "35x45", dpi: 305, format: "image/jpeg", profileStatus: "unverified", source: "35 × 45 mm adalah format kerja awal, bukan biometrik universal untuk seluruh aplikasi visa/imigrasi Kanada. Angka tinggi kepala, margin atas, DPI, dan batas file harus mengikuti instruksi resmi IRCC pada jenis aplikasi dan kanal yang digunakan; jangan mengambil target biometrik dari situs pihak ketiga." },
+    "ca:visa": { preset: "35x45", dpi: 600, format: "image/jpeg", profileStatus: "verified-official", headMinMm: 31, headMaxMm: 36, positionGuidance: "Foto TRV cetak minimal 35 × 45 mm; kepala diukur dari dagu ke crown, wajah di tengah dan bahu terlihat. Jangan menerapkan profil ini pada eTA, eVisa digital, atau program imigrasi lain tanpa memeriksa petunjuk spesifik.", source: "Government of Canada / IRCC — Temporary Resident Visa application photograph specifications: frame minimum 35 × 45 mm; head size chin-to-crown 31–36 mm. https://www.canada.ca/en/immigration-refugees-citizenship/services/application/application-forms-guides/temporary-resident-visa-application-photograph-specifications.html. DPI 600 di PFVISA adalah setelan ekspor, bukan angka yang ditentukan sumber." },
 
     "au:passport": { preset: "35x45", dpi: 600, headMinMm: 32, headMaxMm: 36, profileStatus: "verified-official", positionGuidance: "Wajah berada di tengah, menghadap lurus, kepala tidak miring, mata terbuka dan ekspresi netral. Panduan resmi tidak menetapkan angka garis mata atau margin atas.", source: "Australian Passport Office — Photo Guidelines: ukuran foto yang diterima 35–40 mm × 45–50 mm; tinggi wajah dari dagu ke crown 32–36 mm; wajah terpusat dan melihat lurus ke kamera. https://www.passports.gov.au/PhotoGuidelines. Preset PFVISA 35 × 45 mm berada di dalam rentang resmi, tetapi bukan satu-satunya ukuran yang diterima." },
     "au:visa": { preset: "35x45", dpi: 600, profileStatus: "unverified", positionGuidance: "Tidak ada satu spesifikasi biometrik foto yang dapat diterapkan ke seluruh visa Australia. Ikuti permintaan foto yang muncul pada jenis visa dan kanal ImmiAccount yang digunakan.", source: "Belum diberi status resmi: ketentuan foto visa Australia bergantung pada subclass dan instruksi pengajuan. Standar paspor Australia tidak diwariskan ke visa. Jangan gunakan angka pihak ketiga sebagai target biometrik resmi." },
 
     "in:passport": { preset: "35x45", dpi: 600, headMm: null, topMm: null, source: "India memiliki beberapa format paspor cetak/digital; konfirmasi spesifikasi portal yang digunakan." },
-    "in:visa": { preset: "2x2", dpi: 300, profileStatus: "unverified", source: "Ukuran 2 × 2 inci hanya titik awal kerja. Foto visa India dan e-Visa dapat memiliki persyaratan digital yang berbeda; target tinggi kepala, garis mata, DPI, format, dan batas file belum dikunci karena harus mengikuti instruksi resmi portal dan kategori aplikasi yang digunakan." },
+    "in:visa": { preset: "digitalSquare", dpi: 300, format: "image/jpeg", minFileKB: 10, maxFileKB: 1024, profileStatus: "verified-official", positionGuidance: "Profil khusus unggahan India e-Visa: foto persegi, full face tampak depan, mata terbuka, tanpa kacamata, kepala di tengah dan seluruh kepala dari rambut hingga dagu terlihat; latar terang/polos, tanpa bayangan atau bingkai. Sumber tidak menetapkan angka tinggi kepala atau posisi garis mata.", source: "Government of India — official e-Visa portal: digital photo must be JPEG, 10 KB–1 MB, equal height and width, full face/front view, eyes open, no spectacles, full head visible, centered on plain light/white background without shadows or borders. https://indianvisaonline.gov.in/evisa/. PFVISA uses a square working canvas; the source does not specify a minimum pixel dimension or numeric head/eye target." },
+
+    "fr:visa": { preset: "35x45", dpi: 600, format: "image/jpeg", profileStatus: "verified-official", headMinMm: 32, headMaxMm: 36, headMinFraction: 0.70, headMaxFraction: 0.80, positionGuidance: "France-Visas menetapkan lebar foto 35–40 mm dan tinggi wajah dagu-ke-dahi 32–36 mm (70–80% foto), tidak termasuk rambut. Tidak ada target margin atas atau garis mata numerik terpisah pada FAQ yang dirujuk.", source: "France-Visas official FAQ — identity photo 35–40 mm wide; face size 32–36 mm (70–80% of picture), chin to forehead excluding hair, ICAO compliant. https://www.france-visas.gouv.fr/en/faq. Profil ini untuk aplikasi visa Prancis; ikuti arahan pusat visa setempat." },
+    "sg:passport": { preset: "digitalSG", dpi: 254, pixelWidth: 400, pixelHeight: 514, minPixelWidth: 400, maxPixelWidth: 400, minPixelHeight: 514, maxPixelHeight: 514, maxFileKB: 8192, profileStatus: "verified-official", positionGuidance: "Foto digital ICA Singapura untuk paspor/IC: foto berwarna terbaru, tidak boleh mengubah/meningkatkan foto atau memakai filter. Panduan ICA mengikuti spesifikasi ISO/ICAO; ukuran unggahan 400 × 514 px. Tidak ada target numerik tinggi kepala yang dikunci oleh halaman ini.", source: "Immigration & Checkpoints Authority Singapore — Photo Guidelines: online photo 400 × 514 px; accepted JPG/JPEG/HEIC/HEIF/PNG; maximum 8 MB; do not alter or enhance facial features/use filters. https://www.ica.gov.sg/photo-guidelines. Profil untuk e-Services ICA; periksa instruksi layanan yang digunakan." },
+    "sg:visa": { preset: "digitalSG", dpi: 254, pixelWidth: 400, pixelHeight: 514, minPixelWidth: 400, maxPixelWidth: 400, minPixelHeight: 514, maxPixelHeight: 514, format: "image/jpeg", maxFileKB: 60, profileStatus: "verified-official", positionGuidance: "Profil unggahan visa ICA: foto warna terbaru (dalam 3 bulan), latar putih, full face, tanpa penutup kepala kecuali kebiasaan keagamaan/adat yang tidak menutupi fitur wajah. Tidak ada target numerik tinggi kepala pada FAQ yang dirujuk.", source: "Singapore ICA / Ask.gov.sg — visa application photo: JPEG, maximum 60 KB, 400 × 514 px, recent within 3 months, white background, full face. https://ask.gov.sg/ica/questions/clos83fvx01lz5k0wkrclrdwg. Persyaratan ini khusus visa ICA e-Service." },
 
     "cn:passport": { preset: "33x48", dpi: 300, profileStatus: "unverified", positionGuidance: "Jangan memakai angka foto visa sebagai ketentuan paspor nasional. Persyaratan foto paspor Tiongkok harus dicocokkan dengan kanal penerbit paspor yang berlaku.", source: "Belum diverifikasi dari sumber resmi khusus paspor nasional Tiongkok. Ukuran dan biometrik visa Tiongkok tidak diwariskan ke paspor." },
     "cn:visa": { preset: "33x48", dpi: 600, headMinMm: 28, headMaxMm: 33, headWidthMinMm: 15, headWidthMaxMm: 22, topMinMm: 3, topMaxMm: 5, profileStatus: "verified-official", positionGuidance: "Kepala terpusat; lebar kepala resmi 15–22 mm. Wajah menghadap kamera, mata terbuka, bibir tertutup, telinga terlihat. Panduan digital terpisah memiliki template posisi mata; jangan campurkan piksel digital dengan pengukuran foto cetak.", source: "Chinese Visa Application Service Center, berdasarkan instruksi Consular Department MFA RRT: foto cetak 48 × 33 mm; lebar kepala 15–22 mm; tinggi kepala 28–33 mm; jarak crown ke tepi atas 3–5 mm. https://www.visaforchina.cn/MES4_EN/tongzhigonggao/551659995754795028.html. Profil ini untuk visa Tiongkok, bukan paspor Tiongkok." },
