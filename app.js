@@ -563,6 +563,9 @@
     if (countrySelect.value === "id" && guide.documents.visa) {
       documentSelect.value = "visa";
     }
+    if (countrySelect.value === "tw" && guide.documents.visa) {
+      documentSelect.value = "visa";
+    }
     updateRequirements();
   }
 
