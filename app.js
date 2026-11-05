@@ -36,6 +36,10 @@
   const metricHeadTarget = $("metric-head-target");
   const metricTop = $("metric-top");
   const metricTopTarget = $("metric-top-target");
+  const metricHeadWidth = $("metric-head-width");
+  const metricHeadWidthTarget = $("metric-head-width-target");
+  const metricEyeLine = $("metric-eye-line");
+  const metricEyeLineTarget = $("metric-eye-line-target");
   const measurementNote = $("measurement-note");
   const cropControls = $("crop-controls");
   const cropZoomInput = $("crop-zoom");
@@ -216,7 +220,7 @@
     "schengen:residence": { preset: "35x45", dpi: 600, headMm: null, topMm: null, source: "Izin tinggal berbeda menurut negara penerbit; ukuran ini hanya titik awal." },
 
     "gb:passport": { preset: "35x45", dpi: 600, headMinMm: 29, headMaxMm: 34, profileStatus: "verified-official", positionGuidance: "Untuk foto cetak paspor: wajah menghadap lurus, mata terbuka dan terlihat, ekspresi netral. Untuk permohonan online, GOV.UK meminta foto digital yang belum di-crop karena pemotongan dilakukan oleh sistem pengajuan; jangan gunakan preset cetak ini sebagai spesifikasi upload digital.", source: "GOV.UK — Printed passport photos: ukuran 35 × 45 mm; tinggi wajah dari crown ke dagu 29–34 mm. https://www.gov.uk/photos-for-passports/photo-requirements. GOV.UK digital passport application separately instructs applicants not to crop the uploaded image: https://www.passport.service.gov.uk/photo/how-to-take-a-photo." },
-    "gb:visa": { preset: "35x45", dpi: 600, headMm: 32.8, topMm: 4.9, source: "Visafoto: https://id.visafoto.com/gb-visa-photo — 35 × 45 mm, 600 DPI, tinggi kepala 32,8 mm dan jarak tepi atas 4,9 mm. Cocokkan dengan jalur visa/biometrik yang berlaku." },
+    "gb:visa": { preset: "35x45", dpi: 600, profileStatus: "unverified", positionGuidance: "UKVI tidak menetapkan satu rentang biometrik tinggi kepala, margin atas, atau garis mata universal pada panduan digital visa yang dirujuk. Jangan memakai angka 64–76% sebagai standar resmi tanpa instruksi khusus pada akun aplikasi atau pusat visa.", source: "GOV.UK / UK Visas and Immigration — Take a photo of your face for a visa application or permission (12 February 2026): foto digital minimal 600 × 750 px, JPG/JPEG, 50 KB–6 MB, orientasi vertikal; panduan ini tidak mencantumkan rentang tinggi kepala 64–76% atau ukuran margin atas/garis mata. https://www.gov.uk/guidance/how-to-take-a-photo-for-a-visa-application-or-permission. Ukuran 35 × 45 mm hanya ukuran awal editor, bukan standar universal UKVI." },
 
     "ca:passport": { preset: "50x70", dpi: 600, headMinMm: 31, headMaxMm: 36, profileStatus: "verified-official", positionGuidance: "Wajah dan bahu harus berada di tengah dan sejajar menghadap kamera; mata terbuka dan terlihat jelas. Panduan resmi tidak menetapkan angka garis mata atau margin atas.", source: "Government of Canada — Passport photo requirements: foto 50 × 70 mm; tinggi wajah dari dagu ke crown 31–36 mm; wajah/bahu terpusat dan tegak, mata terbuka serta terlihat. https://www.canada.ca/en/immigration-refugees-citizenship/services/canadian-passports/photos.html. Berlaku untuk paspor dewasa cetak/in-person/mail; pembaruan online memakai foto digital tersendiri." },
     "ca:visa": { preset: "35x45", dpi: 305, format: "image/jpeg", maxFileKB: 240, headMm: 34.7, topMm: 3, source: "Visafoto: https://id.visafoto.com/ca-visa-photo — 35 × 45 mm, 305 DPI, tinggi kepala 34,7 mm dan jarak tepi atas 3 mm. Ukuran file yang dicantumkan Visafoto 60–240 KB; cek instruksi kategori aplikasi terbaru." },
@@ -228,7 +232,7 @@
     "in:visa": { preset: "2x2", dpi: 300, headMm: 32.766, topMm: null, source: "Visafoto: https://id.visafoto.com/in-visa-photo — 2 × 2 inci, 300 DPI, tinggi kepala 1,29 inci (32,8 mm), garis mata 1,18 inci dari tepi bawah, ukuran file 0–290 KB. Jarak atas tidak disimpulkan dari garis mata; e-Visa dapat memiliki profil digital lain." },
 
     "cn:passport": { preset: "33x48", dpi: 300, profileStatus: "unverified", positionGuidance: "Jangan memakai angka foto visa sebagai ketentuan paspor nasional. Persyaratan foto paspor Tiongkok harus dicocokkan dengan kanal penerbit paspor yang berlaku.", source: "Belum diverifikasi dari sumber resmi khusus paspor nasional Tiongkok. Ukuran dan biometrik visa Tiongkok tidak diwariskan ke paspor." },
-    "cn:visa": { preset: "33x48", dpi: 600, headMinMm: 28, headMaxMm: 33, topMinMm: 3, topMaxMm: 5, profileStatus: "verified-official", positionGuidance: "Kepala terpusat; lebar kepala resmi 15–22 mm. Wajah menghadap kamera, mata terbuka, bibir tertutup, telinga terlihat. Panduan digital terpisah memiliki template posisi mata; jangan campurkan piksel digital dengan pengukuran foto cetak.", source: "Chinese Visa Application Service Center, berdasarkan instruksi Consular Department MFA RRT: foto cetak 48 × 33 mm; lebar kepala 15–22 mm; tinggi kepala 28–33 mm; jarak crown ke tepi atas 3–5 mm. https://www.visaforchina.cn/MES4_EN/tongzhigonggao/551659995754795028.html. Profil ini untuk visa Tiongkok, bukan paspor Tiongkok." },
+    "cn:visa": { preset: "33x48", dpi: 600, headMinMm: 28, headMaxMm: 33, headWidthMinMm: 15, headWidthMaxMm: 22, topMinMm: 3, topMaxMm: 5, profileStatus: "verified-official", positionGuidance: "Kepala terpusat; lebar kepala resmi 15–22 mm. Wajah menghadap kamera, mata terbuka, bibir tertutup, telinga terlihat. Panduan digital terpisah memiliki template posisi mata; jangan campurkan piksel digital dengan pengukuran foto cetak.", source: "Chinese Visa Application Service Center, berdasarkan instruksi Consular Department MFA RRT: foto cetak 48 × 33 mm; lebar kepala 15–22 mm; tinggi kepala 28–33 mm; jarak crown ke tepi atas 3–5 mm. https://www.visaforchina.cn/MES4_EN/tongzhigonggao/551659995754795028.html. Profil ini untuk visa Tiongkok, bukan paspor Tiongkok." },
 
     "jp:passport": { preset: "35x45", dpi: 300, headMinMm: 32, headMaxMm: 36, profileStatus: "verified-official", positionGuidance: "Foto berwarna, satu orang, tampak depan, tanpa topi, latar polos; ukuran kepala diukur dari puncak kepala ke dagu. Tidak ada angka garis mata yang dikunci dalam ringkasan resmi yang dipakai.", source: "Ministry of Foreign Affairs of Japan — Passport photo standards (updated 3 March 2025): foto 45 × 35 mm; diagram formulir paspor menetapkan tinggi kepala 34 ± 2 mm. https://www.mofa.go.jp/mofaj/toko/passport/ic_photo.html dan https://www.mofa.go.jp/mofaj/files/100412471.pdf. Tidak ada target garis mata numerik yang diterapkan oleh profil ini." },
     "jp:visa": { preset: "35x45", dpi: 300, profileStatus: "verified-official", positionGuidance: "Untuk permohonan visa Jepang di Indonesia: foto berwarna 35 × 45 mm, tampak depan, latar polos, dan tidak dimanipulasi. Sumber yang dirujuk tidak memberi rentang tinggi kepala, garis mata, atau margin atas numerik; Auto Crop tidak mengarang nilai tersebut.", source: "Kedutaan Besar Jepang di Indonesia — persyaratan foto visa 4,5 × 3,5 cm dan foto tidak boleh diedit: https://www.id.emb-japan.go.jp/visa_3.html. Profil ini khusus pengajuan di Indonesia; instruksi kedutaan/kanal negara lain dapat berbeda." },
@@ -631,7 +635,7 @@
       // changes the requested head-to-photo proportion. Out-of-frame areas
       // are rendered as the existing white canvas background.
       detectedCrop = { x: cropX, y: cropY, width: cw, height: ch };
-      detectedHead = { top: headTop, chin: chin.y };
+      detectedHead = { top: headTop, chin: chin.y, leftX: p(234).x, rightX: p(454).x, eyesY: (leftEye.y + rightEye.y) / 2 };
       cropZoom = 1; cropPanX = 0; cropPanY = 0;
       cropZoomInput.value = "1"; cropZoomLabel.textContent = "100%";
       // Apply the automatic result immediately, then leave the editor open so
@@ -975,9 +979,6 @@
   function updateMeasurements(crop) {
     const spec = currentCropSpec();
     const dims = getDimensions();
-    // Report effective magnification against a plain ratio-fit crop. The
-    // profile-driven auto crop often has a custom crop rectangle, so the manual
-    // slider can correctly remain at 1.0x while the actual zoom is not 100%.
     const ratio = dims.widthPx / dims.heightPx;
     const ratioFitHeight = sourceImage
       ? (sourceImage.naturalWidth / sourceImage.naturalHeight > ratio
@@ -986,29 +987,81 @@
       : 0;
     const effectiveZoom = crop && ratioFitHeight > 0 ? (ratioFitHeight / crop.height) * 100 : cropZoom * 100;
     metricZoom.textContent = Math.round(effectiveZoom) + "%";
+
+    const target = (min, max, unit, exact) => {
+      if (min != null && max != null) return "Target " + mmLabel(min) + "–" + mmLabel(max) + " " + unit;
+      if (exact != null) return "Target " + mmLabel(exact) + " " + unit;
+      return "Tidak ditetapkan pada sumber";
+    };
+    metricHeadTarget.textContent = spec && spec.headMinFraction != null && spec.headMaxFraction != null
+      ? "Target " + Math.round(spec.headMinFraction * 100) + "–" + Math.round(spec.headMaxFraction * 100) + "%"
+      : target(spec && spec.headMinMm, spec && spec.headMaxMm, "mm", spec && spec.headMm);
+    metricTopTarget.textContent = target(spec && spec.topMinMm, spec && spec.topMaxMm, "mm", spec && spec.topMm);
+    metricHeadWidthTarget.textContent = target(spec && spec.headWidthMinMm, spec && spec.headWidthMaxMm, "mm", spec && spec.headWidthMm);
+    metricEyeLineTarget.textContent = spec && spec.eyeLineMinFraction != null && spec.eyeLineMaxFraction != null
+      ? "Target " + Math.round(spec.eyeLineMinFraction * 100) + "–" + Math.round(spec.eyeLineMaxFraction * 100) + "% dari bawah"
+      : target(spec && spec.eyeLineMinMm, spec && spec.eyeLineMaxMm, "mm dari bawah", spec && spec.eyeLineMm);
+
     if (!sourceImage || !crop || !detectedHead) {
       metricHead.textContent = "Belum terukur";
       metricTop.textContent = "Belum terukur";
-      metricHeadTarget.textContent = spec && spec.headMinFraction != null && spec.headMaxFraction != null ? "Target " + Math.round(spec.headMinFraction * 100) + "–" + Math.round(spec.headMaxFraction * 100) + "%" : spec && spec.headMinMm != null && spec.headMaxMm != null ? "Target " + mmLabel(spec.headMinMm) + "–" + mmLabel(spec.headMaxMm) + " mm" : spec && spec.headMm != null ? "Target " + mmLabel(spec.headMm) + " mm" : "Target belum diverifikasi";
-      metricTopTarget.textContent = spec && spec.topMinMm != null && spec.topMaxMm != null ? "Target " + mmLabel(spec.topMinMm) + "–" + mmLabel(spec.topMaxMm) + " mm" : spec && spec.topMm != null ? "Target " + mmLabel(spec.topMm) + " mm" : "Target belum diverifikasi";
-      measurementStatus.textContent = sourceImage ? "Perlu verifikasi" : "Menunggu foto";
+      metricHeadWidth.textContent = "Belum terukur";
+      metricEyeLine.textContent = "Belum terukur";
+      measurementStatus.textContent = sourceImage ? "Menunggu Auto Crop" : "Menunggu foto";
       measurementStatus.className = "measurement-badge neutral";
-      measurementNote.textContent = "Deteksi wajah belum memberi pengukuran yang dapat digunakan. Periksa posisi secara visual.";
+      measurementNote.textContent = "Tekan Auto Crop untuk mengestimasi ukuran kepala, lebar wajah, jarak tepi atas, dan posisi garis mata. Pengukuran otomatis perlu diperiksa secara visual.";
       return;
     }
-    const headMm = ((detectedHead.chin - detectedHead.top) / crop.height) * dims.heightMm;
-    const topMm = ((detectedHead.top - crop.y) / crop.height) * dims.heightMm;
-    metricHead.textContent = mmLabel(Number(headMm.toFixed(1))) + " mm · " + (headMm / dims.heightMm * 100).toFixed(1) + "%";
-    metricTop.textContent = mmLabel(Number(topMm.toFixed(1))) + " mm";
-    metricHeadTarget.textContent = spec && spec.headMinFraction != null && spec.headMaxFraction != null ? "Target " + Math.round(spec.headMinFraction * 100) + "–" + Math.round(spec.headMaxFraction * 100) + "%" : spec && spec.headMinMm != null && spec.headMaxMm != null ? "Target " + mmLabel(spec.headMinMm) + "–" + mmLabel(spec.headMaxMm) + " mm" : spec && spec.headMm != null ? "Target " + mmLabel(spec.headMm) + " mm" : "Target belum diverifikasi";
-    metricTopTarget.textContent = spec && spec.topMinMm != null && spec.topMaxMm != null ? "Target " + mmLabel(spec.topMinMm) + "–" + mmLabel(spec.topMaxMm) + " mm" : spec && spec.topMm != null ? "Target " + mmLabel(spec.topMm) + " mm" : "Target belum diverifikasi";
-    const hasTarget = !!(spec && (spec.headMm != null || spec.headMinMm != null || spec.headMinFraction != null || spec.topMm != null || spec.topMinMm != null));
-    // The crop is mathematically fitted using an estimated crown. These values
-    // are not independent biometric verification and cannot establish a pass.
-    measurementStatus.textContent = hasTarget ? "Perlu cek visual" : "Perlu verifikasi";
-    measurementStatus.className = "measurement-badge warn";
-    measurementNote.textContent = "Angka di atas menunjukkan geometri crop berdasarkan perkiraan puncak kepala dari landmark wajah; bukan pengukuran independen ubun-ubun sebenarnya. Periksa rambut/ubun-ubun, dagu, mata, tepi foto, dan instruksi portal secara visual. PFVISA tidak dapat menjamin penerimaan.";
 
+    const headMm = ((detectedHead.chin - detectedHead.top) / crop.height) * dims.heightMm;
+    const headPercent = (headMm / dims.heightMm) * 100;
+    const topMm = ((detectedHead.top - crop.y) / crop.height) * dims.heightMm;
+    const eyeLineMm = detectedHead.eyesY != null
+      ? ((crop.y + crop.height - detectedHead.eyesY) / crop.height) * dims.heightMm
+      : null;
+    const headWidthMm = detectedHead.leftX != null && detectedHead.rightX != null
+      ? ((detectedHead.rightX - detectedHead.leftX) / crop.width) * dims.widthMm
+      : null;
+
+    metricHead.textContent = mmLabel(Number(headMm.toFixed(1))) + " mm · " + headPercent.toFixed(1) + "%";
+    metricTop.textContent = mmLabel(Number(topMm.toFixed(1))) + " mm";
+    metricHeadWidth.textContent = headWidthMm == null ? "Belum terukur" : mmLabel(Number(headWidthMm.toFixed(1))) + " mm";
+    metricEyeLine.textContent = eyeLineMm == null ? "Belum terukur" : mmLabel(Number(eyeLineMm.toFixed(1))) + " mm · " + (eyeLineMm / dims.heightMm * 100).toFixed(1) + "%";
+
+    const checks = [];
+    const within = (value, min, max, exact) => {
+      if (value == null) return;
+      if (min != null && max != null) checks.push(value >= min && value <= max);
+      else if (exact != null) checks.push(Math.abs(value - exact) <= 0.5);
+    };
+    if (spec) {
+      if (spec.headMinFraction != null && spec.headMaxFraction != null) {
+        checks.push(headPercent >= spec.headMinFraction * 100 && headPercent <= spec.headMaxFraction * 100);
+      } else within(headMm, spec.headMinMm, spec.headMaxMm, spec.headMm);
+      within(topMm, spec.topMinMm, spec.topMaxMm, spec.topMm);
+      within(headWidthMm, spec.headWidthMinMm, spec.headWidthMaxMm, spec.headWidthMm);
+      if (eyeLineMm != null) {
+        if (spec.eyeLineMinFraction != null && spec.eyeLineMaxFraction != null) {
+          const eyePercent = eyeLineMm / dims.heightMm * 100;
+          checks.push(eyePercent >= spec.eyeLineMinFraction * 100 && eyePercent <= spec.eyeLineMaxFraction * 100);
+        } else within(eyeLineMm, spec.eyeLineMinMm, spec.eyeLineMaxMm, spec.eyeLineMm);
+      }
+    }
+    const official = spec && spec.profileStatus === "verified-official";
+    const allMeasuredTargetsKnown = checks.length > 0;
+    if (!official || !allMeasuredTargetsKnown) {
+      measurementStatus.textContent = "Perlu verifikasi";
+      measurementStatus.className = "measurement-badge warn";
+      measurementNote.textContent = "Hasil adalah estimasi dari landmark wajah. Status profil atau sebagian target belum terverifikasi; angka yang tidak ditetapkan sumber resmi tidak dinilai lulus/gagal. Periksa ubun-ubun, rambut, dagu, lebar kepala, garis mata, dan instruksi portal secara visual.";
+    } else if (checks.every(Boolean)) {
+      measurementStatus.textContent = "Dalam rentang acuan";
+      measurementStatus.className = "measurement-badge good";
+      measurementNote.textContent = "Semua parameter numerik yang tersedia berada dalam rentang acuan profil resmi. Ini pemeriksaan geometri crop, bukan jaminan foto diterima; puncak kepala dan lebar wajah tetap estimasi landmark dan perlu pemeriksaan visual.";
+    } else {
+      measurementStatus.textContent = "Ada ukuran di luar rentang";
+      measurementStatus.className = "measurement-badge warn";
+      measurementNote.textContent = "Satu atau lebih parameter numerik berada di luar rentang acuan. Geser foto atau koreksi zoom, lalu periksa kembali. Hasil tetap berupa estimasi landmark dan bukan keputusan penerimaan resmi.";
+    }
   }
 
   function updateLabels() {
