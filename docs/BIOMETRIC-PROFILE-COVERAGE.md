@@ -1,6 +1,6 @@
 # PFVISA biometric profile coverage
 
-Last reviewed: 2026-11-05
+Last reviewed: 2026-11-05 (Taiwan 4 × 6 cm working preset added; source discrepancy documented)
 
 This document distinguishes official requirements from editor presets and third-party size catalogs. A country being present in the selector does **not** mean every document type or application channel in that country has an officially verified biometric profile.
 
@@ -25,6 +25,7 @@ This document distinguishes official requirements from editor presets and third-
 | France | Visa application | 35–40 mm wide; face height 32–36 mm (70–80% of photo), chin to forehead excluding hair |
 | Singapore | Passport/IC ICA e-Services | 400 × 514 px; accepted JPG/JPEG/HEIC/HEIF/PNG; maximum 8 MB; no numeric head-height target |
 | Singapore | Visa ICA e-Service | JPEG 400 × 514 px; maximum 60 KB; recent within 3 months; white background; no numeric head-height target |
+| Taiwan | Visa application in Indonesia (requested 4 × 6 cm working preset) | 40 × 60 mm preset based on a TETO Indonesia document dated 14 July 2016; unverified as current. BOCA visitor-visa guidance updated 14 October 2025 lists 45 × 35 mm, so applicants must confirm with the handling TETO office |
 
 ## Profiles intentionally left unverified or incomplete
 
