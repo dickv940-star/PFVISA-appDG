@@ -214,7 +214,7 @@
     "id:id": { preset: "30x40", dpi: 600, headMm: 30, topMm: 2.5, source: "Referensi format foto 30 × 40 mm; pastikan cocok dengan instansi penerbit." },
 
     "us:passport": { preset: "2x2", dpi: 300, format: "image/jpeg", profileStatus: "verified-official", headMinMm: 25, headMaxMm: 35, positionGuidance: "Kepala dan bahu berada di tengah; wajah menghadap lurus dan kedua mata terlihat. Tidak ada angka garis mata atau margin atas terpisah pada panduan paspor cetak yang dirujuk.", source: "U.S. Department of State — Passport Photos untuk pengajuan dengan formulir kertas: ukuran cetak 2 × 2 inci dan tinggi kepala 25–35 mm dari dagu ke puncak kepala. https://travel.state.gov/en/passports/apply/help/photos.html. Dimensi piksel hasil PFVISA berasal dari setelan ekspor 300 DPI, bukan angka minimum resmi. Pembaruan online memakai instruksi digital terpisah." },
-    "us:visa": { preset: "2x2", dpi: 300, pixelWidth: 600, pixelHeight: 600, minPixelWidth: 600, maxPixelWidth: 1200, minPixelHeight: 600, maxPixelHeight: 1200, format: "image/jpeg", profileStatus: "verified-official", headMinFraction: 0.50, headMaxFraction: 0.69, eyeLineMinFraction: 0.56, eyeLineMaxFraction: 0.69, positionGuidance: "Foto digital visa AS: kepala tegak dan di tengah; kedua mata terbuka, terlihat jelas, dan wajah menghadap kamera. Angka eye-line diukur dari tepi bawah gambar.", source: "U.S. Department of State — Photo Composition Template: foto 2 × 2 inci; foto digital tinggi kepala 50–69% dari tinggi gambar dan garis mata 56–69% dari tepi bawah. https://travel.state.gov/content/travel/en/us-visas/visa-information-resources/photos/photo-composition-template.html. Persyaratan dapat berbeda menurut formulir/kanal; ikuti instruksi aplikasi yang sedang digunakan." },
+    "us:visa": { preset: "2x2", dpi: 300, pixelWidth: 600, pixelHeight: 600, minPixelWidth: 600, maxPixelWidth: 1200, minPixelHeight: 600, maxPixelHeight: 1200, format: "image/jpeg", profileStatus: "verified-official", headMinMm: 25, headMaxMm: 35, headMinFraction: 0.50, headMaxFraction: 0.69, eyeLineMinMm: 28, eyeLineMaxMm: 35, eyeLineMinFraction: 0.56, eyeLineMaxFraction: 0.69, positionGuidance: "Foto digital visa AS: kepala tegak dan di tengah; kedua mata terbuka, terlihat jelas, dan wajah menghadap kamera. Angka eye-line diukur dari tepi bawah gambar.", source: "U.S. Department of State — Photo Composition Template: foto 2 × 2 inci; foto digital tinggi kepala 50–69% dari tinggi gambar dan garis mata 56–69% dari tepi bawah. https://travel.state.gov/content/travel/en/us-visas/visa-information-resources/photos/photo-composition-template.html. Persyaratan dapat berbeda menurut formulir/kanal; ikuti instruksi aplikasi yang sedang digunakan." },
 
     "schengen:visa": { preset: "35x45", dpi: 600, headMm: null, topMm: null, source: "Visafoto mencantumkan Schengen Visa 35 × 45 mm: https://id.visafoto.com/requirements. Ukuran kepala dan jarak atas tidak dikunci di profil generik ini karena ketentuan konsulat/pusat visa perlu diverifikasi untuk tempat pengajuan." },
     "schengen:residence": { preset: "35x45", dpi: 600, headMm: null, topMm: null, source: "Izin tinggal berbeda menurut negara penerbit; ukuran ini hanya titik awal." },
@@ -994,14 +994,14 @@
       return "Tidak ditetapkan pada sumber";
     };
     metricHeadTarget.textContent = spec && spec.headMinFraction != null && spec.headMaxFraction != null
-      ? "Target " + Math.round(spec.headMinFraction * 100) + "–" + Math.round(spec.headMaxFraction * 100) + "%"
+      ? "Target " + Math.round(spec.headMinFraction * 100) + "–" + Math.round(spec.headMaxFraction * 100) + "%" + (spec.headMinMm != null && spec.headMaxMm != null ? " / " + mmLabel(spec.headMinMm) + "–" + mmLabel(spec.headMaxMm) + " mm" : "")
       : target(spec && spec.headMinMm, spec && spec.headMaxMm, "mm", spec && spec.headMm);
     metricTopTarget.textContent = target(spec && spec.topMinMm, spec && spec.topMaxMm, "mm", spec && spec.topMm);
     metricHeadWidthTarget.textContent = spec && (spec.headWidthMinMm != null || spec.headWidthMm != null)
       ? "Referensi kepala " + (spec.headWidthMinMm != null ? mmLabel(spec.headWidthMinMm) + "–" + mmLabel(spec.headWidthMaxMm) : mmLabel(spec.headWidthMm)) + " mm; lebar wajah hanya estimasi"
       : "Tidak ditetapkan pada sumber";
     metricEyeLineTarget.textContent = spec && spec.eyeLineMinFraction != null && spec.eyeLineMaxFraction != null
-      ? "Target " + Math.round(spec.eyeLineMinFraction * 100) + "–" + Math.round(spec.eyeLineMaxFraction * 100) + "% dari bawah"
+      ? "Target " + Math.round(spec.eyeLineMinFraction * 100) + "–" + Math.round(spec.eyeLineMaxFraction * 100) + "% dari bawah" + (spec.eyeLineMinMm != null && spec.eyeLineMaxMm != null ? " / " + mmLabel(spec.eyeLineMinMm) + "–" + mmLabel(spec.eyeLineMaxMm) + " mm" : "")
       : target(spec && spec.eyeLineMinMm, spec && spec.eyeLineMaxMm, "mm dari bawah", spec && spec.eyeLineMm);
 
     if (!sourceImage || !crop || !detectedHead) {
