@@ -369,6 +369,21 @@
   Object.entries(mmPresetValues).forEach(([key, dimensions]) => {
     if (!presets[key]) presets[key] = { width: dimensions[0], height: dimensions[1], label: dimensions[0] + " × " + dimensions[1] + (key === "2x2" ? " mm (2 × 2 inci)" : " mm") };
   });
+
+  // Every country-catalog preset must exist as a real select option. Merely
+  // defining a preset in JavaScript is insufficient: assigning a missing
+  // option to a <select> clears its value and silently falls back to 35x45.
+  Object.entries(presets).forEach(([key, preset]) => {
+    if (key === "400x514") return; // digital pixel profile, not a physical print size
+    if (Array.from(sizePreset.options).some((option) => option.value === key)) return;
+    const option = document.createElement("option");
+    option.value = key;
+    option.textContent = preset.label + " — profil negara";
+    const customOption = Array.from(sizePreset.options).find((item) => item.value === "custom");
+    if (customOption) sizePreset.insertBefore(option, customOption);
+    else sizePreset.appendChild(option);
+  });
+
   // Entri digital yang memiliki dimensi piksel eksplisit pada katalog.
   Object.assign(photoSpecs, {
     "sg:passport": { preset: "35x45", dpi: 300, pixelWidth: 400, pixelHeight: 514, format: "image/jpeg", profileStatus: "reference", source: "Katalog Visafoto: Singapore passport online 400 × 514 px. Ini adalah ukuran pada katalog pihak ketiga; verifikasi kanal pengajuan yang digunakan: https://id.visafoto.com/requirements." },
