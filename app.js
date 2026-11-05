@@ -758,7 +758,7 @@
     requirementsSummary.textContent = doc.summary + " Status profil: " + profileStatusLabel(spec, doc) + ".";
     if (exportProfileNote) {
       exportProfileNote.textContent = spec && spec.maxFileKB
-        ? "Batas file profil " + spec.maxFileKB + " KB. Cocokkan format dan ukuran akhir dengan portal resmi."
+        ? "Ukuran file profil " + (spec.minFileKB != null ? spec.minFileKB + "–" : "") + spec.maxFileKB + " KB. Cocokkan format dan ukuran akhir dengan portal resmi."
         : "Batas file dan format khusus belum ditetapkan pada profil ini. Periksa portal tujuan; hasil ekspor belum tentu memenuhi semua aturan.";
     }
     requirementsList.replaceChildren();
