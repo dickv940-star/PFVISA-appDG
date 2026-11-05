@@ -997,7 +997,9 @@
       ? "Target " + Math.round(spec.headMinFraction * 100) + "–" + Math.round(spec.headMaxFraction * 100) + "%"
       : target(spec && spec.headMinMm, spec && spec.headMaxMm, "mm", spec && spec.headMm);
     metricTopTarget.textContent = target(spec && spec.topMinMm, spec && spec.topMaxMm, "mm", spec && spec.topMm);
-    metricHeadWidthTarget.textContent = target(spec && spec.headWidthMinMm, spec && spec.headWidthMaxMm, "mm", spec && spec.headWidthMm);
+    metricHeadWidthTarget.textContent = spec && (spec.headWidthMinMm != null || spec.headWidthMm != null)
+      ? "Referensi kepala " + (spec.headWidthMinMm != null ? mmLabel(spec.headWidthMinMm) + "–" + mmLabel(spec.headWidthMaxMm) : mmLabel(spec.headWidthMm)) + " mm; lebar wajah hanya estimasi"
+      : "Tidak ditetapkan pada sumber";
     metricEyeLineTarget.textContent = spec && spec.eyeLineMinFraction != null && spec.eyeLineMaxFraction != null
       ? "Target " + Math.round(spec.eyeLineMinFraction * 100) + "–" + Math.round(spec.eyeLineMaxFraction * 100) + "% dari bawah"
       : target(spec && spec.eyeLineMinMm, spec && spec.eyeLineMaxMm, "mm dari bawah", spec && spec.eyeLineMm);
@@ -1020,7 +1022,7 @@
       ? ((crop.y + crop.height - detectedHead.eyesY) / crop.height) * dims.heightMm
       : null;
     const headWidthMm = detectedHead.leftX != null && detectedHead.rightX != null
-      ? ((detectedHead.rightX - detectedHead.leftX) / crop.width) * dims.widthMm
+      ? (Math.abs(detectedHead.rightX - detectedHead.leftX) / crop.width) * dims.widthMm
       : null;
 
     metricHead.textContent = mmLabel(Number(headMm.toFixed(1))) + " mm · " + headPercent.toFixed(1) + "%";
@@ -1039,7 +1041,6 @@
         checks.push(headPercent >= spec.headMinFraction * 100 && headPercent <= spec.headMaxFraction * 100);
       } else within(headMm, spec.headMinMm, spec.headMaxMm, spec.headMm);
       within(topMm, spec.topMinMm, spec.topMaxMm, spec.topMm);
-      within(headWidthMm, spec.headWidthMinMm, spec.headWidthMaxMm, spec.headWidthMm);
       if (eyeLineMm != null) {
         if (spec.eyeLineMinFraction != null && spec.eyeLineMaxFraction != null) {
           const eyePercent = eyeLineMm / dims.heightMm * 100;
