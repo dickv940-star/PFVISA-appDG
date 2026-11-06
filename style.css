@@ -56,3 +56,7 @@ footer{padding-top:28px;color:#748895}footer span:first-child{color:#345466}
 .install-app-button[hidden]{display:none}
 .install-app-button span{font-size:17px;line-height:1}
 @media(max-width:560px){.topbar-actions{gap:6px}.topbar-actions .privacy{max-width:118px;font-size:9px;padding:6px 7px}.install-app-button{min-height:35px;padding:0 10px;font-size:10px;white-space:nowrap}}
+
+/* Live biometric compliance metrics */
+.measurement-grid{grid-template-columns:repeat(2,minmax(0,1fr))}.measurement-grid>div{min-height:82px}.measurement-grid strong{font-size:14px}.measurement-note{font-size:11px}
+@media(max-width:520px){.measurement-grid{grid-template-columns:1fr}}

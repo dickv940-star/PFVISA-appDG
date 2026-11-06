@@ -36,6 +36,10 @@
   const metricHeadTarget = $("metric-head-target");
   const metricTop = $("metric-top");
   const metricTopTarget = $("metric-top-target");
+  const metricHeadWidth = $("metric-head-width");
+  const metricHeadWidthTarget = $("metric-head-width-target");
+  const metricEyeLine = $("metric-eye-line");
+  const metricEyeLineTarget = $("metric-eye-line-target");
   const measurementNote = $("measurement-note");
   const cropControls = $("crop-controls");
   const cropZoomInput = $("crop-zoom");
@@ -57,7 +61,9 @@
     "digital200": { width: 25, height: 25, label: "Digital 1:1 — Saudi e-Visa (200 × 200 px)" },
     "45x45": { width: 45, height: 45, label: "45 × 45 mm" },
     "40x50": { width: 40, height: 50, label: "40 × 50 mm" },
-    "30x40": { width: 30, height: 40, label: "30 × 40 mm" }
+    "30x40": { width: 30, height: 40, label: "30 × 40 mm" },
+    "digitalSquare": { width: 40, height: 40, label: "Rasio digital 1:1 — India e-Visa" },
+    "digitalSG": { width: 40, height: 51.4, label: "Digital ICA Singapura — 400 × 514 px" }
   };
 
   function generalCountryGuide(name, official, passportPreset = "35x45") {
@@ -165,7 +171,8 @@
     tw: generalCountryGuide("Taiwan", "https://www.boca.gov.tw/"),
     hk: generalCountryGuide("Hong Kong", "https://www.immd.gov.hk/eng/"),
     ie: generalCountryGuide("Irlandia", "https://www.ireland.ie/en/dfa/passports/"),
-    fr: generalCountryGuide("Prancis", "https://www.service-public.fr/"),
+    fr: generalCountryGuide("Prancis", "https://www.france-visas.gouv.fr/en/faq"),
+    sg: generalCountryGuide("Singapura", "https://www.ica.gov.sg/photo-guidelines"),
     de: generalCountryGuide("Jerman", "https://www.auswaertiges-amt.de/"),
     it: generalCountryGuide("Italia", "https://www.esteri.it/"),
     es: generalCountryGuide("Spanyol", "https://www.exteriores.gob.es/"),
@@ -180,8 +187,80 @@
   // Hanya profil yang mempunyai spesifikasi tersendiri di photoSpecs yang mengunci
   // dimensi/format; negara lain tetap diberi status belum diverifikasi, bukan angka tebakan.
   const visafotoCountryDirectory = [
-    ["af","Afghanistan"],["al","Albania"],["dz","Aljazair"],["ao","Angola"],["ag","Antigua dan Barbuda"],["ar","Argentina"],["am","Armenia"],["az","Azerbaijan"],["bs","Bahama"],["bh","Bahrain"],["bb","Barbados"],["by","Belarus"],["be","Belgia"],["bz","Belize"],["bj","Benin"],["bt","Bhutan"],["bo","Bolivia"],["ba","Bosnia dan Herzegovina"],["bw","Botswana"],["bn","Brunei Darussalam"],["bg","Bulgaria"],["bf","Burkina Faso"],["bi","Burundi"],["kh","Kamboja"],["cm","Kamerun"],["cv","Tanjung Verde"],["cf","Republik Afrika Tengah"],["td","Chad"],["cl","Cile"],["co","Kolombia"],["km","Komoro"],["cg","Republik Kongo"],["cd","Republik Demokratik Kongo"],["cr","Kosta Rika"],["ci","Pantai Gading"],["hr","Kroasia"],["cu","Kuba"],["cy","Siprus"],["cz","Ceko"],["dk","Denmark"],["dj","Djibouti"],["dm","Dominika"],["do","Republik Dominika"],["ec","Ekuador"],["sv","El Salvador"],["gq","Guinea Khatulistiwa"],["er","Eritrea"],["ee","Estonia"],["sz","Eswatini"],["et","Ethiopia"],["fj","Fiji"],["fi","Finlandia"],["ga","Gabon"],["gm","Gambia"],["ge","Georgia"],["gh","Ghana"],["gr","Yunani"],["gd","Grenada"],["gt","Guatemala"],["gn","Guinea"],["gw","Guinea-Bissau"],["gy","Guyana"],["ht","Haiti"],["hn","Honduras"],["hu","Hungaria"],["is","Islandia"],["iq","Irak"],["ir","Iran"],["il","Israel"],["jm","Jamaika"],["jo","Yordania"],["kz","Kazakhstan"],["ke","Kenya"],["ki","Kiribati"],["kw","Kuwait"],["kg","Kirgizstan"],["la","Laos"],["lv","Latvia"],["lb","Lebanon"],["ls","Lesotho"],["lr","Liberia"],["ly","Libya"],["li","Liechtenstein"],["lt","Lituania"],["lu","Luksemburg"],["mg","Madagaskar"],["mw","Malawi"],["mv","Maladewa"],["ml","Mali"],["mt","Malta"],["mh","Kepulauan Marshall"],["mr","Mauritania"],["mu","Mauritius"],["fm","Mikronesia"],["md","Moldova"],["mc","Monako"],["mn","Mongolia"],["me","Montenegro"],["ma","Maroko"],["mz","Mozambik"],["mm","Myanmar"],["na","Namibia"],["nr","Nauru"],["ni","Nikaragua"],["ne","Niger"],["mk","Makedonia Utara"],["om","Oman"],["pw","Palau"],["pa","Panama"],["pg","Papua Nugini"],["py","Paraguay"],["pe","Peru"],["pl","Polandia"],["pt","Portugal"],["pr","Puerto Riko"],["ro","Rumania"],["rw","Rwanda"],["kn","Saint Kitts dan Nevis"],["lc","Saint Lucia"],["vc","Saint Vincent dan Grenadines"],["ws","Samoa"],["sm","San Marino"],["st","Sao Tome dan Principe"],["sn","Senegal"],["rs","Serbia"],["sc","Seychelles"],["sl","Sierra Leone"],["sk","Slovakia"],["si","Slovenia"],["sb","Kepulauan Solomon"],["so","Somalia"],["ss","Sudan Selatan"],["lk","Sri Lanka"],["sd","Sudan"],["sr","Suriname"],["sy","Suriah"],["tj","Tajikistan"],["tz","Tanzania"],["tl","Timor-Leste"],["tg","Togo"],["to","Tonga"],["tt","Trinidad dan Tobago"],["tn","Tunisia"],["tm","Turkmenistan"],["tv","Tuvalu"],["ug","Uganda"],["ua","Ukraina"],["uy","Uruguay"],["uz","Uzbekistan"],["vu","Vanuatu"],["va","Vatikan"],["ve","Venezuela"],["ye","Yaman"],["zm","Zambia"],["zw","Zimbabwe"],["ps","Wilayah Palestina"],["xk","Kosovo"],["fo","Kepulauan Faroe"],["gl","Greenland"],["mo","Makau"],["sa","Arab Saudi"],["kr","Korea Selatan"],["any","Any Country (Generic)"],["universities","Universitas / Perguruan Tinggi"]
+    ["af","Afghanistan"],["al","Albania"],["dz","Aljazair"],["ao","Angola"],["ag","Antigua dan Barbuda"],["ar","Argentina"],["am","Armenia"],["az","Azerbaijan"],["bs","Bahama"],["bh","Bahrain"],["bb","Barbados"],["by","Belarus"],["be","Belgia"],["bz","Belize"],["bj","Benin"],["bt","Bhutan"],["bo","Bolivia"],["ba","Bosnia dan Herzegovina"],["bw","Botswana"],["bn","Brunei Darussalam"],["bg","Bulgaria"],["bf","Burkina Faso"],["bi","Burundi"],["kh","Kamboja"],["cm","Kamerun"],["cv","Tanjung Verde"],["cf","Republik Afrika Tengah"],["td","Chad"],["cl","Cile"],["co","Kolombia"],["km","Komoro"],["cg","Republik Kongo"],["cd","Republik Demokratik Kongo"],["cr","Kosta Rika"],["ci","Pantai Gading"],["hr","Kroasia"],["cu","Kuba"],["cy","Siprus"],["cz","Ceko"],["dk","Denmark"],["dj","Djibouti"],["dm","Dominika"],["do","Republik Dominika"],["ec","Ekuador"],["sv","El Salvador"],["gq","Guinea Khatulistiwa"],["er","Eritrea"],["ee","Estonia"],["sz","Eswatini"],["et","Ethiopia"],["fj","Fiji"],["fi","Finlandia"],["ga","Gabon"],["gm","Gambia"],["ge","Georgia"],["gh","Ghana"],["gr","Yunani"],["gd","Grenada"],["gt","Guatemala"],["gn","Guinea"],["gw","Guinea-Bissau"],["gy","Guyana"],["ht","Haiti"],["hn","Honduras"],["hu","Hungaria"],["is","Islandia"],["iq","Irak"],["ir","Iran"],["il","Israel"],["jm","Jamaika"],["jo","Yordania"],["kz","Kazakhstan"],["ke","Kenya"],["ki","Kiribati"],["kw","Kuwait"],["kg","Kirgizstan"],["la","Laos"],["lv","Latvia"],["lb","Lebanon"],["ls","Lesotho"],["lr","Liberia"],["ly","Libya"],["li","Liechtenstein"],["lt","Lituania"],["lu","Luksemburg"],["mg","Madagaskar"],["mw","Malawi"],["mv","Maladewa"],["ml","Mali"],["mt","Malta"],["mh","Kepulauan Marshall"],["mr","Mauritania"],["mu","Mauritius"],["fm","Mikronesia"],["md","Moldova"],["mc","Monako"],["mn","Mongolia"],["me","Montenegro"],["ma","Maroko"],["mz","Mozambik"],["mm","Myanmar"],["na","Namibia"],["nr","Nauru"],["ni","Nikaragua"],["ne","Niger"],["mk","Makedonia Utara"],["om","Oman"],["pw","Palau"],["pa","Panama"],["pg","Papua Nugini"],["py","Paraguay"],["pe","Peru"],["pl","Polandia"],["pt","Portugal"],["pr","Puerto Riko"],["ro","Rumania"],["rw","Rwanda"],["kn","Saint Kitts dan Nevis"],["lc","Saint Lucia"],["vc","Saint Vincent dan Grenadines"],["ws","Samoa"],["sm","San Marino"],["st","Sao Tome dan Principe"],["sn","Senegal"],["rs","Serbia"],["sc","Seychelles"],["sl","Sierra Leone"],["sk","Slovakia"],["si","Slovenia"],["sb","Kepulauan Solomon"],["so","Somalia"],["ss","Sudan Selatan"],["lk","Sri Lanka"],["sd","Sudan"],["sr","Suriname"],["sy","Suriah"],["tj","Tajikistan"],["tz","Tanzania"],["tl","Timor-Leste"],["tg","Togo"],["to","Tonga"],["tt","Trinidad dan Tobago"],["tn","Tunisia"],["tm","Turkmenistan"],["tv","Tuvalu"],["ug","Uganda"],["ua","Ukraina"],["uy","Uruguay"],["uz","Uzbekistan"],["vu","Vanuatu"],["va","Vatikan"],["ve","Venezuela"],["ye","Yaman"],["zm","Zambia"],["zw","Zimbabwe"],["ps","Wilayah Palestina"],["xk","Kosovo"],["fo","Kepulauan Faroe"],["gl","Greenland"],["mo","Makau"],["sa","Arab Saudi"],["kr","Korea Selatan"],["sg","Singapura"],["any","Any Country (Generic)"],["universities","Universitas / Perguruan Tinggi"]
   ];
+  // Taiwan: preset 4 × 6 cm diminta untuk alur pengajuan di Indonesia.
+  // Referensi TETO Indonesia yang ditemukan bertanggal 2016; BOCA visitor visa
+  // yang lebih baru mencantumkan 35 × 45 mm. Karena itu profil 4 × 6 cm tetap unverified.
+  countryGuides.tw.documents.visa = {
+    label: "Visa Taiwan — 4 × 6 cm (referensi TETO Indonesia)",
+    preset: "40x60",
+    profileStatus: "unverified",
+    summary: "Preset kerja 40 × 60 mm sesuai dokumen persyaratan visa Taiwan dari TETO Indonesia tahun 2016. Panduan BOCA Taiwan yang lebih baru untuk visa kunjungan umum mencantumkan 35 × 45 mm; konfirmasikan ukuran dengan TETO dan kategori visa Anda sebelum mencetak.",
+    rules: [
+      "Ukuran editor: 40 × 60 mm (4 × 6 cm), sesuai referensi dokumen TETO Indonesia 2016; statusnya belum dikonfirmasi sebagai ketentuan terkini.",
+      "Dokumen TETO Indonesia tersebut meminta dua foto berwarna dengan latar belakang putih dan diambil dalam enam bulan terakhir.",
+      "BOCA Taiwan pada panduan visa kunjungan umum yang lebih baru mencantumkan dua foto 45 × 35 mm; persyaratan dapat berbeda menurut kantor perwakilan dan kategori visa.",
+      "Gunakan foto terbaru, wajah menghadap lurus, mata terbuka, ekspresi netral, dan pencahayaan merata.",
+      "Tanyakan ke TETO yang memproses permohonan apakah ukuran 4 × 6 cm masih diterima untuk jenis visa Anda."
+    ]
+  };
+
+  // Override generic country summaries where a narrowly scoped official profile exists.
+  countryGuides.in.official = "https://indianvisaonline.gov.in/evisa/";
+  countryGuides.in.documents.visa = {
+    label: "India e-Visa (unggahan digital)",
+    preset: "digitalSquare",
+    summary: "Profil ini khusus unggahan foto pada portal resmi India e-Visa: gambar persegi JPEG 10 KB–1 MB. Portal tidak memberi angka universal tinggi kepala atau garis mata.",
+    rules: [
+      "Foto harus persegi dan berformat JPEG; ukuran file 10 KB sampai 1 MB.",
+      "Wajah penuh menghadap depan, mata terbuka, tanpa kacamata; kepala di tengah dan seluruh kepala dari atas rambut sampai dagu terlihat.",
+      "Gunakan latar terang/polos tanpa bayangan pada wajah/latar dan tanpa bingkai.",
+      "Jangan memakai profil ini untuk visa reguler India atau jenis dokumen lain."
+    ]
+  };
+  countryGuides.ca.documents.visa.summary = "Profil foto Temporary Resident Visa (TRV) Kanada: foto cetak minimal 35 × 45 mm dan tinggi kepala 31–36 mm dari dagu ke crown. Ini bukan profil eTA atau semua jalur imigrasi.";
+  countryGuides.ca.documents.visa.rules = [
+    "Dua foto identik, diambil dalam 6 bulan terakhir; foto harus tajam dan berlatar putih atau warna terang.",
+    "Ukuran bingkai minimal 35 × 45 mm; tinggi kepala dari dagu ke crown 31–36 mm.",
+    "Wajah menghadap kamera dengan ekspresi netral; foto digital tidak boleh diubah.",
+    "Profil ini khusus Temporary Resident Visa; periksa petunjuk program imigrasi lain secara terpisah."
+  ];
+  countryGuides.fr.documents.visa = {
+    label: "Visa Prancis",
+    preset: "35x45",
+    summary: "France-Visas menyatakan foto identitas 35–40 mm lebar dan tinggi wajah 32–36 mm (70–80% foto), dagu ke dahi tidak termasuk rambut.",
+    rules: [
+      "Gunakan foto terbaru yang sesuai penampilan asli dan standar ICAO.",
+      "Lebar foto 35–40 mm; tinggi wajah 32–36 mm atau 70–80% tinggi gambar.",
+      "Tidak ada angka margin atas atau posisi garis mata universal pada FAQ ini.",
+      "Ikuti instruksi konsulat atau pusat visa tempat pengajuan."
+    ]
+  };
+  countryGuides.sg = generalCountryGuide("Singapura", "https://www.ica.gov.sg/photo-guidelines");
+  countryGuides.sg.documents.passport = {
+    label: "Paspor Singapura — foto digital ICA",
+    preset: "digitalSG",
+    summary: "ICA meminta foto digital 400 × 514 piksel untuk unggahan e-Services; format JPG/JPEG/HEIC/HEIF/PNG, maksimum 8 MB.",
+    rules: [
+      "Gunakan foto warna terbaru; untuk hardcopy, cetak matte atau semi-matte.",
+      "Jangan mengubah atau meningkatkan foto, fitur wajah, atau menggunakan filter.",
+      "Foto digital 400 × 514 px dan maksimum 8 MB; tidak ada target tinggi kepala numerik pada panduan ini.",
+      "Periksa kembali instruksi layanan ICA yang sedang digunakan."
+    ]
+  };
+  countryGuides.sg.documents.visa = {
+    label: "Visa Singapura — ICA e-Service",
+    preset: "digitalSG",
+    summary: "ICA menetapkan foto JPEG 400 × 514 piksel, maksimum 60 KB, diambil dalam 3 bulan terakhir dan berlatar putih.",
+    rules: [
+      "Foto JPEG 400 × 514 px dan maksimum 60 KB.",
+      "Foto warna terbaru dalam 3 bulan terakhir, latar putih, full face menghadap depan.",
+      "Penutup kepala keagamaan/adat diperbolehkan jika tidak menutupi fitur wajah.",
+      "Tidak ada target tinggi kepala atau garis mata numerik pada FAQ visa yang dirujuk."
+    ]
+  };
+
   const existingCountryCodes = new Set(Array.from(countrySelect.options, (option) => option.value));
   visafotoCountryDirectory.forEach(([code, name]) => {
     if (!countryGuides[code]) {
@@ -207,28 +286,33 @@
   const photoSpecs = {
     "id:passport": { preset: "35x45", dpi: 600, headMm: null, topMm: null, source: "Panduan paspor Indonesia perlu dikonfirmasi pada kanal Imigrasi yang digunakan." },
     "id:visa": { preset: "digital2x3", dpi: 254, pixelWidth: 400, pixelHeight: 600, format: "image/jpeg", headMinFraction: 0.50, headMaxFraction: 0.60, eyeLineMinFraction: 0.50, eyeLineMaxFraction: 0.60, profileStatus: "verified-official", positionGuidance: "Wajah menghadap lurus; posisi mata diukur dari tepi bawah foto. Tidak ada angka margin atas terpisah pada lembar spesifikasi ini.", source: "Sumber resmi Direktorat Jenderal Imigrasi, lembar Photos format: JPG/JPEG/PNG berwarna, minimum 400 × 600 px, maksimum 2 MB; tinggi kepala termasuk rambut 50–60% tinggi gambar; garis mata 50–60% dari tepi bawah. Sumber: https://www.imigrasi.go.id/upload/file/Syarat%20Foto.pdf. PFVISA mengeluarkan raster awal 400 × 600 px; 40 × 60 mm hanya rasio kerja 2:3, bukan ukuran cetak resmi. Profil ini khusus unggahan foto e-Visa, bukan paspor Indonesia atau semua jenis dokumen." },
-    "id:id": { preset: "30x40", dpi: 600, headMm: 30, topMm: 2.5, source: "Referensi format foto 30 × 40 mm; pastikan cocok dengan instansi penerbit." },
+    "id:id": { preset: "30x40", dpi: 600, profileStatus: "unverified", source: "Ukuran 30 × 40 mm hanya format kerja umum, bukan standar biometrik resmi yang berlaku untuk semua KTP/identitas Indonesia. Ikuti instruksi instansi penerbit." },
+     "tw:visa": { preset: "40x60", dpi: 600, profileStatus: "unverified", positionGuidance: "Gunakan 40 × 60 mm hanya sebagai preset sesuai referensi TETO Indonesia tahun 2016. Jangan tampilkan status lulus biometrik; konfirmasikan ukuran terbaru ke TETO karena panduan BOCA yang lebih baru untuk visa kunjungan umum menyebut 35 × 45 mm.", source: "Referensi lokal TETO Indonesia: dokumen persyaratan visa wisata mencantumkan dua pasfoto berwarna ukuran 4 × 6 cm dengan latar putih, foto diambil dalam enam bulan terakhir (dokumen bertanggal 14 Juli 2016): https://www.roc-taiwan.org/uploads/sites/60/2016/05/20160714_02_Visa_Wisata_Tourist.pdf. Perbedaan: BOCA Taiwan, Visitor Visa for Tourism Purpose, diperbarui 14 Oktober 2025, mencantumkan dua foto 45 × 35 mm: https://www.boca.gov.tw/fp-158-250-a5a40-2.html. Profil 4 × 6 cm ini adalah preset permintaan pengguna untuk referensi pengajuan di Indonesia, bukan klaim standar resmi terkini/universal; ikuti instruksi TETO/kategori visa yang menangani permohonan." },
 
     "us:passport": { preset: "2x2", dpi: 300, format: "image/jpeg", profileStatus: "verified-official", headMinMm: 25, headMaxMm: 35, positionGuidance: "Kepala dan bahu berada di tengah; wajah menghadap lurus dan kedua mata terlihat. Tidak ada angka garis mata atau margin atas terpisah pada panduan paspor cetak yang dirujuk.", source: "U.S. Department of State — Passport Photos untuk pengajuan dengan formulir kertas: ukuran cetak 2 × 2 inci dan tinggi kepala 25–35 mm dari dagu ke puncak kepala. https://travel.state.gov/en/passports/apply/help/photos.html. Dimensi piksel hasil PFVISA berasal dari setelan ekspor 300 DPI, bukan angka minimum resmi. Pembaruan online memakai instruksi digital terpisah." },
-    "us:visa": { preset: "2x2", dpi: 300, pixelWidth: 600, pixelHeight: 600, minPixelWidth: 600, maxPixelWidth: 1200, minPixelHeight: 600, maxPixelHeight: 1200, format: "image/jpeg", profileStatus: "verified-official", headMinFraction: 0.50, headMaxFraction: 0.69, eyeLineMinFraction: 0.56, eyeLineMaxFraction: 0.69, positionGuidance: "Foto digital visa AS: kepala tegak dan di tengah; kedua mata terbuka, terlihat jelas, dan wajah menghadap kamera. Angka eye-line diukur dari tepi bawah gambar.", source: "U.S. Department of State — Photo Composition Template: foto 2 × 2 inci; foto digital tinggi kepala 50–69% dari tinggi gambar dan garis mata 56–69% dari tepi bawah. https://travel.state.gov/content/travel/en/us-visas/visa-information-resources/photos/photo-composition-template.html. Persyaratan dapat berbeda menurut formulir/kanal; ikuti instruksi aplikasi yang sedang digunakan." },
+    "us:visa": { preset: "2x2", dpi: 300, pixelWidth: 600, pixelHeight: 600, minPixelWidth: 600, maxPixelWidth: 1200, minPixelHeight: 600, maxPixelHeight: 1200, format: "image/jpeg", profileStatus: "verified-official", headMinMm: 25, headMaxMm: 35, headMinFraction: 0.50, headMaxFraction: 0.69, eyeLineMinMm: 28, eyeLineMaxMm: 35, eyeLineMinFraction: 0.56, eyeLineMaxFraction: 0.69, positionGuidance: "Foto digital visa AS: kepala tegak dan di tengah; kedua mata terbuka, terlihat jelas, dan wajah menghadap kamera. Angka eye-line diukur dari tepi bawah gambar.", source: "U.S. Department of State — Photo Composition Template: foto 2 × 2 inci; foto digital tinggi kepala 50–69% dari tinggi gambar dan garis mata 56–69% dari tepi bawah. https://travel.state.gov/content/travel/en/us-visas/visa-information-resources/photos/photo-composition-template.html. Persyaratan dapat berbeda menurut formulir/kanal; ikuti instruksi aplikasi yang sedang digunakan." },
 
     "schengen:visa": { preset: "35x45", dpi: 600, headMm: null, topMm: null, source: "Visafoto mencantumkan Schengen Visa 35 × 45 mm: https://id.visafoto.com/requirements. Ukuran kepala dan jarak atas tidak dikunci di profil generik ini karena ketentuan konsulat/pusat visa perlu diverifikasi untuk tempat pengajuan." },
     "schengen:residence": { preset: "35x45", dpi: 600, headMm: null, topMm: null, source: "Izin tinggal berbeda menurut negara penerbit; ukuran ini hanya titik awal." },
 
     "gb:passport": { preset: "35x45", dpi: 600, headMinMm: 29, headMaxMm: 34, profileStatus: "verified-official", positionGuidance: "Untuk foto cetak paspor: wajah menghadap lurus, mata terbuka dan terlihat, ekspresi netral. Untuk permohonan online, GOV.UK meminta foto digital yang belum di-crop karena pemotongan dilakukan oleh sistem pengajuan; jangan gunakan preset cetak ini sebagai spesifikasi upload digital.", source: "GOV.UK — Printed passport photos: ukuran 35 × 45 mm; tinggi wajah dari crown ke dagu 29–34 mm. https://www.gov.uk/photos-for-passports/photo-requirements. GOV.UK digital passport application separately instructs applicants not to crop the uploaded image: https://www.passport.service.gov.uk/photo/how-to-take-a-photo." },
-    "gb:visa": { preset: "35x45", dpi: 600, headMm: 32.8, topMm: 4.9, source: "Visafoto: https://id.visafoto.com/gb-visa-photo — 35 × 45 mm, 600 DPI, tinggi kepala 32,8 mm dan jarak tepi atas 4,9 mm. Cocokkan dengan jalur visa/biometrik yang berlaku." },
+    "gb:visa": { preset: "35x45", dpi: 600, profileStatus: "unverified", positionGuidance: "UKVI tidak menetapkan satu rentang biometrik tinggi kepala, margin atas, atau garis mata universal pada panduan digital visa yang dirujuk. Jangan memakai angka 64–76% sebagai standar resmi tanpa instruksi khusus pada akun aplikasi atau pusat visa.", source: "GOV.UK / UK Visas and Immigration — Take a photo of your face for a visa application or permission (12 February 2026): foto digital minimal 600 × 750 px, JPG/JPEG, 50 KB–6 MB, orientasi vertikal; panduan ini tidak mencantumkan rentang tinggi kepala 64–76% atau ukuran margin atas/garis mata. https://www.gov.uk/guidance/how-to-take-a-photo-for-a-visa-application-or-permission. Ukuran 35 × 45 mm hanya ukuran awal editor, bukan standar universal UKVI." },
 
     "ca:passport": { preset: "50x70", dpi: 600, headMinMm: 31, headMaxMm: 36, profileStatus: "verified-official", positionGuidance: "Wajah dan bahu harus berada di tengah dan sejajar menghadap kamera; mata terbuka dan terlihat jelas. Panduan resmi tidak menetapkan angka garis mata atau margin atas.", source: "Government of Canada — Passport photo requirements: foto 50 × 70 mm; tinggi wajah dari dagu ke crown 31–36 mm; wajah/bahu terpusat dan tegak, mata terbuka serta terlihat. https://www.canada.ca/en/immigration-refugees-citizenship/services/canadian-passports/photos.html. Berlaku untuk paspor dewasa cetak/in-person/mail; pembaruan online memakai foto digital tersendiri." },
-    "ca:visa": { preset: "35x45", dpi: 305, format: "image/jpeg", maxFileKB: 240, headMm: 34.7, topMm: 3, source: "Visafoto: https://id.visafoto.com/ca-visa-photo — 35 × 45 mm, 305 DPI, tinggi kepala 34,7 mm dan jarak tepi atas 3 mm. Ukuran file yang dicantumkan Visafoto 60–240 KB; cek instruksi kategori aplikasi terbaru." },
+    "ca:visa": { preset: "35x45", dpi: 600, format: "image/jpeg", profileStatus: "verified-official", headMinMm: 31, headMaxMm: 36, positionGuidance: "Foto TRV cetak minimal 35 × 45 mm; kepala diukur dari dagu ke crown, wajah di tengah dan bahu terlihat. Jangan menerapkan profil ini pada eTA, eVisa digital, atau program imigrasi lain tanpa memeriksa petunjuk spesifik.", source: "Government of Canada / IRCC — Temporary Resident Visa application photograph specifications: frame minimum 35 × 45 mm; head size chin-to-crown 31–36 mm. https://www.canada.ca/en/immigration-refugees-citizenship/services/application/application-forms-guides/temporary-resident-visa-application-photograph-specifications.html. DPI 600 di PFVISA adalah setelan ekspor, bukan angka yang ditentukan sumber." },
 
     "au:passport": { preset: "35x45", dpi: 600, headMinMm: 32, headMaxMm: 36, profileStatus: "verified-official", positionGuidance: "Wajah berada di tengah, menghadap lurus, kepala tidak miring, mata terbuka dan ekspresi netral. Panduan resmi tidak menetapkan angka garis mata atau margin atas.", source: "Australian Passport Office — Photo Guidelines: ukuran foto yang diterima 35–40 mm × 45–50 mm; tinggi wajah dari dagu ke crown 32–36 mm; wajah terpusat dan melihat lurus ke kamera. https://www.passports.gov.au/PhotoGuidelines. Preset PFVISA 35 × 45 mm berada di dalam rentang resmi, tetapi bukan satu-satunya ukuran yang diterima." },
     "au:visa": { preset: "35x45", dpi: 600, profileStatus: "unverified", positionGuidance: "Tidak ada satu spesifikasi biometrik foto yang dapat diterapkan ke seluruh visa Australia. Ikuti permintaan foto yang muncul pada jenis visa dan kanal ImmiAccount yang digunakan.", source: "Belum diberi status resmi: ketentuan foto visa Australia bergantung pada subclass dan instruksi pengajuan. Standar paspor Australia tidak diwariskan ke visa. Jangan gunakan angka pihak ketiga sebagai target biometrik resmi." },
 
     "in:passport": { preset: "35x45", dpi: 600, headMm: null, topMm: null, source: "India memiliki beberapa format paspor cetak/digital; konfirmasi spesifikasi portal yang digunakan." },
-    "in:visa": { preset: "2x2", dpi: 300, headMm: 32.766, topMm: null, source: "Visafoto: https://id.visafoto.com/in-visa-photo — 2 × 2 inci, 300 DPI, tinggi kepala 1,29 inci (32,8 mm), garis mata 1,18 inci dari tepi bawah, ukuran file 0–290 KB. Jarak atas tidak disimpulkan dari garis mata; e-Visa dapat memiliki profil digital lain." },
+    "in:visa": { preset: "digitalSquare", dpi: 300, format: "image/jpeg", minFileKB: 10, maxFileKB: 1024, profileStatus: "verified-official", positionGuidance: "Profil khusus unggahan India e-Visa: foto persegi, full face tampak depan, mata terbuka, tanpa kacamata, kepala di tengah dan seluruh kepala dari rambut hingga dagu terlihat; latar terang/polos, tanpa bayangan atau bingkai. Sumber tidak menetapkan angka tinggi kepala atau posisi garis mata.", source: "Government of India — official e-Visa portal: digital photo must be JPEG, 10 KB–1 MB, equal height and width, full face/front view, eyes open, no spectacles, full head visible, centered on plain light/white background without shadows or borders. https://indianvisaonline.gov.in/evisa/. PFVISA uses a square working canvas; the source does not specify a minimum pixel dimension or numeric head/eye target." },
+
+    "fr:visa": { preset: "35x45", dpi: 600, format: "image/jpeg", profileStatus: "verified-official", headMinMm: 32, headMaxMm: 36, headMinFraction: 0.70, headMaxFraction: 0.80, positionGuidance: "France-Visas menetapkan lebar foto 35–40 mm dan tinggi wajah dagu-ke-dahi 32–36 mm (70–80% foto), tidak termasuk rambut. Tidak ada target margin atas atau garis mata numerik terpisah pada FAQ yang dirujuk.", source: "France-Visas official FAQ — identity photo 35–40 mm wide; face size 32–36 mm (70–80% of picture), chin to forehead excluding hair, ICAO compliant. https://www.france-visas.gouv.fr/en/faq. Profil ini untuk aplikasi visa Prancis; ikuti arahan pusat visa setempat." },
+    "sg:passport": { preset: "digitalSG", dpi: 254, pixelWidth: 400, pixelHeight: 514, minPixelWidth: 400, maxPixelWidth: 400, minPixelHeight: 514, maxPixelHeight: 514, maxFileKB: 8192, profileStatus: "verified-official", positionGuidance: "Foto digital ICA Singapura untuk paspor/IC: foto berwarna terbaru, tidak boleh mengubah/meningkatkan foto atau memakai filter. Panduan ICA mengikuti spesifikasi ISO/ICAO; ukuran unggahan 400 × 514 px. Tidak ada target numerik tinggi kepala yang dikunci oleh halaman ini.", source: "Immigration & Checkpoints Authority Singapore — Photo Guidelines: online photo 400 × 514 px; accepted JPG/JPEG/HEIC/HEIF/PNG; maximum 8 MB; do not alter or enhance facial features/use filters. https://www.ica.gov.sg/photo-guidelines. Profil untuk e-Services ICA; periksa instruksi layanan yang digunakan." },
+    "sg:visa": { preset: "digitalSG", dpi: 254, pixelWidth: 400, pixelHeight: 514, minPixelWidth: 400, maxPixelWidth: 400, minPixelHeight: 514, maxPixelHeight: 514, format: "image/jpeg", maxFileKB: 60, profileStatus: "verified-official", positionGuidance: "Profil unggahan visa ICA: foto warna terbaru (dalam 3 bulan), latar putih, full face, tanpa penutup kepala kecuali kebiasaan keagamaan/adat yang tidak menutupi fitur wajah. Tidak ada target numerik tinggi kepala pada FAQ yang dirujuk.", source: "Singapore ICA / Ask.gov.sg — visa application photo: JPEG, maximum 60 KB, 400 × 514 px, recent within 3 months, white background, full face. https://ask.gov.sg/ica/questions/clos83fvx01lz5k0wkrclrdwg. Persyaratan ini khusus visa ICA e-Service." },
 
     "cn:passport": { preset: "33x48", dpi: 300, profileStatus: "unverified", positionGuidance: "Jangan memakai angka foto visa sebagai ketentuan paspor nasional. Persyaratan foto paspor Tiongkok harus dicocokkan dengan kanal penerbit paspor yang berlaku.", source: "Belum diverifikasi dari sumber resmi khusus paspor nasional Tiongkok. Ukuran dan biometrik visa Tiongkok tidak diwariskan ke paspor." },
-    "cn:visa": { preset: "33x48", dpi: 600, headMinMm: 28, headMaxMm: 33, topMinMm: 3, topMaxMm: 5, profileStatus: "verified-official", positionGuidance: "Kepala terpusat; lebar kepala resmi 15–22 mm. Wajah menghadap kamera, mata terbuka, bibir tertutup, telinga terlihat. Panduan digital terpisah memiliki template posisi mata; jangan campurkan piksel digital dengan pengukuran foto cetak.", source: "Chinese Visa Application Service Center, berdasarkan instruksi Consular Department MFA RRT: foto cetak 48 × 33 mm; lebar kepala 15–22 mm; tinggi kepala 28–33 mm; jarak crown ke tepi atas 3–5 mm. https://www.visaforchina.cn/MES4_EN/tongzhigonggao/551659995754795028.html. Profil ini untuk visa Tiongkok, bukan paspor Tiongkok." },
+    "cn:visa": { preset: "33x48", dpi: 600, headMinMm: 28, headMaxMm: 33, headWidthMinMm: 15, headWidthMaxMm: 22, topMinMm: 3, topMaxMm: 5, profileStatus: "verified-official", positionGuidance: "Kepala terpusat; lebar kepala resmi 15–22 mm. Wajah menghadap kamera, mata terbuka, bibir tertutup, telinga terlihat. Panduan digital terpisah memiliki template posisi mata; jangan campurkan piksel digital dengan pengukuran foto cetak.", source: "Chinese Visa Application Service Center, berdasarkan instruksi Consular Department MFA RRT: foto cetak 48 × 33 mm; lebar kepala 15–22 mm; tinggi kepala 28–33 mm; jarak crown ke tepi atas 3–5 mm. https://www.visaforchina.cn/MES4_EN/tongzhigonggao/551659995754795028.html. Profil ini untuk visa Tiongkok, bukan paspor Tiongkok." },
 
     "jp:passport": { preset: "35x45", dpi: 300, headMinMm: 32, headMaxMm: 36, profileStatus: "verified-official", positionGuidance: "Foto berwarna, satu orang, tampak depan, tanpa topi, latar polos; ukuran kepala diukur dari puncak kepala ke dagu. Tidak ada angka garis mata yang dikunci dalam ringkasan resmi yang dipakai.", source: "Ministry of Foreign Affairs of Japan — Passport photo standards (updated 3 March 2025): foto 45 × 35 mm; diagram formulir paspor menetapkan tinggi kepala 34 ± 2 mm. https://www.mofa.go.jp/mofaj/toko/passport/ic_photo.html dan https://www.mofa.go.jp/mofaj/files/100412471.pdf. Tidak ada target garis mata numerik yang diterapkan oleh profil ini." },
     "jp:visa": { preset: "35x45", dpi: 300, profileStatus: "verified-official", positionGuidance: "Untuk permohonan visa Jepang di Indonesia: foto berwarna 35 × 45 mm, tampak depan, latar polos, dan tidak dimanipulasi. Sumber yang dirujuk tidak memberi rentang tinggi kepala, garis mata, atau margin atas numerik; Auto Crop tidak mengarang nilai tersebut.", source: "Kedutaan Besar Jepang di Indonesia — persyaratan foto visa 4,5 × 3,5 cm dan foto tidak boleh diedit: https://www.id.emb-japan.go.jp/visa_3.html. Profil ini khusus pengajuan di Indonesia; instruksi kedutaan/kanal negara lain dapat berbeda." },
@@ -236,7 +320,7 @@
     "kr:visa": { preset: "35x45", dpi: 300, profileStatus: "verified-official", positionGuidance: "Foto warna 35 × 45 mm, tampak depan, latar putih atau off-white, tanpa topi, diambil dalam 6 bulan. Formulir visa resmi tidak menetapkan angka tinggi kepala, garis mata, atau margin atas.", source: "Republic of Korea Ministry of Justice Visa Application Form (Form 17): foto paspor 35 × 45 mm, full face/front view, white/off-white background, within 6 months. https://overseas.mofa.go.kr/upload/cntnts/bd-en/visa_application_form.pdf. Profil ukuran dan posisi dasar; biometrik numerik tidak dinyatakan pada formulir." },
 
     "sa:passport": { preset: "2x2", dpi: 300, profileStatus: "unverified", positionGuidance: "Belum ada sumber resmi khusus foto paspor nasional Arab Saudi yang diverifikasi pada audit ini.", source: "Belum diverifikasi dari otoritas penerbit paspor Arab Saudi. Jangan menyamakan foto paspor nasional dengan foto e-Visa turis." },
-    "sa:visa": { preset: "digital200", dpi: 203, pixelWidth: 200, pixelHeight: 200, minPixelWidth: 200, maxPixelWidth: 200, minPixelHeight: 200, maxPixelHeight: 200, format: "image/jpeg", headMinFraction: 0.70, headMaxFraction: 0.80, profileStatus: "verified-official", positionGuidance: "Wajah dan bagian atas bahu mengisi sekitar 70–80% gambar; wajah terpusat, tegak dan menghadap kamera. Sumber tidak memberi posisi garis mata numerik atau margin atas numerik.", source: "Official Saudi eVisa — Photo Specifications: gambar persegi 200 × 200 px, 5–100 KB; wajah sekitar 70–80% bidang foto; ukuran crown-ke-dagu 1,4–1,6 inci; wajah terpusat dan menghadap lurus. https://visa.visitsaudi.com/Home/PhotoSpecifications. Profil ini hanya Saudi tourist eVisa, bukan paspor atau visa kerja/ziarah lainnya." },
+    "sa:visa": { preset: "digital200", dpi: 203, pixelWidth: 200, pixelHeight: 200, minPixelWidth: 200, maxPixelWidth: 200, minPixelHeight: 200, maxPixelHeight: 200, format: "image/jpeg", profileStatus: "verified-official", positionGuidance: "Sumber menyebut area wajah sekitar 70–80% foto dan ukuran wajah crown-ke-dagu sekitar 1.4–1.6 inci; angka ini bukan target persentase tinggi kepala untuk panel crop. Wajah terpusat, tegak dan menghadap kamera. Tidak ada posisi garis mata numerik atau margin atas numerik.", source: "Official Saudi eVisa — Photo Specifications: gambar persegi 200 × 200 px, 5–100 KB; wajah sekitar 70–80% bidang foto; ukuran crown-ke-dagu 1,4–1,6 inci; wajah terpusat dan menghadap lurus. https://visa.visitsaudi.com/Home/PhotoSpecifications. Profil ini hanya Saudi tourist eVisa, bukan paspor atau visa kerja/ziarah lainnya." },
 
     "ae:visa": { preset: "35x45", dpi: 600, headMm: null, topMm: null, source: "Visafoto mencantumkan beberapa varian UEA: 43 × 55 mm (Flydubai/Etihad), 600 × 600 px (ICP), 2 × 2 inci (VFS), serta 35 × 45 mm untuk izin tinggal/ICA. Profil 35 × 45 mm di sini hanya titik awal; pilih kanal/portal yang benar sebelum crop otomatis." },
     "ae:id": { preset: "35x45", dpi: 600, headMm: null, topMm: null, source: "Emirates ID/izin tinggal dapat memiliki spesifikasi digital tersendiri; verifikasi pada portal resmi." }
@@ -479,6 +563,9 @@
     if (countrySelect.value === "id" && guide.documents.visa) {
       documentSelect.value = "visa";
     }
+    if (countrySelect.value === "tw" && guide.documents.visa) {
+      documentSelect.value = "visa";
+    }
     updateRequirements();
   }
 
@@ -631,7 +718,7 @@
       // changes the requested head-to-photo proportion. Out-of-frame areas
       // are rendered as the existing white canvas background.
       detectedCrop = { x: cropX, y: cropY, width: cw, height: ch };
-      detectedHead = { top: headTop, chin: chin.y };
+      detectedHead = { top: headTop, chin: chin.y, leftX: p(234).x, rightX: p(454).x, eyesY: (leftEye.y + rightEye.y) / 2 };
       cropZoom = 1; cropPanX = 0; cropPanY = 0;
       cropZoomInput.value = "1"; cropZoomLabel.textContent = "100%";
       // Apply the automatic result immediately, then leave the editor open so
@@ -655,7 +742,7 @@
         edgeIssue
           ? compositionNote + " (" + targetDescription + "), tetapi foto sumber terlalu rapat atau wajah terlalu dekat tepi. Periksa area putih dan atur crop manual."
           : compositionNote + " (" + targetDescription + "). Puncak kepala merupakan estimasi; status profil " + (profileVerified ? "bersumber resmi" : "tetap perlu diverifikasi") + ". Periksa hasil sebelum menyimpan.",
-        edgeIssue ? "error" : (hasHeadTarget || hasTopTarget ? "success" : "")
+        edgeIssue ? "error" : (profileVerified && (hasHeadTarget || hasTopTarget) ? "success" : "")
       );
     } catch (error) {
       if (detectionRun !== cropDetectionRun || sourceImage !== image) return;
@@ -692,7 +779,7 @@
     requirementsSummary.textContent = doc.summary + " Status profil: " + profileStatusLabel(spec, doc) + ".";
     if (exportProfileNote) {
       exportProfileNote.textContent = spec && spec.maxFileKB
-        ? "Batas file profil " + spec.maxFileKB + " KB. Cocokkan format dan ukuran akhir dengan portal resmi."
+        ? "Ukuran file profil " + (spec.minFileKB != null ? spec.minFileKB + "–" : "") + spec.maxFileKB + " KB. Cocokkan format dan ukuran akhir dengan portal resmi."
         : "Batas file dan format khusus belum ditetapkan pada profil ini. Periksa portal tujuan; hasil ekspor belum tentu memenuhi semua aturan.";
     }
     requirementsList.replaceChildren();
@@ -704,7 +791,7 @@
     if (spec) {
       const facts = [
         "Profil kerja PFVISA: " + presets[presetKey].label + ", " + spec.dpi + " DPI. " + profileStatusLabel(spec, doc) + ".",
-        spec.headMinFraction != null && spec.headMaxFraction != null ? "Rentang tinggi kepala acuan: " + Math.round(spec.headMinFraction * 100) + "–" + Math.round(spec.headMaxFraction * 100) + "% tinggi foto." : spec.headMinMm != null && spec.headMaxMm != null ? "Rentang tinggi kepala acuan (perkiraan ubun-ubun hingga dagu): " + mmLabel(spec.headMinMm) + "–" + mmLabel(spec.headMaxMm) + " mm." : spec.headMm != null ? "Target tinggi kepala (perkiraan ubun-ubun hingga dagu): " + mmLabel(spec.headMm) + " mm." : "Ukuran kepala belum dikunci otomatis karena spesifikasi yang tepat bergantung pada dokumen/portal.",
+        spec.headMinFraction != null && spec.headMaxFraction != null ? (spec.profileStatus === "verified-official" ? "Rentang tinggi kepala resmi: " : "Referensi tinggi kepala belum diverifikasi: ") + Math.round(spec.headMinFraction * 100) + "–" + Math.round(spec.headMaxFraction * 100) + "% tinggi foto." : spec.headMinMm != null && spec.headMaxMm != null ? (spec.profileStatus === "verified-official" ? "Rentang tinggi kepala resmi (perkiraan ubun-ubun hingga dagu): " : "Referensi tinggi kepala belum diverifikasi: ") + mmLabel(spec.headMinMm) + "–" + mmLabel(spec.headMaxMm) + " mm." : spec.headMm != null ? (spec.profileStatus === "verified-official" ? "Target tinggi kepala resmi (perkiraan ubun-ubun hingga dagu): " : "Referensi tinggi kepala belum diverifikasi: ") + mmLabel(spec.headMm) + " mm." : "Ukuran kepala belum dikunci otomatis karena spesifikasi yang tepat bergantung pada dokumen/portal.",
         spec.topMinMm != null && spec.topMaxMm != null ? "Rentang jarak tepi atas ke puncak kepala: " + mmLabel(spec.topMinMm) + "–" + mmLabel(spec.topMaxMm) + " mm." : spec.topMm != null ? "Target jarak tepi atas ke ubun-ubun: " + mmLabel(spec.topMm) + " mm." : "Jarak tepi atas kepala belum ditetapkan otomatis; periksa petunjuk resmi.",
         spec.eyeLineMinFraction != null && spec.eyeLineMaxFraction != null ? "Rentang posisi garis mata dari tepi bawah: " + Math.round(spec.eyeLineMinFraction * 100) + "–" + Math.round(spec.eyeLineMaxFraction * 100) + "% tinggi foto." : spec.eyeLineMinMm != null && spec.eyeLineMaxMm != null ? "Rentang garis mata dari tepi bawah: " + mmLabel(spec.eyeLineMinMm) + "–" + mmLabel(spec.eyeLineMaxMm) + " mm." : spec.eyeLineMm != null ? "Target garis mata dari tepi bawah: " + mmLabel(spec.eyeLineMm) + " mm; Auto Crop menggunakan posisi mata sebagai acuan vertikal." : "Garis mata belum ditetapkan otomatis untuk profil ini.",
         spec.positionGuidance ? "Panduan posisi wajah/mata: " + spec.positionGuidance : "Panduan posisi mata numerik atau posisi wajah khusus belum ditetapkan pada profil ini.",
@@ -975,9 +1062,6 @@
   function updateMeasurements(crop) {
     const spec = currentCropSpec();
     const dims = getDimensions();
-    // Report effective magnification against a plain ratio-fit crop. The
-    // profile-driven auto crop often has a custom crop rectangle, so the manual
-    // slider can correctly remain at 1.0x while the actual zoom is not 100%.
     const ratio = dims.widthPx / dims.heightPx;
     const ratioFitHeight = sourceImage
       ? (sourceImage.naturalWidth / sourceImage.naturalHeight > ratio
@@ -986,29 +1070,92 @@
       : 0;
     const effectiveZoom = crop && ratioFitHeight > 0 ? (ratioFitHeight / crop.height) * 100 : cropZoom * 100;
     metricZoom.textContent = Math.round(effectiveZoom) + "%";
+
+    const target = (min, max, unit, exact) => {
+      const prefix = spec && spec.profileStatus === "verified-official" ? "Target " : "Referensi belum diverifikasi ";
+      if (min != null && max != null) return prefix + mmLabel(min) + "–" + mmLabel(max) + " " + unit;
+      if (exact != null) return prefix + mmLabel(exact) + " " + unit;
+      return "Tidak ditetapkan pada sumber";
+    };
+    metricHeadTarget.textContent = spec && spec.headMinFraction != null && spec.headMaxFraction != null
+      ? (spec.profileStatus === "verified-official" ? "Target " : "Referensi belum diverifikasi ") + Math.round(spec.headMinFraction * 100) + "–" + Math.round(spec.headMaxFraction * 100) + "%" + (spec.headMinMm != null && spec.headMaxMm != null ? " / " + mmLabel(spec.headMinMm) + "–" + mmLabel(spec.headMaxMm) + " mm" : "")
+      : target(spec && spec.headMinMm, spec && spec.headMaxMm, "mm", spec && spec.headMm);
+    metricTopTarget.textContent = target(spec && spec.topMinMm, spec && spec.topMaxMm, "mm", spec && spec.topMm);
+    metricHeadWidthTarget.textContent = spec && (spec.headWidthMinMm != null || spec.headWidthMm != null)
+      ? "Referensi kepala " + (spec.headWidthMinMm != null ? mmLabel(spec.headWidthMinMm) + "–" + mmLabel(spec.headWidthMaxMm) : mmLabel(spec.headWidthMm)) + " mm; lebar wajah hanya estimasi"
+      : "Tidak ditetapkan pada sumber";
+    metricEyeLineTarget.textContent = spec && spec.eyeLineMinFraction != null && spec.eyeLineMaxFraction != null
+      ? "Target " + Math.round(spec.eyeLineMinFraction * 100) + "–" + Math.round(spec.eyeLineMaxFraction * 100) + "% dari bawah" + (spec.eyeLineMinMm != null && spec.eyeLineMaxMm != null ? " / " + mmLabel(spec.eyeLineMinMm) + "–" + mmLabel(spec.eyeLineMaxMm) + " mm" : "")
+      : target(spec && spec.eyeLineMinMm, spec && spec.eyeLineMaxMm, "mm dari bawah", spec && spec.eyeLineMm);
+
     if (!sourceImage || !crop || !detectedHead) {
       metricHead.textContent = "Belum terukur";
       metricTop.textContent = "Belum terukur";
-      metricHeadTarget.textContent = spec && spec.headMinFraction != null && spec.headMaxFraction != null ? "Target " + Math.round(spec.headMinFraction * 100) + "–" + Math.round(spec.headMaxFraction * 100) + "%" : spec && spec.headMinMm != null && spec.headMaxMm != null ? "Target " + mmLabel(spec.headMinMm) + "–" + mmLabel(spec.headMaxMm) + " mm" : spec && spec.headMm != null ? "Target " + mmLabel(spec.headMm) + " mm" : "Target belum diverifikasi";
-      metricTopTarget.textContent = spec && spec.topMinMm != null && spec.topMaxMm != null ? "Target " + mmLabel(spec.topMinMm) + "–" + mmLabel(spec.topMaxMm) + " mm" : spec && spec.topMm != null ? "Target " + mmLabel(spec.topMm) + " mm" : "Target belum diverifikasi";
-      measurementStatus.textContent = sourceImage ? "Perlu verifikasi" : "Menunggu foto";
+      metricHeadWidth.textContent = "Belum terukur";
+      metricEyeLine.textContent = "Belum terukur";
+      measurementStatus.textContent = sourceImage ? "Menunggu Auto Crop" : "Menunggu foto";
       measurementStatus.className = "measurement-badge neutral";
-      measurementNote.textContent = "Deteksi wajah belum memberi pengukuran yang dapat digunakan. Periksa posisi secara visual.";
+      measurementNote.textContent = "Tekan Auto Crop untuk mengestimasi ukuran kepala, lebar wajah, jarak tepi atas, dan posisi garis mata. Pengukuran otomatis perlu diperiksa secara visual.";
       return;
     }
-    const headMm = ((detectedHead.chin - detectedHead.top) / crop.height) * dims.heightMm;
-    const topMm = ((detectedHead.top - crop.y) / crop.height) * dims.heightMm;
-    metricHead.textContent = mmLabel(Number(headMm.toFixed(1))) + " mm · " + (headMm / dims.heightMm * 100).toFixed(1) + "%";
-    metricTop.textContent = mmLabel(Number(topMm.toFixed(1))) + " mm";
-    metricHeadTarget.textContent = spec && spec.headMinFraction != null && spec.headMaxFraction != null ? "Target " + Math.round(spec.headMinFraction * 100) + "–" + Math.round(spec.headMaxFraction * 100) + "%" : spec && spec.headMinMm != null && spec.headMaxMm != null ? "Target " + mmLabel(spec.headMinMm) + "–" + mmLabel(spec.headMaxMm) + " mm" : spec && spec.headMm != null ? "Target " + mmLabel(spec.headMm) + " mm" : "Target belum diverifikasi";
-    metricTopTarget.textContent = spec && spec.topMinMm != null && spec.topMaxMm != null ? "Target " + mmLabel(spec.topMinMm) + "–" + mmLabel(spec.topMaxMm) + " mm" : spec && spec.topMm != null ? "Target " + mmLabel(spec.topMm) + " mm" : "Target belum diverifikasi";
-    const hasTarget = !!(spec && (spec.headMm != null || spec.headMinMm != null || spec.headMinFraction != null || spec.topMm != null || spec.topMinMm != null));
-    // The crop is mathematically fitted using an estimated crown. These values
-    // are not independent biometric verification and cannot establish a pass.
-    measurementStatus.textContent = hasTarget ? "Perlu cek visual" : "Perlu verifikasi";
-    measurementStatus.className = "measurement-badge warn";
-    measurementNote.textContent = "Angka di atas menunjukkan geometri crop berdasarkan perkiraan puncak kepala dari landmark wajah; bukan pengukuran independen ubun-ubun sebenarnya. Periksa rambut/ubun-ubun, dagu, mata, tepi foto, dan instruksi portal secara visual. PFVISA tidak dapat menjamin penerimaan.";
 
+    const headMm = ((detectedHead.chin - detectedHead.top) / crop.height) * dims.heightMm;
+    const headPercent = (headMm / dims.heightMm) * 100;
+    const topMm = ((detectedHead.top - crop.y) / crop.height) * dims.heightMm;
+    const eyeLineMm = detectedHead.eyesY != null
+      ? ((crop.y + crop.height - detectedHead.eyesY) / crop.height) * dims.heightMm
+      : null;
+    const headWidthMm = detectedHead.leftX != null && detectedHead.rightX != null
+      ? (Math.abs(detectedHead.rightX - detectedHead.leftX) / crop.width) * dims.widthMm
+      : null;
+
+    metricHead.textContent = mmLabel(Number(headMm.toFixed(1))) + " mm · " + headPercent.toFixed(1) + "%";
+    metricTop.textContent = mmLabel(Number(topMm.toFixed(1))) + " mm";
+    metricHeadWidth.textContent = headWidthMm == null ? "Belum terukur" : mmLabel(Number(headWidthMm.toFixed(1))) + " mm";
+    metricEyeLine.textContent = eyeLineMm == null ? "Belum terukur" : mmLabel(Number(eyeLineMm.toFixed(1))) + " mm · " + (eyeLineMm / dims.heightMm * 100).toFixed(1) + "%";
+
+    const checks = [];
+    const within = (value, min, max, exact) => {
+      if (value == null) return;
+      if (min != null && max != null) checks.push(value >= min && value <= max);
+      else if (exact != null) checks.push(Math.abs(value - exact) <= 0.5);
+    };
+    if (spec) {
+      // If an authority supplies both a physical head dimension and a digital
+      // percentage, validate both instead of silently preferring one scale.
+      if (spec.headMinFraction != null && spec.headMaxFraction != null) {
+        checks.push(headPercent >= spec.headMinFraction * 100 && headPercent <= spec.headMaxFraction * 100);
+      }
+      if (spec.headMinMm != null || spec.headMaxMm != null || spec.headMm != null) {
+        within(headMm, spec.headMinMm, spec.headMaxMm, spec.headMm);
+      }
+      within(topMm, spec.topMinMm, spec.topMaxMm, spec.topMm);
+      if (eyeLineMm != null) {
+        if (spec.eyeLineMinFraction != null && spec.eyeLineMaxFraction != null) {
+          const eyePercent = eyeLineMm / dims.heightMm * 100;
+          checks.push(eyePercent >= spec.eyeLineMinFraction * 100 && eyePercent <= spec.eyeLineMaxFraction * 100);
+        }
+        if (spec.eyeLineMinMm != null || spec.eyeLineMaxMm != null || spec.eyeLineMm != null) {
+          within(eyeLineMm, spec.eyeLineMinMm, spec.eyeLineMaxMm, spec.eyeLineMm);
+        }
+      }
+    }
+    const official = spec && spec.profileStatus === "verified-official";
+    const allMeasuredTargetsKnown = checks.length > 0;
+    const hasUnmeasuredOfficialWidthTarget = Boolean(spec && (spec.headWidthMinMm != null || spec.headWidthMaxMm != null || spec.headWidthMm != null));
+    if (!official || !allMeasuredTargetsKnown || hasUnmeasuredOfficialWidthTarget) {
+      measurementStatus.textContent = "Perlu verifikasi";
+      measurementStatus.className = "measurement-badge warn";
+      measurementNote.textContent = "Hasil adalah estimasi landmark wajah. Profil ini belum sepenuhnya terverifikasi secara resmi atau masih memiliki target yang tidak dapat diukur langsung. Angka referensi nonresmi tidak dinilai lulus/gagal. Periksa ubun-ubun, rambut, dagu, lebar kepala, garis mata, serta instruksi portal/dokumen yang benar secara visual.";
+    } else if (checks.every(Boolean)) {
+      measurementStatus.textContent = "Dalam rentang acuan";
+      measurementStatus.className = "measurement-badge good";
+      measurementNote.textContent = "Semua parameter numerik yang tersedia berada dalam rentang acuan profil resmi. Ini pemeriksaan geometri crop, bukan jaminan foto diterima; puncak kepala dan lebar wajah tetap estimasi landmark dan perlu pemeriksaan visual.";
+    } else {
+      measurementStatus.textContent = "Ada ukuran di luar rentang";
+      measurementStatus.className = "measurement-badge warn";
+      measurementNote.textContent = "Satu atau lebih parameter numerik berada di luar rentang acuan. Geser foto atau koreksi zoom, lalu periksa kembali. Hasil tetap berupa estimasi landmark dan bukan keputusan penerimaan resmi.";
+    }
   }
 
   function updateLabels() {
