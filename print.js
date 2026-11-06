@@ -564,6 +564,64 @@
     printButton.disabled=false;continueButton.disabled=false;return true;
   }
 
+  // Drag preview uses a small display-resolution canvas. The 600-DPI master
+  // is rebuilt only after the pointer is released, never on every pointermove.
+  const dragPreviewCanvas = document.createElement("canvas");
+  dragPreviewCanvas.width = 400;
+  dragPreviewCanvas.height = 600;
+  const dragPreviewContext = dragPreviewCanvas.getContext("2d", { alpha: false });
+  let dragFrame = 0;
+  let pendingDragPoint = null;
+
+  function drawDragPreview() {
+    dragFrame = 0;
+    if (!activeDrag || !pendingDragPoint) return;
+    const point = pendingDragPoint;
+    pendingDragPoint = null;
+    const rects = photoRects();
+    const rect = rects.find((item) => item.index === activeDrag.index);
+    if (!rect) return;
+    const x = Math.max(0, Math.min(outputCanvas.width - rect.w, point.x - activeDrag.offsetX));
+    const y = Math.max(0, Math.min(outputCanvas.height - rect.h, point.y - activeDrag.offsetY));
+    manualPositions.set(activeDrag.index, { x, y });
+
+    const sx = dragPreviewCanvas.width / sheetCanvas.width;
+    const sy = dragPreviewCanvas.height / sheetCanvas.height;
+    const ctx = dragPreviewContext;
+    ctx.setTransform(1, 0, 0, 1, 0, 0);
+    ctx.fillStyle = "#fff";
+    ctx.fillRect(0, 0, dragPreviewCanvas.width, dragPreviewCanvas.height);
+    ctx.filter = "brightness(" + brightnessInput.value + "%) contrast(" + contrastInput.value + "%) saturate(" + saturationInput.value + "%)";
+    rects.forEach((item) => {
+      const previewRect = { x: item.x * sx, y: item.y * sy, w: item.w * sx, h: item.h * sy };
+      drawPhotoCover(ctx, previewRect, item.group);
+      if (strokeEnabledInput.checked) {
+        ctx.save();
+        ctx.strokeStyle = strokeColorInput.value;
+        ctx.lineWidth = Math.max(0.5, Number(strokeWidthInput.value) * MM_TO_PX * sx);
+        const inset = ctx.lineWidth / 2;
+        ctx.strokeRect(previewRect.x + inset, previewRect.y + inset, previewRect.w - ctx.lineWidth, previewRect.h - ctx.lineWidth);
+        ctx.restore();
+      }
+    });
+    ctx.filter = "none";
+    const pixels = ctx.getImageData(0, 0, dragPreviewCanvas.width, dragPreviewCanvas.height);
+    const data = pixels.data;
+    const ro = Number(redBalanceInput.value) * 1.5;
+    const go = Number(greenBalanceInput.value) * 1.5;
+    const bo = Number(blueBalanceInput.value) * 1.5;
+    if (ro || go || bo) {
+      for (let p = 0; p < data.length; p += 4) {
+        data[p] = Math.max(0, Math.min(255, data[p] + ro));
+        data[p + 1] = Math.max(0, Math.min(255, data[p + 1] + go));
+        data[p + 2] = Math.max(0, Math.min(255, data[p + 2] + bo));
+      }
+      ctx.putImageData(pixels, 0, 0);
+    }
+    outputContext.clearRect(0, 0, outputCanvas.width, outputCanvas.height);
+    outputContext.drawImage(dragPreviewCanvas, 0, 0, outputCanvas.width, outputCanvas.height);
+  }
+
   function canvasPoint(event) {
     const rect = outputCanvas.getBoundingClientRect();
     return {
@@ -589,19 +647,21 @@
 
   outputCanvas.addEventListener("pointermove", (event) => {
     if (!activeDrag) return;
-    const point = canvasPoint(event);
-    const rect = photoRects().find((item) => item.index === activeDrag.index);
-    if (!rect) return;
-    const x = Math.max(0, Math.min(outputCanvas.width - rect.w, point.x - activeDrag.offsetX));
-    const y = Math.max(0, Math.min(outputCanvas.height - rect.h, point.y - activeDrag.offsetY));
-    manualPositions.set(activeDrag.index, { x, y });
-    drawCollage();
+    pendingDragPoint = canvasPoint(event);
+    if (!dragFrame) dragFrame = requestAnimationFrame(drawDragPreview);
     event.preventDefault();
   });
 
   function finishCanvasDrag() {
+    if (!activeDrag) return;
+    if (dragFrame) cancelAnimationFrame(dragFrame);
+    dragFrame = 0;
+    if (pendingDragPoint) drawDragPreview();
+    pendingDragPoint = null;
     activeDrag = null;
     outputCanvas.classList.remove("is-dragging");
+    // Restore the full-resolution 600-DPI composition after interaction.
+    drawCollage();
   }
   outputCanvas.addEventListener("pointerup", finishCanvasDrag);
   outputCanvas.addEventListener("pointercancel", finishCanvasDrag);
