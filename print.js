@@ -140,6 +140,9 @@
   document.head.appendChild(navStyle);
 
   function showPrintPage() {
+    // The explicit navigation action captures the latest editor state now;
+    // cancel any pending debounced capture to avoid rebuilding the same master twice.
+    if (typeof editorCaptureTimer !== "undefined") clearTimeout(editorCaptureTimer);
     if (photoCanvas.hidden || !photoCanvas.width || !photoCanvas.height) {
       const status = document.getElementById("status");
       if (status) status.textContent = "Selesaikan crop foto terlebih dahulu sebelum membuka halaman cetak.";
