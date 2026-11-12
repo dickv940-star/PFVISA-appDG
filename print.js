@@ -733,11 +733,11 @@
     manualPositions.clear();drawCollage();
   }
   [sizeMode,sizeA,sizeB].forEach(el=>el.addEventListener("change",updateSizeControls));
-  [countA,countB,$("print-width-a"),$("print-height-a"),$("print-width-b"),$("print-height-b")].forEach(el=>el.addEventListener("input",()=>{manualPositions.clear();drawCollage();}));
-  [marginSelect,gapSelect,sharpenInput,brightnessInput,contrastInput,saturationInput,redBalanceInput,greenBalanceInput,blueBalanceInput,strokeEnabledInput,strokeColorInput,strokeWidthInput].forEach(el=>el.addEventListener("input",drawCollage));
+  [countA,countB,$("print-width-a"),$("print-height-a"),$("print-width-b"),$("print-height-b")].forEach(el=>el.addEventListener("input",()=>{manualPositions.clear();scheduleCollageDraw();}));
+  [marginSelect,gapSelect,sharpenInput,brightnessInput,contrastInput,saturationInput,redBalanceInput,greenBalanceInput,blueBalanceInput,strokeEnabledInput,strokeColorInput,strokeWidthInput].forEach(el=>el.addEventListener("input",scheduleCollageDraw));
   updateSizeControls();
-  [strokeEnabledInput, strokeColorInput].forEach((el) => el.addEventListener("change", drawCollage));
-  [marginSelect, gapSelect].forEach((el) => el.addEventListener("change", drawCollage));
+  [strokeEnabledInput, strokeColorInput].forEach((el) => el.addEventListener("change", scheduleCollageDraw));
+  [marginSelect, gapSelect].forEach((el) => el.addEventListener("change", scheduleCollageDraw));
   paperSelect.addEventListener("change", () => {
     paperGuide.textContent = paperSelect.value === "glossy"
       ? "Epson Glossy: pilih media Glossy Photo Paper / Premium Glossy Photo Paper sesuai jenis kertas yang benar-benar dipakai. Coba kualitas High/Best Photo dan koreksi warna driver standar terlebih dahulu."
@@ -761,13 +761,11 @@
   // a full 600-DPI master for every pointer event blocks the UI, so coalesce
   // updates and capture only after the user pauses briefly.
   let editorCaptureTimer = 0;
-  let collageFrame = 0;
+  let collageTimer = 0;
   function scheduleCollageDraw() {
-    if (collageFrame) return;
-    collageFrame = requestAnimationFrame(() => {
-      collageFrame = 0;
-      drawCollage();
-    });
+    // Coalesce rapid slider/input events before rebuilding the 600-DPI sheet.
+    clearTimeout(collageTimer);
+    collageTimer = setTimeout(() => requestAnimationFrame(drawCollage), 90);
   }
   photoCanvas.addEventListener("pfvisa:editor-crop-updated", () => {
     syncContinueAvailability();
