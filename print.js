@@ -245,6 +245,8 @@
 
   function captureEditorCrop() {
     if (photoCanvas.hidden || !photoCanvas.width || !photoCanvas.height) return false;
+    // The source pixels changed, so cached rotated/sharpened canvases are stale.
+    sharpenCache.clear();
     editorCropSnapshot = typeof window.PFVISA_getEditorCropState === "function"
       ? window.PFVISA_getEditorCropState() : null;
     const editorDimensions = typeof window.PFVISA_getPhotoDimensions === "function"
@@ -280,6 +282,7 @@
 
   function drawRecropPreview() {
     if (!recropBaseCanvas.width || !recropBaseCanvas.height) return;
+    sharpenCache.clear();
     const width = recropPreview.width = recropBaseCanvas.width;
     const height = recropPreview.height = recropBaseCanvas.height;
     const context = recropPreviewContext;
@@ -472,6 +475,9 @@
       frame.data.set(out); sctx.putImageData(frame, 0, 0); finalImage = sharpened;
     }
     const result = { image: finalImage, width: finalImage.width, height: finalImage.height };
+    // Keep only a few processed variants to avoid repeated full-resolution sharpening
+    // without retaining an unbounded number of large canvases.
+    if (sharpenCache.size >= 4) sharpenCache.clear();
     sharpenCache.set(cacheKey, result);
     return result;
   }
@@ -508,7 +514,6 @@
       info.textContent = "Unggah foto dan selesaikan crop terlebih dahulu.";
       printButton.disabled = true; continueButton.disabled = true; return false;
     }
-    sharpenCache.clear();
     const ctx = sheetCanvas.getContext("2d", { alpha:false });
     ctx.fillStyle="#fff"; ctx.fillRect(0,0,sheetCanvas.width,sheetCanvas.height);
     const rects=photoRects();
@@ -551,10 +556,17 @@
       if(strokeEnabledInput.checked){ctx.save();ctx.strokeStyle=strokeColorInput.value;ctx.lineWidth=Number(strokeWidthInput.value)*MM_TO_PX;const inset=ctx.lineWidth/2;ctx.strokeRect(rect.x+inset,rect.y+inset,rect.w-ctx.lineWidth,rect.h-ctx.lineWidth);ctx.restore();}
     });
     ctx.filter="none";
-    const pixels=ctx.getImageData(0,0,sheetCanvas.width,sheetCanvas.height), data=pixels.data;
     const ro=Number(redBalanceInput.value)*1.5, go=Number(greenBalanceInput.value)*1.5, bo=Number(blueBalanceInput.value)*1.5;
-    for(let p=0;p<data.length;p+=4){data[p]=Math.max(0,Math.min(255,data[p]+ro));data[p+1]=Math.max(0,Math.min(255,data[p+1]+go));data[p+2]=Math.max(0,Math.min(255,data[p+2]+bo));}
-    ctx.putImageData(pixels,0,0);
+    // Pixel readback and a full 600-DPI loop are costly; skip them at neutral RGB.
+    if (ro || go || bo) {
+      const pixels=ctx.getImageData(0,0,sheetCanvas.width,sheetCanvas.height), data=pixels.data;
+      for(let p=0;p<data.length;p+=4){
+        data[p]=Math.max(0,Math.min(255,data[p]+ro));
+        data[p+1]=Math.max(0,Math.min(255,data[p+1]+go));
+        data[p+2]=Math.max(0,Math.min(255,data[p+2]+bo));
+      }
+      ctx.putImageData(pixels,0,0);
+    }
     outputContext.clearRect(0,0,outputCanvas.width,outputCanvas.height);outputContext.drawImage(sheetCanvas,0,0);
     info.textContent=SHEET_W_MM+" × "+SHEET_H_MM+" mm · A: "+selectedCount("A")+" foto "+selectedSize("A").width+" × "+selectedSize("A").height+" mm"+(sizeMode.value==="mixed"?" · B: "+selectedCount("B")+" foto "+selectedSize("B").width+" × "+selectedSize("B").height+" mm":"");
     $("print-sharpen-value").textContent=sharpenInput.value+"%";
