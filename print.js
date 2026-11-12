@@ -347,6 +347,8 @@
   });
   $("print-recrop-apply").addEventListener("click", applyPrintRecrop);
   $("print-recrop-cancel").addEventListener("click", () => {
+    // Restoring the committed source invalidates any sharpened preview variant.
+    sharpenCache.clear();
     if (committedPrintCanvas.width) {
       printPhotoCanvas.width = committedPrintCanvas.width;
       printPhotoCanvas.height = committedPrintCanvas.height;
