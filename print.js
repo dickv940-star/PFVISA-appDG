@@ -757,13 +757,27 @@
     drawCollage();
   });
   printButton.addEventListener("click", printSheet);
+  // Editor pointer movement can emit many preview updates per second. Building
+  // a full 600-DPI master for every pointer event blocks the UI, so coalesce
+  // updates and capture only after the user pauses briefly.
+  let editorCaptureTimer = 0;
+  let collageFrame = 0;
+  function scheduleCollageDraw() {
+    if (collageFrame) return;
+    collageFrame = requestAnimationFrame(() => {
+      collageFrame = 0;
+      drawCollage();
+    });
+  }
   photoCanvas.addEventListener("pfvisa:editor-crop-updated", () => {
-    // The editor preview canvas is the master source. Any completed crop
-    // update invalidates a previous print-only override.
     syncContinueAvailability();
-    if (!captureEditorCrop()) return;
-    syncContinueAvailability();
-    if (!printPage.hidden) drawCollage();
+    clearTimeout(editorCaptureTimer);
+    editorCaptureTimer = setTimeout(() => {
+      // Any completed editor crop supersedes a print-only crop override.
+      if (!captureEditorCrop()) return;
+      syncContinueAvailability();
+      if (!printPage.hidden) scheduleCollageDraw();
+    }, 120);
   });
   document.addEventListener("click", (event) => {
     if (event.target.closest("#auto-crop-btn,#crop-mode-btn,#reset-btn")) {
@@ -785,7 +799,7 @@
       if (!printPage.hidden) showEditorPage();
     } else {
       syncContinueAvailability();
-      drawCollage();
+      scheduleCollageDraw();
     }
   });
   observer.observe(photoCanvas, { attributes: true, attributeFilter: ["width", "height", "hidden"] });
