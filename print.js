@@ -779,18 +779,12 @@
       if (!printPage.hidden) scheduleCollageDraw();
     }, 120);
   });
-  document.addEventListener("click", (event) => {
-    if (event.target.closest("#auto-crop-btn,#crop-mode-btn,#reset-btn")) {
-      setTimeout(() => {
-        if (!printCropOverride && captureEditorCrop() && !printPage.hidden) drawCollage();
-      }, 150);
-    }
-  });
+  // Editor crop changes are captured by the debounced canvas event above.
   document.addEventListener("change", (event) => {
-    if (event.target.matches("#size-preset,#custom-width,#custom-height,#country-select,#document-select,#dpi")) setTimeout(drawCollage, 150);
+    if (event.target.matches("#size-preset,#custom-width,#custom-height,#country-select,#document-select,#dpi")) scheduleCollageDraw();
   });
   document.addEventListener("input", (event) => {
-    if (event.target.matches("#crop-zoom,#custom-width,#custom-height")) setTimeout(drawCollage, 100);
+    if (event.target.matches("#crop-zoom,#custom-width,#custom-height")) scheduleCollageDraw();
   });
   const observer = new MutationObserver(() => {
     if (photoCanvas.hidden || !photoCanvas.width || !photoCanvas.height) {
